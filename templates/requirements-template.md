@@ -1,14 +1,32 @@
 ---
+# === IDENTIFICATION ===
+spec_name: "[NN-spec-name]"  # e.g., "02-build-http-client" - MUST match directory name
+spec_number: NN  # Two-digit number (e.g., 02, 15)
 description: Brief one-sentence description
+
+# === LOCATION CONTEXT ===
+# To find this file's location:
+# 1. Run: bash pwd  (gets current working directory = CWD)
+# 2. This file is at: CWD/specifications/[NN-spec-name]/requirements.md
+# 3. Workspace root: CWD (contains .agents/, specifications/, documentation/, backends/)
+workspace_name: "ewe_platform"  # Project workspace name (from Cargo.toml workspace.name or root dir)
+spec_directory: "specifications/[NN-spec-name]"  # Relative to CWD (workspace root)
+this_file: "specifications/[NN-spec-name]/requirements.md"  # This file's path from workspace root
+
+# === STATUS ===
 status: in-progress
 priority: medium
 created: YYYY-MM-DD
 author: Main Agent
+
+# === CONTEXT OPTIMIZATION ===
 machine_optimized: true  # Main Agent MUST generate machine_prompt.md before spawning sub-agents
 machine_prompt_file: ./machine_prompt.md  # Sub-agents read this (NOT requirements.md) for 58% token savings
 context_optimization: true  # Sub-agents MUST generate COMPACT_CONTEXT.md before work, reload after updates
 compact_context_file: ./COMPACT_CONTEXT.md  # Ultra-compact current task context (97% reduction)
 context_reload_required: true  # Clear and reload from compact context regularly to prevent context limit errors
+
+# === METADATA ===
 metadata:
   version: "1.0"
   last_updated: YYYY-MM-DD
@@ -21,8 +39,10 @@ metadata:
   skills: []
   tools:
     - [Tool names]
-builds_on: []
-related_specs: []
+
+# === DEPENDENCIES ===
+builds_on: []  # Other specs this depends on (e.g., ["../01-spec-name"])
+related_specs: []  # Related but not dependent specs
 has_features: true # DEFAULT: true unless spec is very simple (1-3 trivial tasks)
 has_fundamentals: true # DEFAULT: true unless user explicitly says no - create user documentation
 # Choose ONE based on has_features:
@@ -81,6 +101,46 @@ files_required:
 ---
 
 # [Specification Name] - Requirements
+
+## 📍 Location Reference
+
+**How to find your location**:
+1. Run `bash pwd` to get current working directory (CWD)
+2. This file is at: `CWD/specifications/[NN-spec-name]/requirements.md`
+3. Workspace root is CWD (contains `.agents/`, `specifications/`, `documentation/`, `backends/`)
+
+**Quick paths** (all relative to workspace root = CWD):
+- This specification: `specifications/[NN-spec-name]/`
+- This file: `specifications/[NN-spec-name]/requirements.md`
+- Features: `specifications/[NN-spec-name]/features/*/feature.md`
+- Machine prompt: `specifications/[NN-spec-name]/machine_prompt.md`
+- Progress: `specifications/[NN-spec-name]/PROGRESS.md`
+- Learnings: `specifications/[NN-spec-name]/LEARNINGS.md`
+- Agent rules: `.agents/rules/`
+- Stack files: `.agents/stacks/`
+- Documentation: `documentation/*/doc.md`
+
+**Verification**: If you can read `.agents/AGENTS.md` from CWD, you're in the right place!
+
+**Quick Navigation Commands**:
+```bash
+# Verify you're in workspace root
+test -f .agents/AGENTS.md && echo "✓ In workspace root" || echo "✗ Wrong location"
+
+# List all specifications
+ls -d specifications/*/
+
+# Check this spec's features (if has_features: true)
+ls -d specifications/[NN-spec-name]/features/*/
+
+# View specification structure
+tree -L 2 specifications/[NN-spec-name]/
+
+# Find related code (adjust pattern to your spec)
+find backends/ -name "*[relevant-pattern]*" -type f
+```
+
+---
 
 > **Specification Structure**:
 > - **has_features: false** → This file contains COMPLETE requirements with detailed tasks

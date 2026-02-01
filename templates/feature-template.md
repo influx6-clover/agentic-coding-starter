@@ -1,18 +1,38 @@
 ---
-feature: feature-name
+# === IDENTIFICATION ===
+spec_name: "[NN-spec-name]"  # Parent spec (e.g., "02-build-http-client")
+spec_number: NN  # Parent spec number (e.g., 02)
+feature_name: "feature-name"  # This feature's name (e.g., "compression")
+feature_number: N  # Feature number within spec (e.g., 3 for compression)
 description: Brief one-sentence description of what this feature implements
+
+# === LOCATION CONTEXT ===
+# To find this file's location:
+# 1. Run: bash pwd  (gets current working directory = CWD)
+# 2. This file is at: CWD/specifications/[NN-spec-name]/features/[feature-name]/feature.md
+# 3. Workspace root: CWD (contains .agents/, specifications/, documentation/, backends/)
+workspace_name: "ewe_platform"  # Project workspace name
+spec_directory: "specifications/[NN-spec-name]"  # Parent spec directory (relative to CWD)
+feature_directory: "specifications/[NN-spec-name]/features/[feature-name]"  # This feature's directory
+this_file: "specifications/[NN-spec-name]/features/[feature-name]/feature.md"  # This file's path
+
+# === STATUS ===
 status: pending
 priority: medium
-depends_on: []
+depends_on: []  # Other features this depends on (e.g., ["foundation", "connection"])
 estimated_effort: medium
 created: YYYY-MM-DD
 last_updated: YYYY-MM-DD
 author: Main Agent
+
+# === CONTEXT OPTIMIZATION ===
 machine_optimized: true  # Main Agent MUST generate machine_prompt.md before spawning sub-agents
 machine_prompt_file: ./machine_prompt.md  # Sub-agents read this (NOT feature.md) for 58% token savings
 context_optimization: true  # Sub-agents MUST generate COMPACT_CONTEXT.md before work, reload after updates
 compact_context_file: ./COMPACT_CONTEXT.md  # Ultra-compact current task context (97% reduction)
 context_reload_required: true  # Clear and reload from compact context regularly to prevent context limit errors
+
+# === TASKS ===
 tasks:
   completed: 0
   uncompleted: 0
@@ -47,6 +67,49 @@ files_required:
 ---
 
 # [Feature Name]
+
+## 📍 Location Reference
+
+**How to find your location**:
+1. Run `bash pwd` to get current working directory (CWD)
+2. This file is at: `CWD/specifications/[NN-spec-name]/features/[feature-name]/feature.md`
+3. Workspace root is CWD (contains `.agents/`, `specifications/`, `documentation/`, `backends/`)
+
+**Quick paths** (all relative to workspace root = CWD):
+- Parent spec: `specifications/[NN-spec-name]/requirements.md`
+- This feature: `specifications/[NN-spec-name]/features/[feature-name]/`
+- This file: `specifications/[NN-spec-name]/features/[feature-name]/feature.md`
+- Machine prompt: `specifications/[NN-spec-name]/features/[feature-name]/machine_prompt.md`
+- Templates: `specifications/[NN-spec-name]/features/[feature-name]/templates/` (if exists)
+- Parent progress: `specifications/[NN-spec-name]/PROGRESS.md`
+- Parent learnings: `specifications/[NN-spec-name]/LEARNINGS.md`
+- Agent rules: `.agents/rules/`
+- Stack files: `.agents/stacks/`
+
+**Verification**: If you can read `.agents/AGENTS.md` from CWD, you're in the right place!
+
+**Quick Navigation Commands**:
+```bash
+# Verify you're in workspace root
+test -f .agents/AGENTS.md && echo "✓ In workspace root" || echo "✗ Wrong location"
+
+# View parent spec
+cat specifications/[NN-spec-name]/requirements.md
+
+# List all features in parent spec
+ls -d specifications/[NN-spec-name]/features/*/
+
+# Check feature dependencies (other features listed in depends_on)
+cat specifications/[NN-spec-name]/features/[dependency-name]/feature.md
+
+# View this feature's structure
+tree specifications/[NN-spec-name]/features/[feature-name]/
+
+# Find related code (adjust pattern to your feature)
+find backends/ -name "*[relevant-pattern]*" -type f
+```
+
+---
 
 ## 🔍 CRITICAL: Retrieval-Led Reasoning Required
 
