@@ -6,6 +6,136 @@ This file contains the complete version history for all files in the `.agents/` 
 
 ---
 
+## 2026-02-01
+
+### AGENTS.md - Version 5.4.0
+- Updated: Main Agent generates initial COMPACT_CONTEXT.md before spawning sub-agents
+- Clarified: Sub-agents receive and maintain COMPACT_CONTEXT.md during work
+- Clarified: Main Agent handles cleanup after verification
+- Added: Clear handoff model for COMPACT_CONTEXT.md lifecycle
+- Benefit: Clear ownership and lifecycle management for context optimization
+
+### AGENTS.md - Version 5.4.0
+- **NAVIGATION**: Converted all plain text rule references to markdown links
+- Updated: "By Role" table with clickable links to all rules
+- Updated: "Rules Reference" table with full navigable links
+- Enhanced: "Spawning Sub-Agents" section with linked references
+- Updated: "Critical Reminders" section with links to rules and sections
+- Enhanced: "Directory Structure" with navigable directory links
+- Stats: +44 insertions, -28 deletions
+- Benefit: Easy one-click navigation throughout AGENTS.md, better discoverability
+
+### rules/14-machine-optimized-prompts.md - Version 1.1
+- **MAJOR**: Added "machine_prompt.md Lifecycle and Usage" section (~200 lines)
+- Added: 8-step generation and context workflow
+- Clarified: Dual file maintenance (human + machine versions)
+- Clarified: Human files remain source of truth, never deleted
+- Clarified: Machine files generated, synced, used by agents, never hand-edited
+- Added: Synchronization workflow (edit human → regen machine → clear → reload → commit both)
+- Added: Integration with Rule 15 (machine_prompt content embeds in COMPACT_CONTEXT.md)
+- Benefit: Complete clarity on machine_prompt.md lifecycle and relationship with human files
+
+### rules/15-instruction-compaction.md - Version 1.1
+- **MAJOR**: Added "Ephemeral Nature of COMPACT_CONTEXT.md" section (~150 lines)
+- Clarified: Lifecycle is per-task, regenerated on updates, deleted on completion
+- Clarified: NEVER accumulates history - current task only
+- Added: Size limit guidance (500-800 tokens maximum)
+- **MAJOR**: Added "machine_prompt.md Integration" section
+- Clarified: COMPACT_CONTEXT.md embeds machine_prompt content (MACHINE_PROMPT_CONTENT section)
+- Clarified: Self-contained after context clear - no need to re-read machine_prompt.md
+- **MAJOR**: Added "PROGRESS.md Lifecycle" section
+- Clarified: PROGRESS.md rewritten from scratch per task (no cumulative history)
+- Added: Pattern documentation (Create → Update → CLEAR → Rewrite for next)
+- Updated: Generation workflow to include machine_prompt embedding (Step 3b)
+- Added: extract_task_from_machine_prompt() function example
+- Updated: Example to show MACHINE_PROMPT_CONTENT section
+- Stats: +575 insertions, -50 deletions
+- Benefit: Complete clarity on COMPACT_CONTEXT.md and PROGRESS.md lifecycles
+
+### templates/COMPACT_CONTEXT-template.md - Version 1.1
+- Added: MACHINE_PROMPT_CONTENT section for embedded requirements
+- Added: Comprehensive agent instructions for using embedded content
+- Benefit: Template guides agents to create self-contained compact context
+
+### templates/PROGRESS-template.md - Version 1.2
+- Enhanced: Header with lifecycle and relationship diagram
+- Added: Clear documentation of ephemeral nature
+- Benefit: Agents understand PROGRESS.md is rewritten per task
+
+### templates/requirements-template.md - Version 3.3
+- Added: context_optimization frontmatter section
+- Added: Token Optimization and Context Management section
+- Documented: Rule 14 and Rule 15 integration
+- Benefit: Specifications include optimization guidance
+
+### templates/feature-template.md - Version 1.3
+- Added: context_optimization frontmatter section
+- Added: Token Optimization and Context Management section
+- Documented: COMPACT_CONTEXT.md and PROGRESS.md lifecycle details
+- Benefit: Features include complete optimization workflow
+
+### rules/14-machine-optimized-prompts.md - Initial Creation
+- **NEW RULE**: Machine-optimized prompts for 58% token savings
+- Core principle: Sub-agents read machine_prompt.md (NOT requirements.md)
+- Added: Automatic generation protocol from requirements.md
+- Added: Compact format specification (pipe-delimited, minimal tokens)
+- Added: When to use guidelines (sub-agents, not Main Agent)
+- Benefit: Massive token reduction for sub-agent context loading
+
+### rules/15-instruction-compaction.md - Initial Creation
+- **NEW RULE**: Instruction compaction for 97% context reduction
+- Core principle: COMPACT_CONTEXT.md for radically compressed task context
+- Added: Complete compaction protocol (generate → clear → reload)
+- Added: Compact format specification (ultra-minimal, reference-based)
+- Added: When to compact guidelines (before tasks, after updates, at thresholds)
+- Added: Context preservation strategy
+- Benefit: Eliminates context exhaustion, enables indefinite work sessions
+
+### AGENTS.md - Version 5.3.0
+- Added: Rule 14 as mandatory for ALL agents
+- Added: Rule 15 as mandatory for ALL sub-agents
+- Updated: "By Role" table to include Rules 14 and 15
+- Updated: "Critical Reminders" section with context optimization points
+- Updated: "Spawning Sub-Agents" prompt to include Rules 14 and 15
+- Benefit: Context optimization built into agent workflow from start
+
+### rules/05-coding-practice-agent-orchestration.md - Version 1.2
+- Added: Main Agent responsibility to generate initial COMPACT_CONTEXT.md
+- Added: Main Agent handles cleanup after verification
+- Benefit: Clear Main Agent ownership of COMPACT_CONTEXT.md lifecycle
+
+### rules/13-implementation-agent-guide.md - Version 1.2
+- Added: Context compaction to "Before Starting Work" (steps 11-15)
+- Added: COMPACT_CONTEXT.md generation and reload workflow
+- Clarified: Sub-agents receive (not generate) initial COMPACT_CONTEXT.md
+- Added: Maintenance during work session
+- Benefit: Sub-agents know when and how to compact context
+
+### rules/06-specifications-and-requirements.md - Version 2.2
+- Added: COMPACT_CONTEXT.md to "Work-in-Progress Files"
+- Added: context_optimization to frontmatter specification
+- Updated: Directory structure examples to include COMPACT_CONTEXT.md
+- Benefit: Specifications recognize and guide context optimization files
+
+### rules/08-verification-workflow-complete-guide.md - Version 1.2
+- Added: Automated verification scripts requirement
+- Added: Guidelines for user-specified verification script support
+- Added: Script discoverability protocol
+- Benefit: Verification agents can use project-specific verification workflows
+
+### AGENTS.md - Version 5.2.0
+- **MAJOR**: Added retrieval-led reasoning as core principle
+- Added: Comprehensive "Retrieval-Led Reasoning (MANDATORY)" section
+- Clarified: Read codebase FIRST before assumptions
+- Clarified: Use Grep/Glob/Read tools to understand patterns
+- Clarified: Trust project rules over general best practices
+- Added: Enforcement requirements before any implementation
+- Added: Examples of retrieval-led vs pretraining-led reasoning
+- Stats: ~60 lines added
+- Benefit: Ensures agents follow project-specific patterns, not generic assumptions
+
+---
+
 ## 2026-01-25
 
 ### rules/07-language-conventions-and-standards.md - Version 1.1
@@ -297,4 +427,4 @@ This file contains the complete version history for all files in the `.agents/` 
 
 ---
 
-*Last Updated: 2026-01-24*
+*Last Updated: 2026-02-01*
