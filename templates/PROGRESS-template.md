@@ -7,6 +7,13 @@
 > **Commit Strategy**: Update this file during work. Commit happens AFTER task/feature verification passes (Rule 04).
 >
 > **⚠️ Machine Optimization**: Sub-agents should read `machine_prompt.md` (NOT requirements.md/feature.md) for 58% token savings. See Rule 14.
+>
+> **⚠️ Context Optimization** (CRITICAL - Rule 15):
+> - Generate `COMPACT_CONTEXT.md` before starting work
+> - Regenerate after updating this file
+> - Clear context and reload from `COMPACT_CONTEXT.md`
+> - Prevents context limit errors, provides 97% context reduction
+> - MANDATORY: Compact → Clear → Reload cycle
 
 ---
 

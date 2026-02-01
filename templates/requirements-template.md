@@ -6,6 +6,9 @@ created: YYYY-MM-DD
 author: Main Agent
 machine_optimized: true  # Main Agent MUST generate machine_prompt.md before spawning sub-agents
 machine_prompt_file: ./machine_prompt.md  # Sub-agents read this (NOT requirements.md) for 58% token savings
+context_optimization: true  # Sub-agents MUST generate COMPACT_CONTEXT.md before work, reload after updates
+compact_context_file: ./COMPACT_CONTEXT.md  # Ultra-compact current task context (97% reduction)
+context_reload_required: true  # Clear and reload from compact context regularly to prevent context limit errors
 metadata:
   version: "1.0"
   last_updated: YYYY-MM-DD

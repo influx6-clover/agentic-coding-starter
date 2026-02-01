@@ -86,17 +86,28 @@ When multiple tasks or issues exist:
 
 1. ✅ Load Rules 01-04 (mandatory)
 2. ✅ Load Rule 14 (machine-optimized prompts - token efficiency)
-3. ✅ Load Rule 12 (agent registry usage)
-4. ✅ Load Rule 11 (if using skills)
-5. ✅ Load your agent documentation (`.agents/agents/[name].md`)
-6. ✅ Load relevant stack file (`.agents/stacks/[language].md`)
-7. ✅ **Read `machine_prompt.md`** (NOT requirements.md/feature.md - 58% token savings):
+3. ✅ Load Rule 15 (instruction compaction - context optimization)
+4. ✅ Load Rule 12 (agent registry usage)
+5. ✅ Load Rule 11 (if using skills)
+6. ✅ Load your agent documentation (`.agents/agents/[name].md`)
+7. ✅ Load relevant stack file (`.agents/stacks/[language].md`)
+8. ✅ **Read `machine_prompt.md`** (NOT requirements.md/feature.md - 58% token savings):
    - **If has_features: false**: Read `specifications/[NN-spec]/machine_prompt.md`
    - **If has_features: true**: Read `specifications/[NN-spec]/features/[name]/machine_prompt.md`
-8. ✅ Parse DOCS_TO_READ section and read only listed files
-9. ✅ Understand what to build and standards to follow
+9. ✅ Parse DOCS_TO_READ section and read only listed files
+10. ✅ Read PROGRESS.md to understand current context
+11. ✅ **Generate COMPACT_CONTEXT.md** (Rule 15 - 97% context reduction):
+    - Extract current task from machine_prompt.md
+    - Extract current status from PROGRESS.md
+    - Create ultra-compact summary
+    - List files to read/update/create
+    - Reference requirements (not duplicate)
+12. ✅ **CLEAR ENTIRE CONTEXT** (drop everything loaded so far)
+13. ✅ **RELOAD from COMPACT_CONTEXT.md ONLY**
+14. ✅ Read only files listed in FILES section of COMPACT_CONTEXT.md
+15. ✅ Proceed with clean, minimal context (5K-10K tokens vs 150K+)
 
-**CRITICAL**: Always prefer machine_prompt.md over verbose human-readable files for token efficiency.
+**CRITICAL**: Steps 11-15 (compact → clear → reload) are MANDATORY to prevent context limit errors.
 
 ---
 
@@ -384,23 +395,27 @@ After reporting:
 
 **Core Workflow**:
 ```
-Priority Check (fix tests first) → TDD (Test → Red → Code → Green → Refactor) →
-Self-Review → Document Learnings → Report → WAIT
+Load machine_prompt.md + PROGRESS.md → Generate COMPACT_CONTEXT.md → Clear Context →
+Reload from Compact → Priority Check (fix tests first) → TDD (Test → Red → Code → Green → Refactor) →
+Self-Review → Document Learnings → Update PROGRESS.md → Regenerate COMPACT_CONTEXT.md →
+Clear & Reload → Report → WAIT
 ```
 
 **Golden Rules**:
 1. **Retrieval-Led Reasoning**: Read codebase FIRST, follow project patterns, verify assumptions (NOT pretraining-led guessing)
-2. **Work Priority**: Fix tests → Pass checks → Complete features (zero tolerance for bugs/failures)
-3. **TDD Mandatory**: Write tests FIRST, verify failure, then implement
-4. **Autonomous Fixing**: Fix clear issues without asking (lint, format, simple bugs)
-5. **Self-Review**: Check completeness, quality, simplicity before reporting
-6. **Never Commit**: Always report to Main Agent and wait
-7. **Never Spawn Verification**: Only Main Agent has this authority
+2. **Context Optimization**: Generate COMPACT_CONTEXT.md before work, reload after PROGRESS.md updates (Rule 15 - 97% reduction)
+3. **Machine Prompts**: Read machine_prompt.md (NOT requirements.md) for 58% token savings (Rule 14)
+4. **Work Priority**: Fix tests → Pass checks → Complete features (zero tolerance for bugs/failures)
+5. **TDD Mandatory**: Write tests FIRST, verify failure, then implement
+6. **Autonomous Fixing**: Fix clear issues without asking (lint, format, simple bugs)
+7. **Self-Review**: Check completeness, quality, simplicity before reporting
+8. **Never Commit**: Always report to Main Agent and wait
+9. **Never Spawn Verification**: Only Main Agent has this authority
 
-**Smart Agent**: Make sensible choices that maintain quality. Read code to understand patterns. Only ask when truly unclear.
+**Smart Agent**: Make sensible choices that maintain quality. Read code to understand patterns. Compact context regularly to prevent limit errors. Only ask when truly unclear.
 
 ---
 
 *Created: 2026-01-19*
-*Last Updated: 2026-02-01 (Added: Retrieval-led reasoning section, machine_prompt.md usage for token efficiency.)*
+*Last Updated: 2026-02-01 (Added: Retrieval-led reasoning, machine_prompt.md usage, COMPACT_CONTEXT.md generation and reload protocol for context optimization.)*
 *Purpose: Concise implementation guide for sub-agents (reduces context vs full Rule 05)*

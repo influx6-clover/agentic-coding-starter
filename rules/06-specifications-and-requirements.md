@@ -119,6 +119,8 @@ Agent: "Let me summarize what success looks like..."
 ```
 specifications/01-simple-spec/
 ├── requirements.md          # Complete requirements with integrated tasks
+├── machine_prompt.md        # Machine-optimized (Rule 14 - 58% savings)
+├── COMPACT_CONTEXT.md       # Ultra-compact current task (Rule 15 - 97% reduction)
 ├── scripts/                 # Automated verification/validation scripts (MANDATORY if applicable)
 │   ├── verify_requirements.py   # Verifies requirement expectations met
 │   ├── verify_completion.py     # Verifies completed code elements
@@ -139,6 +141,8 @@ specifications/01-simple-spec/
 ```
 specifications/02-feature-spec/
 ├── requirements.md          # High-level overview + feature index ONLY
+├── machine_prompt.md        # Machine-optimized (Rule 14 - 58% savings)
+├── COMPACT_CONTEXT.md       # Ultra-compact current work (Rule 15 - 97% reduction)
 ├── scripts/                 # Automated verification/validation scripts (MANDATORY if applicable)
 │   ├── verify_requirements.py   # Verifies requirement expectations met
 │   ├── verify_features.py       # Verifies all features complete
@@ -146,7 +150,9 @@ specifications/02-feature-spec/
 ├── Makefile                 # Encodes verification commands (MANDATORY if scripts exist)
 ├── features/
 │   ├── 00-foundation/
-│   │   ├── feature.md      # Detailed feature requirements + tasks
+│   │   ├── feature.md       # Detailed feature requirements + tasks
+│   │   ├── machine_prompt.md    # Machine-optimized (Rule 14)
+│   │   ├── COMPACT_CONTEXT.md   # Ultra-compact current task (Rule 15)
 │   │   ├── scripts/        # Feature-specific verification scripts (optional)
 │   │   └── templates/      # Feature-specific templates (optional)
 │   ├── 01-core-api/
@@ -238,18 +244,20 @@ Once completed (status: completed, REPORT.md and VERIFICATION.md created), speci
 
 Each specification directory MUST contain ONLY these files:
 
-| File              | Status    | Purpose                                                                              |
-| ----------------- | --------- | ------------------------------------------------------------------------------------ |
-| `requirements.md` | Permanent | Requirements with integrated tasks                                                   |
-| `scripts/`        | Permanent | Automated verification/validation scripts (MANDATORY if applicable)                  |
-| `Makefile`        | Permanent | Encodes verification commands (MANDATORY if scripts exist)                           |
-| `LEARNINGS.md`    | Permanent | ALL learnings consolidated (technical + process, with efficient writing for context) |
-| `REPORT.md`       | Permanent | ALL reports consolidated (work sessions, testing, completion)                        |
-| `VERIFICATION.md` | Permanent | Verification signoff                                                                 |
-| `PROGRESS.md`     | Ephemeral | Current status (DELETE at 100%)                                                      |
-| `fundamentals/`   | Permanent | User docs (if has_fundamentals: true)                                                |
-| `features/`       | Permanent | Feature breakdown (if has_features: true)                                            |
-| `templates/`      | Permanent | Code templates (optional)                                                            |
+| File                  | Status    | Purpose                                                                              |
+| --------------------- | --------- | ------------------------------------------------------------------------------------ |
+| `requirements.md`     | Permanent | Requirements with integrated tasks                                                   |
+| `machine_prompt.md`   | Generated | Machine-optimized specification (Rule 14 - 58% token savings)                        |
+| `COMPACT_CONTEXT.md`  | Generated | Ultra-compact current task context (Rule 15 - 97% context reduction)                 |
+| `scripts/`            | Permanent | Automated verification/validation scripts (MANDATORY if applicable)                  |
+| `Makefile`            | Permanent | Encodes verification commands (MANDATORY if scripts exist)                           |
+| `LEARNINGS.md`        | Permanent | ALL learnings consolidated (technical + process, with efficient writing for context) |
+| `REPORT.md`           | Permanent | ALL reports consolidated (work sessions, testing, completion)                        |
+| `VERIFICATION.md`     | Permanent | Verification signoff                                                                 |
+| `PROGRESS.md`         | Ephemeral | Current status (DELETE at 100%)                                                      |
+| `fundamentals/`       | Permanent | User docs (if has_fundamentals: true)                                                |
+| `features/`           | Permanent | Feature breakdown (if has_features: true)                                            |
+| `templates/`          | Permanent | Code templates (optional)                                                            |
 
 ### File Consolidation Rules
 
@@ -1079,4 +1087,4 @@ Central dashboard at `specifications/Spec.md`:
 ---
 
 _Created: 2026-01-11_
-_Last Updated: 2026-02-01 (Added: Automated verification scripts requirement. Changed: Documentation workflow - now AFTER implementation. Added: Performance optimization documentation requirements.)_
+_Last Updated: 2026-02-01 (Added: Automated verification scripts, instruction compaction (COMPACT_CONTEXT.md). Changed: Documentation workflow - now AFTER implementation. Added: Performance optimization documentation requirements.)_
