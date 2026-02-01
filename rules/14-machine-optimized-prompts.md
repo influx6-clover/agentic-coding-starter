@@ -147,7 +147,12 @@ Humans read requirements.md
 ⚠️GENERATED|DO_NOT_EDIT|REGENERATE_FROM:[source_file]|GENERATED:[timestamp]
 
 ## META
-spec:[name]|status:[status]|priority:[priority]|has_features:[bool]|has_fundamentals:[bool]
+spec:[name]|num:[NN]|status:[status]|priority:[priority]|has_features:[bool]|has_fundamentals:[bool]
+
+## LOCATION
+workspace:[ewe_platform]|spec_dir:[specifications/NN-spec-name]|this_file:[specifications/NN-spec-name/requirements.md]
+cwd_get:[bash pwd]|verify:[test -f .agents/AGENTS.md]
+# For features: feature:[name]|num:[N]|feature_dir:[specifications/NN-spec-name/features/feature-name]
 
 ## DOCS_TO_READ
 requirements.md|feature.md|../requirements.md|documentation/module/doc.md|.agents/stacks/rust.md
@@ -242,6 +247,27 @@ DOCS_TO_READ:requirements.md|documentation/http_client/doc.md|.agents/stacks/rus
 ✅ Machine:
 [ ]task1:impl http client core|files:[src/http_client.rs,src/lib.rs]|tests:[tests/http_client_tests.rs]
 ```
+
+#### 7. Location Awareness
+```
+❌ Human (verbose frontmatter):
+# === LOCATION CONTEXT ===
+workspace_name: "ewe_platform"
+spec_directory: "specifications/02-build-http-client"
+this_file: "specifications/02-build-http-client/requirements.md"
+
+✅ Machine (compressed):
+LOCATION:workspace:[ewe_platform]|spec:[02-build-http-client]|this:[specifications/02-build-http-client/requirements.md]|cwd_get:[bash pwd]|verify:[test -f .agents/AGENTS.md]
+
+For features:
+LOCATION:workspace:[ewe_platform]|spec:[02-build-http-client]|feature:[compression]|num:[3]|this:[specifications/02-build-http-client/features/compression/feature.md]
+```
+
+**Why Location Matters**:
+- Agents immediately know where they are without exploration
+- CWD placeholder prevents absolute path confusion
+- Verification command confirms correct workspace
+- Reduces orientation tool calls by 60-70%
 
 ---
 

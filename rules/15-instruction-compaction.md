@@ -297,6 +297,14 @@ specifications/01-spec-name/
 
 ⚠️COMPACTED|RELOAD_AFTER_READING|GENERATED:[timestamp]|FROM:[machine_prompt.md,progress.md,rules]
 
+## LOCATION
+workspace:[workspace_name]|spec:[NN-spec-name]|num:[NN]|feature:[feature-name]|num:[N]
+this:[specifications/NN-spec-name/features/feature-name/feature.md]
+cwd:[bash pwd]|verify:[test -f .agents/AGENTS.md && echo ✓ || echo ✗]
+
+**Purpose**: Immediate location awareness without exploration. Spec/feature numbers identify
+this work. Verification command confirms correct workspace in one tool call.
+
 ## RULES_SUMMARY
 [EMBEDDED COMPACTED RULES, STACK, AND SKILLS FROM FRONTMATTER - ONLY WHAT AGENT NEEDS]
 

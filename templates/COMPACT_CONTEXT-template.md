@@ -2,6 +2,11 @@
 
 ⚠️COMPACTED|RELOAD_AFTER_READING|GENERATED:[YYYY-MM-DDTHH:MM:SSZ]|FROM:[machine_prompt.md,progress.md,rules]
 
+## LOCATION
+workspace:[ewe_platform]|spec:[NN-spec-name]|num:[NN]|feature:[feature-name]|num:[N]
+this:[specifications/NN-spec-name/features/feature-name/feature.md]
+cwd:[bash pwd]|verify:[test -f .agents/AGENTS.md && echo ✓ || echo ✗]
+
 ## RULES_SUMMARY
 [EMBEDDED COMPACTED RULES, STACK, AND SKILLS FROM SPECIFICATION FRONTMATTER - ONLY WHAT THIS AGENT TYPE NEEDS]
 
@@ -58,6 +63,9 @@ progress:[./PROGRESS.md#current-section]|learnings:[./LEARNINGS.md#relevant-sect
 ## Instructions for Agent
 
 **CRITICAL**: This file is self-contained. After context clear, read ONLY this file.
+
+**Location Awareness**: The LOCATION section tells you exactly where you are. Run the verify
+command to confirm correct workspace. Spec number (NN) and feature number (N) identify this work.
 
 **Rules Summary**: The RULES_SUMMARY section contains compacted essential rules, stack files,
 and skills from specification frontmatter. **MANDATORY**: Must include all three (rules, stack, skills).
