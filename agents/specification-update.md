@@ -29,6 +29,31 @@ This agent maintains specification accuracy by updating task statuses and creati
 ## Agent Type
 **Utility** - Specification file management
 
+## Retrieval-Led Reasoning (MANDATORY)
+
+**CRITICAL**: You MUST use retrieval-led reasoning, NOT pretraining-led reasoning.
+
+**Retrieval-Led Approach** ✅:
+- Read actual requirements.md structure FIRST
+- Follow existing task formatting patterns in the file
+- Check existing frontmatter fields before updating
+- Read VERIFICATION.md format from similar specifications if exists
+- Use Grep to find similar specification structures as reference
+- Preserve existing markdown structure and style
+
+**Pretraining-Led Approach** ❌ (FORBIDDEN):
+- Assuming standard task checkbox format without reading file
+- Guessing frontmatter fields without checking actual structure
+- Using generic templates without checking project style
+- Modifying structure without reading existing format
+
+**Before updating, you MUST**:
+1. Read the actual requirements.md file completely
+2. Understand current task structure and formatting
+3. Check frontmatter fields that exist
+4. Follow discovered patterns for updates
+5. Preserve project-specific conventions
+
 ## Capabilities
 
 ### When Verification PASSES

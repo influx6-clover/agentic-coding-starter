@@ -14,7 +14,40 @@ This rule establishes the mandatory practice for code development, requiring spe
 
 ## Core Principles
 
-### 1. Main Agent as Orchestrator
+### 1. Retrieval-Led Reasoning (MANDATORY)
+
+**ALL agents MUST follow retrieval-led reasoning, NOT pretraining-led reasoning.**
+
+**Retrieval-Led Reasoning**:
+- ✅ **Read the codebase FIRST** before making assumptions
+- ✅ **Use Grep/Glob/Read tools** to understand existing patterns
+- ✅ **Follow project-specific conventions** found in code
+- ✅ **Trust project rules** over general best practices
+- ✅ **Search for similar implementations** as reference
+- ✅ **Read stack files and learnings** for project context
+- ✅ **Verify assumptions** by reading actual code
+
+**Pretraining-Led Reasoning** (FORBIDDEN):
+- ❌ Making assumptions based on "typical" patterns
+- ❌ Implementing without checking existing code
+- ❌ Applying generic best practices without context
+- ❌ Assuming file structures or naming conventions
+- ❌ Guessing at project patterns without verification
+
+**Why This Matters**:
+- Every codebase has unique patterns and conventions
+- Pretraining knowledge may not match project specifics
+- Reading actual code reveals true project structure
+- Project rules and learnings encode critical context
+- Assumptions lead to inconsistent implementations
+
+**Enforcement**: Before implementation, agents MUST demonstrate retrieval by:
+1. Searching for similar implementations
+2. Reading relevant existing code
+3. Checking project conventions
+4. Following discovered patterns
+
+### 2. Main Agent as Orchestrator
 The Main Agent **MUST**:
 - Act as controller and orchestrator ONLY
 - NEVER perform coding tasks directly
@@ -23,7 +56,7 @@ The Main Agent **MUST**:
 - Coordinate specification updates
 - Commit code ONLY after verification passes
 
-### 2. Autonomous Decision-Making (CRITICAL)
+### 3. Autonomous Decision-Making (CRITICAL)
 Agents are smart and empowered to make sensible choices that maintain quality:
 
 **When to Act Autonomously (NO user approval needed)**:
@@ -46,7 +79,7 @@ Agents are smart and empowered to make sensible choices that maintain quality:
 
 **Principle**: If you know what "good" looks like and how to achieve it per rules/specs, DO IT. Only ask when truly unclear or when rules require approval.
 
-### 3. Work Priority Order (MANDATORY)
+### 4. Work Priority Order (MANDATORY)
 When multiple tasks exist or issues are discovered, follow this strict priority:
 
 1. **Fix ALL broken tests** (highest priority)
@@ -64,7 +97,7 @@ When multiple tasks exist or issues are discovered, follow this strict priority:
 
 **Principle**: Always resolve existing issues before starting new work. Code must always be in good, working shape.
 
-### 4. Commit Correction Pattern (New Features)
+### 5. Commit Correction Pattern (New Features)
 If a fix is needed for a recently committed feature (not yet pushed or just pushed):
 
 **Pattern: Soft Undo and Recommit**
@@ -101,7 +134,7 @@ git push
 - Multiple people working on the branch
 - In these cases: Create new commit with fix
 
-### 5. Agent Identity and Verification Authority
+### 6. Agent Identity and Verification Authority
 
 **CRITICAL DISTINCTION**: Only the Main Agent can spawn verification agents.
 
@@ -123,14 +156,14 @@ Directly interacting with user? → MAIN AGENT (can spawn verification)
 - ✅ Report completion to Main Agent
 - ✅ Wait for Main Agent to coordinate verification
 
-### 6. Verification-First Workflow
+### 7. Verification-First Workflow
 **CRITICAL REQUIREMENT**: NO code is EVER committed without verification.
 
 ```
 Implement Task/Feature → Report to Main → Verification → Update Spec → Commit
 ```
 
-### 7. Specification Versioning (CRITICAL)
+### 8. Specification Versioning (CRITICAL)
 **MANDATORY REQUIREMENT**: Completed specifications are IMMUTABLE.
 
 **From Rule 06**: Once a specification is marked as completed (with REPORT.md and VERIFICATION.md), it is **LOCKED** and represents historical fact.
@@ -813,11 +846,16 @@ Main Agent MUST:
    - Files changed
    - Implementation description
 5. ✅ WAIT for Specification Agent to complete
-6. ✅ Commit code AND specification updates following Rule 03
-7. ✅ Include verification status in commit message:
+6. ✅ Check if module documentation update required (see Rule 06)
+7. ✅ If documentation update required:
+   - Spawn Documentation Agent
+   - Provide implementation summary, files changed, modules affected
+   - WAIT for Documentation Agent to complete
+8. ✅ Commit code AND specification updates AND documentation together following Rule 03
+9. ✅ Include verification status in commit message:
       "Verified by [Language] Verification Agent(s): All checks passed"
-8. ✅ Push to remote following Rule 05
-9. ✅ Report success to user
+10. ✅ Push to remote following Rule 05
+11. ✅ Report success to user
 ```
 
 ##### Specification Update Process
@@ -1142,7 +1180,7 @@ Violations have severe consequences:
 
 **Core Workflow**:
 ```
-Implement (TDD: Test → Red → Code → Green → Refactor) → Self-Review → Document Learnings → Report → Verify (Scripts + Checks) → Fix Autonomously if Clear → Update Spec → Commit → Push
+Implement (TDD: Test → Red → Code → Green → Refactor) → Self-Review → Document Learnings → Report → Verify (Scripts + Checks) → Fix Autonomously if Clear → Update Spec → Update Documentation (if required) → Commit → Push
 ```
 
 **Key Principles**:
@@ -1199,7 +1237,7 @@ Implement (TDD: Test → Red → Code → Green → Refactor) → Self-Review �
 
 ---
 *Created: 2026-01-11*
-*Last Updated: 2026-01-19 (Split into Rule 05 for orchestration and Rule 13 for implementation)*
+*Last Updated: 2026-02-01 (Added: Retrieval-led reasoning as Core Principle #1. Updated workflow to include documentation updates after verification passes.)*
 
 ---
 

@@ -30,6 +30,31 @@ Acts as mandatory quality gate for Python code. Provides independent validation 
 ## Agent Type
 **Verification** - Quality assurance and standards enforcement
 
+## Retrieval-Led Reasoning (MANDATORY)
+
+**CRITICAL**: You MUST use retrieval-led reasoning, NOT pretraining-led reasoning.
+
+**Retrieval-Led Approach** ✅:
+- Read project-specific verification scripts from requirements.md FIRST
+- Check pyproject.toml or setup.py for custom verification configs
+- Check Makefile for verification targets
+- Follow project-specific stack configuration from `.agents/stacks/python.md`
+- Use Grep/Read to understand project testing patterns
+- Trust project rules over generic Python best practices
+
+**Pretraining-Led Approach** ❌ (FORBIDDEN):
+- Assuming standard Python tools without checking project config
+- Skipping project-specific verification scripts
+- Applying generic verification without reading project requirements
+- Guessing test commands without checking codebase
+
+**Before verifying, you MUST**:
+1. Read requirements.md for user-specified verification scripts
+2. Check pyproject.toml/setup.py for verification configs
+3. Check Makefile for verification targets
+4. Read stack file for project-specific standards
+5. Follow discovered verification requirements
+
 ## Standard Verification Checks
 
 ### 1. User-Specified Scripts (if any)

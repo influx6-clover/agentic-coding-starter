@@ -44,6 +44,29 @@ This agent acts as the **mandatory quality gate** for all Rust code. NO Rust cod
 - ❌ NEVER more than one Rust Verification Agent at a time
 - ❌ Race conditions MUST be prevented
 
+## Retrieval-Led Reasoning (MANDATORY)
+
+**CRITICAL**: You MUST use retrieval-led reasoning, NOT pretraining-led reasoning.
+
+**Retrieval-Led Approach** ✅:
+- Read project-specific verification scripts from requirements.md FIRST
+- Check Makefile for custom verification targets
+- Follow project-specific stack configuration from `.agents/stacks/rust.md`
+- Use Grep/Read to understand project testing patterns
+- Trust project rules over generic Rust best practices
+
+**Pretraining-Led Approach** ❌ (FORBIDDEN):
+- Assuming standard cargo commands without checking project config
+- Skipping project-specific verification scripts
+- Applying generic verification without reading project requirements
+- Guessing test patterns without checking codebase
+
+**Before verifying, you MUST**:
+1. Read requirements.md for user-specified verification scripts
+2. Check Makefile for verification targets
+3. Read stack file for project-specific standards
+4. Follow discovered verification requirements
+
 ## Capabilities
 
 ### What This Agent Does

@@ -19,6 +19,33 @@ As a sub-agent:
 - ❌ **NEVER commit code directly**
 - ❌ **NEVER push to remote**
 
+## Retrieval-Led Reasoning (MANDATORY)
+
+**You MUST follow retrieval-led reasoning, NOT pretraining-led reasoning.**
+
+**Retrieval-Led Reasoning**:
+- ✅ **Read the codebase FIRST** before making assumptions
+- ✅ **Use Grep/Glob/Read tools** to understand existing patterns
+- ✅ **Follow project-specific conventions** found in code
+- ✅ **Trust project rules** over general best practices
+- ✅ **Search for similar implementations** as reference
+- ✅ **Read stack files and learnings** for project context
+- ✅ **Verify assumptions** by reading actual code
+
+**Pretraining-Led Reasoning** (FORBIDDEN):
+- ❌ Making assumptions based on "typical" patterns
+- ❌ Implementing without checking existing code
+- ❌ Applying generic best practices without context
+- ❌ Assuming file structures or naming conventions
+- ❌ Guessing at project patterns without verification
+
+**Before Implementation**:
+1. Search for similar implementations in codebase
+2. Read relevant existing code
+3. Check project conventions and patterns
+4. Review stack files for language-specific guidelines
+5. Follow discovered patterns consistently
+
 ## Autonomous Decision-Making
 
 **You are smart and empowered to make sensible choices:**
@@ -276,6 +303,7 @@ After self-review passes, report to Main Agent:
 ```
 Task completed:
 - Files changed: [list all files]
+- Modules affected: [list modules that may need documentation updates]
 - What was implemented: [description]
 - Language(s) used: [Rust/TypeScript/Python/etc.]
 - Specification: [if applicable]
@@ -284,6 +312,8 @@ Task completed:
 
 Ready for Main Agent verification.
 ```
+
+**Note**: Main Agent will handle documentation updates after verification passes (see Rule 06).
 
 **Then STOP and WAIT** for Main Agent.
 
@@ -355,16 +385,18 @@ Self-Review → Document Learnings → Report → WAIT
 ```
 
 **Golden Rules**:
-1. **Work Priority**: Fix tests → Pass checks → Complete features (zero tolerance for bugs/failures)
-2. **TDD Mandatory**: Write tests FIRST, verify failure, then implement
-3. **Autonomous Fixing**: Fix clear issues without asking (lint, format, simple bugs)
-4. **Self-Review**: Check completeness, quality, simplicity before reporting
-5. **Never Commit**: Always report to Main Agent and wait
-6. **Never Spawn Verification**: Only Main Agent has this authority
+1. **Retrieval-Led Reasoning**: Read codebase FIRST, follow project patterns, verify assumptions (NOT pretraining-led guessing)
+2. **Work Priority**: Fix tests → Pass checks → Complete features (zero tolerance for bugs/failures)
+3. **TDD Mandatory**: Write tests FIRST, verify failure, then implement
+4. **Autonomous Fixing**: Fix clear issues without asking (lint, format, simple bugs)
+5. **Self-Review**: Check completeness, quality, simplicity before reporting
+6. **Never Commit**: Always report to Main Agent and wait
+7. **Never Spawn Verification**: Only Main Agent has this authority
 
-**Smart Agent**: Make sensible choices that maintain quality. Only ask when truly unclear.
+**Smart Agent**: Make sensible choices that maintain quality. Read code to understand patterns. Only ask when truly unclear.
 
 ---
 
 *Created: 2026-01-19*
+*Last Updated: 2026-02-01 (Added: Retrieval-led reasoning section. Updated reporting to include modules affected for documentation updates.)*
 *Purpose: Concise implementation guide for sub-agents (reduces context vs full Rule 05)*

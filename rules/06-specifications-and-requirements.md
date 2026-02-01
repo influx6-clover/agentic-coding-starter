@@ -376,7 +376,126 @@ files_required:
 
 ### Purpose
 
-`documentation/` directory at project root provides detailed module documentation agents MUST read before changes.
+`documentation/` directory at project root contains detailed module documentation that **MUST be updated AFTER implementation, refactoring, or feature changes**.
+
+### Documentation-After-Implementation Workflow (MANDATORY)
+
+**CRITICAL CHANGE**: Documentation is created/updated **AFTER** successful implementation and verification, NOT before.
+
+**Workflow**:
+```
+Implement → Verify → Update Documentation → Commit (code + docs together)
+```
+
+**Rationale**:
+- Implementation reveals actual design decisions and edge cases
+- Code is the source of truth; documentation reflects reality
+- Prevents documentation-code divergence from speculative design
+- Ensures documentation describes what was actually built
+
+### When Documentation Updates Required
+
+Documentation **MUST** be updated after:
+- ✅ Implementing new modules or features
+- ✅ Refactoring existing modules (significant changes)
+- ✅ Updating module specifications or APIs
+- ✅ Fixing bugs that change behavior
+- ✅ Adding new dependencies or integrations
+- ✅ **Performance optimizations** (MANDATORY: document reasoning, benchmarks, trade-offs)
+
+Documentation updates **NOT** required for:
+- ❌ Trivial bug fixes (typos, formatting)
+- ❌ Internal implementation details (no API changes)
+- ❌ Test-only changes
+
+### Performance Optimization Documentation (MANDATORY)
+
+**CRITICAL**: Performance optimizations **MUST** be comprehensively documented with fundamentals, reasoning, and justification.
+
+When implementing performance optimizations, Documentation Agent **MUST** create:
+
+1. **Fundamental Documentation** (`documentation/[module]/fundamentals/performance/[optimization-name].md`):
+   - **Problem Statement**: What performance issue was observed
+   - **Measurement**: Baseline benchmarks and metrics (with data)
+   - **Root Cause**: Why the performance issue existed
+   - **Solution Approach**: What optimization technique was applied
+   - **Trade-offs**: What was sacrificed (readability, memory, maintainability, etc.)
+   - **Alternative Approaches**: What other solutions were considered and why they were rejected
+   - **Results**: Post-optimization benchmarks showing improvement
+   - **Verification**: How to verify the optimization is still effective
+
+2. **Module Documentation Update** (`documentation/[module]/doc.md`):
+   - Add entry to "Performance Characteristics" section
+   - Document optimization in "Architecture" section
+   - Reference fundamental documentation for details
+
+3. **Code Comments** (in optimized code):
+   - WHY the optimization was necessary
+   - WHAT trade-off was made
+   - HOW to benchmark/verify the optimization
+   - Reference to fundamental documentation
+
+**Example Performance Optimization Documentation**:
+
+```markdown
+# HTTP Connection Pooling Optimization
+
+## Problem Statement
+HTTP client was creating new TCP connections for every request, causing:
+- 200ms average latency per request
+- TCP handshake overhead on every call
+- Resource exhaustion under high load (>1000 req/s)
+
+## Baseline Measurements
+- Requests/second: 850 (before)
+- Average latency: 200ms (before)
+- P99 latency: 450ms (before)
+- Memory usage: 120MB baseline
+
+## Root Cause
+Default HTTP client configuration created fresh connections without reuse.
+TCP handshake (SYN, SYN-ACK, ACK) added ~80ms per request.
+
+## Solution Approach
+Implemented connection pooling with:
+- Pool size: 50 persistent connections
+- Keep-alive: 60 seconds
+- Connection reuse across requests
+
+## Trade-offs
+✅ Gained: 3x throughput, 75% latency reduction
+❌ Sacrificed:
+  - Increased memory footprint (+15MB for connection pool)
+  - More complex error handling (stale connections)
+  - Additional configuration parameters
+
+## Alternative Approaches Considered
+1. HTTP/2 multiplexing - rejected (server doesn't support HTTP/2)
+2. Larger pool (100 connections) - rejected (diminishing returns, 2x memory cost)
+3. Adaptive pooling - rejected (complexity not justified by gains)
+
+## Results
+- Requests/second: 2,500 (after) - **3x improvement**
+- Average latency: 45ms (after) - **78% reduction**
+- P99 latency: 95ms (after) - **79% reduction**
+- Memory usage: 135MB - **12% increase**
+
+## Verification
+Run benchmark: `cargo bench --bench http_client_pool`
+Expected: >2000 req/s with <50ms avg latency
+```
+
+**Why Comprehensive Performance Documentation Matters**:
+- Future agents understand WHY optimization exists (prevents accidental removal)
+- Trade-offs are explicit (helps with future refactoring decisions)
+- Benchmarks provide regression detection baseline
+- Alternative approaches prevent re-exploring dead ends
+- Reasoning captures context that code alone cannot express
+
+**Enforcement**:
+- ❌ **USER WILL REJECT** performance optimizations without comprehensive documentation
+- ❌ Committing performance changes without benchmarks is FORBIDDEN
+- ❌ Optimizations without trade-off analysis will be reverted
 
 ### doc.md Structure
 
@@ -390,13 +509,37 @@ Depending on `has_features=true`:
 
 **Context optimization**: If >8-10KB, agents use Grep/Glob/Read tools instead of loading entire file
 
-### Verification Workflow
+### Post-Implementation Documentation Workflow
 
-1. Agent reads module documentation
-2. Verifies docs match code (spot check)
-3. If mismatch: STOP, report to Main Agent
-4. Main Agent halts work, fixes documentation first
-5. Then resume implementation
+**After verification passes**, Main Agent **MUST**:
+
+1. ✅ Identify affected modules (which modules were changed)
+2. ✅ Check if documentation update required (see criteria above)
+3. ✅ If required: Spawn Documentation Agent
+4. ✅ Provide Documentation Agent with:
+   - Implementation summary
+   - Files changed
+   - Verification report (PASS status)
+   - Specification reference
+   - List of modules affected
+5. ✅ WAIT for Documentation Agent to complete
+6. ✅ Review documentation updates
+7. ✅ Commit code AND documentation together
+8. ✅ Push to remote
+
+**Documentation Agent responsibilities**:
+1. ✅ Read implementation code (actual behavior)
+2. ✅ Read existing documentation (if exists)
+3. ✅ Update doc.md to reflect new implementation
+4. ✅ Update frontmatter (last_updated, version)
+5. ✅ Create/update supplementary assets (OpenAPI, schemas, examples, diagrams)
+6. ✅ Ensure documentation accuracy (matches code behavior)
+7. ✅ Report completion to Main Agent
+
+**Main Agent MUST NOT**:
+- ❌ Commit code without updating required documentation
+- ❌ Update documentation directly (delegate to Documentation Agent)
+- ❌ Skip documentation updates for significant changes
 
 ## Verification and Quality
 
@@ -468,7 +611,9 @@ Central dashboard at `specifications/Spec.md`:
 
 **Requirements**: Coding without documented requirements, skipping user approval, incomplete frontmatter
 
-**Verification**: Committing without verification, skipping quality checks
+**Verification**: Committing without verification, skipping quality checks, missing documentation updates
+
+**Documentation**: Committing module changes without updating documentation, performance optimizations without comprehensive documentation and benchmarks
 
 ### Corrective Action
 
@@ -490,7 +635,7 @@ Central dashboard at `specifications/Spec.md`:
 
 ## Summary
 
-**Core workflow**: Deep requirements gathering (Socratic method) → Document → User approval of spec → Autonomous implementation → Verification → Completion
+**Core workflow**: Deep requirements gathering (Socratic method) → Document → User approval of spec → Autonomous implementation → Verification → **Update Documentation** → Completion
 
 **Requirements Excellence**:
 - Use Socratic method to probe deeply
@@ -503,6 +648,12 @@ Central dashboard at `specifications/Spec.md`:
 - MANDATORY approval: Specifications, requirements, success criteria
 - NO approval needed: Implementation details, fixing tests, following specs
 
+**Documentation Workflow** (NEW):
+- Documentation created/updated AFTER implementation and verification
+- Code is source of truth, documentation reflects reality
+- **Performance optimizations REQUIRE comprehensive documentation**: fundamentals, reasoning, benchmarks, trade-offs
+- Commit code and documentation together
+
 **File structure**: requirements.md (with tasks) + LEARNINGS.md + REPORT.md + VERIFICATION.md + PROGRESS.md (ephemeral)
 
 **Consolidation**: All learnings in one file, all reports in one file, one verification file
@@ -514,4 +665,4 @@ Central dashboard at `specifications/Spec.md`:
 ---
 
 _Created: 2026-01-11_
-_Last Updated: 2026-01-24 (Optimized: reduced from 1,270 to 660 lines, removed duplication, renamed FINAL_REPORT → REPORT)_
+_Last Updated: 2026-02-01 (Changed: Documentation workflow - now AFTER implementation, not before. Added mandatory performance optimization documentation with fundamentals, reasoning, benchmarks, and trade-offs.)_

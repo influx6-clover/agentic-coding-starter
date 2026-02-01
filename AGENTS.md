@@ -1,8 +1,8 @@
 ---
 purpose: Central entry point for AI agent configuration
 description: Minimal configuration directing agents to load rules selectively
-version: 5.1.0
-last_updated: 2026-01-24
+version: 5.2.0
+last_updated: 2026-02-01
 ---
 
 # Agent Configuration
@@ -12,6 +12,51 @@ last_updated: 2026-01-24
 Agents load rules **selectively** based on role and task to optimize context window usage.
 
 **CRITICAL**: `.agents/rules/*` takes precedence over this file if conflicts arise.
+
+### Retrieval-Led Reasoning (MANDATORY)
+
+**ALL agents MUST follow retrieval-led reasoning, NOT pretraining-led reasoning.**
+
+**Retrieval-Led Reasoning**:
+- ✅ **Read the codebase FIRST** before making assumptions
+- ✅ **Use Grep/Glob/Read tools** to understand existing patterns
+- ✅ **Follow project-specific conventions** found in code
+- ✅ **Trust project rules** over general best practices
+- ✅ **Search for similar implementations** as reference
+- ✅ **Read stack files and learnings** for project context
+- ✅ **Verify assumptions** by reading actual code
+
+**Pretraining-Led Reasoning** (FORBIDDEN):
+- ❌ Making assumptions based on "typical" patterns
+- ❌ Implementing without checking existing code
+- ❌ Applying generic best practices without context
+- ❌ Assuming file structures or naming conventions
+- ❌ Guessing at project patterns without verification
+
+**Why This Matters**:
+- Every codebase has unique patterns and conventions
+- Pretraining knowledge may not match project specifics
+- Reading actual code reveals true project structure
+- Project rules and learnings encode critical context
+- Assumptions lead to inconsistent implementations
+
+**Example**:
+```
+❌ BAD (Pretraining-Led):
+"I'll create the API endpoint using Express middleware because that's standard"
+
+✅ GOOD (Retrieval-Led):
+"Let me search for existing API endpoints to see how this project structures them"
+[Uses Grep to find route patterns]
+[Reads actual endpoint files]
+"I see this project uses Axum with custom middleware. I'll follow that pattern."
+```
+
+**Enforcement**: Before any implementation, agents MUST demonstrate retrieval by:
+1. Searching for similar implementations
+2. Reading relevant existing code
+3. Checking project conventions
+4. Following discovered patterns
 
 ---
 
@@ -84,13 +129,15 @@ OPTIONAL: Rule 11 (skills), Rule 13 (implementation), stack file, spec
 
 ## Critical Reminders
 
-1. **Main Agent**: Orchestrator only - delegates ALL work
-2. **Verification Required**: NO commits without verification passing
-3. **Context Optimization**: Load ONLY what you need
-4. **Sub-agents**: Never commit directly, never spawn verification agents
+1. **Retrieval-Led Reasoning**: Read codebase FIRST, follow discovered patterns, verify assumptions (NOT pretraining guessing)
+2. **Main Agent**: Orchestrator only - delegates ALL work
+3. **Verification Required**: NO commits without verification passing
+4. **Documentation After Implementation**: Update docs AFTER successful implementation and verification
+5. **Context Optimization**: Load ONLY what you need
+6. **Sub-agents**: Never commit directly, never spawn verification agents
 
 ---
 
-_Version: 5.1.1 - Last Updated: 2026-01-25_
+_Version: 5.2.0 - Last Updated: 2026-02-01_
 
 _For complete version history, see [CHANGELOG.md](./CHANGELOG.md)_

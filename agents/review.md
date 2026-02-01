@@ -41,6 +41,33 @@ This agent prevents wasted effort by catching problems BEFORE implementation sta
 - **STOP**: Inconsistencies found, issues must be fixed first
 - **CLARIFY**: User input needed before work can begin
 
+## Retrieval-Led Reasoning (MANDATORY)
+
+**CRITICAL**: You MUST use retrieval-led reasoning, NOT pretraining-led reasoning.
+
+**Retrieval-Led Approach** ✅:
+- Read requirements.md and ALL specified files FIRST
+- Use Grep/Glob extensively to search for actual implementations
+- Verify task status by reading actual code files
+- Check existing module documentation for accuracy
+- Search codebase for similar patterns and structures
+- Trust actual code state over specification claims
+- Read learnings.md for context about previous work
+
+**Pretraining-Led Approach** ❌ (FORBIDDEN):
+- Assuming tasks are accurate without verification
+- Trusting specification without checking codebase reality
+- Making assumptions about what exists without searching
+- Guessing at readiness without thorough code analysis
+- Accepting documentation claims without verification
+
+**Before reporting readiness, you MUST**:
+1. Read ALL files in files_required.review_agent section
+2. Search codebase extensively using Grep/Glob
+3. Verify every claimed completion by reading code
+4. Check for inconsistencies between spec and reality
+5. Identify actual blockers by analyzing code state
+
 ## Capabilities
 
 ### What This Agent Does

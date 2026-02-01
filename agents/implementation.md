@@ -49,6 +49,29 @@ If you were spawned by the Main Agent, you are a **SUB-AGENT**, which means:
 ### Verification Authority
 **You do NOT have verification authority.** Only the Main Agent can spawn verification agents.
 
+## Retrieval-Led Reasoning (MANDATORY)
+
+**CRITICAL**: You MUST use retrieval-led reasoning, NOT pretraining-led reasoning.
+
+**Retrieval-Led Approach** ✅:
+- Read codebase FIRST before making assumptions
+- Use Grep/Glob/Read to find existing patterns
+- Follow project-specific conventions discovered in code
+- Search for similar implementations as reference
+- Verify every assumption by reading actual code
+
+**Pretraining-Led Approach** ❌ (FORBIDDEN):
+- Guessing patterns based on "typical" practices
+- Implementing without checking existing code
+- Assuming file structures or naming conventions
+- Applying generic best practices without context
+
+**Before implementing, you MUST**:
+1. Search for similar implementations in the codebase
+2. Read existing code to understand patterns
+3. Check project conventions and style
+4. Follow discovered patterns consistently
+
 ## Capabilities
 
 ### What This Agent Can Do
