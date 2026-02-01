@@ -1,14 +1,30 @@
 ---
+# Identification
+spec_name: "[NN-spec-name]"  # e.g., "02-build-http-client" - MUST match directory name
+spec_number: NN  # Two-digit number (e.g., 02, 15)
 description: Brief one-sentence description
+
+# Location Context
+# How to find: Run `bash pwd` to get CWD, this file is at CWD/specifications/[NN-spec-name]/requirements.md
+# Workspace root is CWD and contains: .agents/, specifications/, documentation/, backends/
+workspace_name: "ewe_platform"
+spec_directory: "specifications/[NN-spec-name]"
+this_file: "specifications/[NN-spec-name]/requirements.md"
+
+# Status
 status: in-progress
 priority: medium
 created: YYYY-MM-DD
 author: Main Agent
-machine_optimized: true  # Main Agent MUST generate machine_prompt.md before spawning sub-agents
-machine_prompt_file: ./machine_prompt.md  # Sub-agents read this (NOT requirements.md) for 58% token savings
-context_optimization: true  # Sub-agents MUST generate COMPACT_CONTEXT.md before work, reload after updates
-compact_context_file: ./COMPACT_CONTEXT.md  # Ultra-compact current task context (97% reduction)
-context_reload_required: true  # Clear and reload from compact context regularly to prevent context limit errors
+
+# Context Optimization
+machine_optimized: true
+machine_prompt_file: ./machine_prompt.md
+context_optimization: true
+compact_context_file: ./COMPACT_CONTEXT.md
+context_reload_required: true
+
+# Metadata
 metadata:
   version: "1.0"
   last_updated: YYYY-MM-DD
@@ -21,21 +37,28 @@ metadata:
   skills: []
   tools:
     - [Tool names]
+
+# Dependencies
 builds_on: []
 related_specs: []
-has_features: true # DEFAULT: true unless spec is very simple (1-3 trivial tasks)
-has_fundamentals: true # DEFAULT: true unless user explicitly says no - create user documentation
-# Choose ONE based on has_features:
-features: # If has_features: true
+
+# Structure
+has_features: true  # DEFAULT: true unless spec is very simple (1-3 trivial tasks)
+has_fundamentals: true  # DEFAULT: true unless user explicitly says no
+
+# Progress Tracking (choose ONE based on has_features)
+features:  # If has_features: true
   completed: 0
   uncompleted: [N]
   total: [N]
   completion_percentage: 0
-tasks: # If has_features: false
+tasks:  # If has_features: false
   completed: 0
   uncompleted: [N]
   total: [N]
   completion_percentage: 0
+
+# Files Required by Agents
 files_required:
   main_agent:
     rules:
@@ -81,6 +104,46 @@ files_required:
 ---
 
 # [Specification Name] - Requirements
+
+## 📍 Location Reference
+
+**How to find your location**:
+1. Run `bash pwd` to get current working directory (CWD)
+2. This file is at: `CWD/specifications/[NN-spec-name]/requirements.md`
+3. Workspace root is CWD (contains `.agents/`, `specifications/`, `documentation/`, `backends/`)
+
+**Quick paths** (all relative to workspace root = CWD):
+- This specification: `specifications/[NN-spec-name]/`
+- This file: `specifications/[NN-spec-name]/requirements.md`
+- Features: `specifications/[NN-spec-name]/features/*/feature.md`
+- Machine prompt: `specifications/[NN-spec-name]/machine_prompt.md`
+- Progress: `specifications/[NN-spec-name]/PROGRESS.md`
+- Learnings: `specifications/[NN-spec-name]/LEARNINGS.md`
+- Agent rules: `.agents/rules/`
+- Stack files: `.agents/stacks/`
+- Documentation: `documentation/*/doc.md`
+
+**Verification**: If you can read `.agents/AGENTS.md` from CWD, you're in the right place!
+
+**Quick Navigation Commands**:
+```bash
+# Verify you're in workspace root
+test -f .agents/AGENTS.md && echo "✓ In workspace root" || echo "✗ Wrong location"
+
+# List all specifications
+ls -d specifications/*/
+
+# Check this spec's features (if has_features: true)
+ls -d specifications/[NN-spec-name]/features/*/
+
+# View specification structure
+tree -L 2 specifications/[NN-spec-name]/
+
+# Find related code (adjust pattern to your spec)
+find backends/ -name "*[relevant-pattern]*" -type f
+```
+
+---
 
 > **Specification Structure**:
 > - **has_features: false** → This file contains COMPLETE requirements with detailed tasks
@@ -423,6 +486,133 @@ Based on Review Agent assessment:
 - Dependencies might not actually work
 - Prevents wasted implementation effort on wrong assumptions
 - **USER EXPECTS thorough review before starting work**
+
+---
+
+## ⚠️ CRITICAL: Verification Requirements for Completion
+
+**NO specification/feature can be marked complete (status: completed) until ALL of these are verified:**
+
+### 1. Zero Incomplete Implementations (MANDATORY)
+- [ ] **NO TODO comments** in production code (tests OK)
+- [ ] **NO FIXME comments** anywhere
+- [ ] **NO unimplemented!() macros** (Rust)
+- [ ] **NO todo!() macros** (Rust)
+- [ ] **NO NotImplementedError** (Python)
+- [ ] **NO stub methods** (functions that just return Ok(()), default values, empty implementations, or pass-only bodies)
+- [ ] **All public methods have real implementations** (not just type signatures)
+- [ ] **All state machine states implemented** (no states that just return Pending forever)
+- [ ] **All action handlers implemented** (not just Ok(()) stubs)
+
+**Verification Command (run this before marking complete)**:
+```bash
+# Search for incomplete implementations
+grep -r "TODO\|FIXME\|unimplemented!\|todo!" --include="*.rs" --include="*.py" --include="*.ts" --include="*.js" [code_directory]
+
+# Rust: Check for unimplemented macros
+rg "unimplemented!\|todo!" --type rust [code_directory]
+
+# Check for stub implementations (empty or trivial returns)
+# This requires manual code review - verify each function has real logic
+```
+
+### 2. All Verification Checks Pass
+- [ ] Format check passes (cargo fmt, prettier, black)
+- [ ] Lint check passes with **zero warnings** (clippy -D warnings, eslint --max-warnings 0, ruff)
+- [ ] Type check passes with **zero errors** (tsc --noEmit, mypy)
+- [ ] **All tests pass** (no skipped/ignored tests without justification)
+- [ ] Build succeeds in all configurations (debug, release, all features)
+- [ ] Security audit clean (cargo audit, npm audit, pip-audit)
+- [ ] Code coverage meets project standards
+- [ ] Documentation builds successfully
+
+### 3. Specification-Specific Requirements Met
+
+**For has_features: false (simple specs)**:
+- [ ] All tasks in Tasks section marked [x] complete
+- [ ] All Success Criteria checked off
+- [ ] All verification commands execute successfully
+- [ ] Integration with dependencies verified
+- [ ] Automated verification scripts pass (if created)
+
+**For has_features: true (feature-based specs)**:
+- [ ] ALL features in Feature Index marked ✅ Complete
+- [ ] Each feature has passed individual verification
+- [ ] Inter-feature integration tests passing
+- [ ] Cross-feature functionality verified
+- [ ] Spec-wide quality checks pass (all features)
+- [ ] LEARNINGS.md created
+- [ ] fundamentals/ directory created (if has_fundamentals: true)
+- [ ] Automated verification scripts pass (if created)
+
+### 4. User Approval Required (MANDATORY)
+
+**BEFORE marking specification/feature complete, Main Agent MUST:**
+
+1. **Run Incomplete Implementation Scan**:
+   ```bash
+   # Example for Rust HTTP client
+   grep -rn "TODO\|FIXME\|unimplemented!\|todo!" backends/foundation_core/src/wire/simple_http/client/
+   ```
+
+2. **Present Comprehensive Report to User**:
+   ```markdown
+   ## Completion Verification Report
+
+   **Specification**: [NN-spec-name]
+   **Date**: [timestamp]
+
+   ### Incomplete Implementation Scan
+   - TODO markers: 0 found ✅
+   - FIXME markers: 0 found ✅
+   - Unimplemented macros: 0 found ✅
+   - Stub methods: 0 found ✅
+
+   ### Verification Status
+   - Format: PASS ✅
+   - Lint: PASS ✅ (0 warnings)
+   - Type Check: PASS ✅ (0 errors)
+   - Tests: PASS ✅ ([N]/[N] passing)
+   - Build: PASS ✅ (all configurations)
+   - Security: PASS ✅ (0 vulnerabilities)
+   - Coverage: [N]% ✅
+
+   ### Tasks/Features Status
+   - Completed: [N]/[N] (100%)
+   - All Success Criteria: MET ✅
+   - Integration Tests: PASS ✅
+
+   ### Ready for Completion
+   All requirements met. Request user approval to mark complete.
+   ```
+
+3. **Ask User Explicitly**:
+   > "All verification checks passed and no incomplete implementations found. May I mark [spec/feature name] as complete (status: completed)?"
+
+4. **Wait for User Confirmation**:
+   - ✅ User says "yes" → Mark complete, create REPORT.md, create VERIFICATION.md
+   - ❌ User says "no" or has concerns → Address concerns first
+   - ❓ User wants to review → Provide detailed information
+
+**User decides** - NOT agents - when work is truly complete.
+
+### 5. Why User Approval is Mandatory
+
+**Prevents Premature Completion**:
+- Agents may miss context or nuances
+- User may have additional requirements
+- Hidden TODOs may exist that scans miss
+- Integration issues may not be caught by tests
+- User's definition of "complete" is authoritative
+
+**Examples of Issues User Might Catch**:
+- "That's structurally complete but doesn't handle edge case X"
+- "Tests pass but performance is unacceptable"
+- "Implementation works but doesn't match my original intent"
+- "Missing error handling for scenario Y"
+- "Need additional documentation before calling this done"
+
+**THE USER WILL BE UPSET** if agents mark work complete without approval and it's actually incomplete.
 
 ---
 

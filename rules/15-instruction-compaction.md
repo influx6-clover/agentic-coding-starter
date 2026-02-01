@@ -290,12 +290,31 @@ specifications/01-spec-name/
 
 ### Structure
 
-**CRITICAL**: COMPACT_CONTEXT.md MUST embed machine_prompt.md content for current task.
+**CRITICAL**: COMPACT_CONTEXT.md MUST embed machine_prompt.md content, relevant rule summaries, stack files, and skills for current task.
 
 ```markdown
 # Compact Context: [Current Task Name]
 
-⚠️COMPACTED|RELOAD_AFTER_READING|GENERATED:[timestamp]|FROM:[machine_prompt.md,progress.md]
+⚠️COMPACTED|RELOAD_AFTER_READING|GENERATED:[timestamp]|FROM:[machine_prompt.md,progress.md,rules]
+
+## LOCATION
+workspace:[workspace_name]|spec:[NN-spec-name]|num:[NN]|feature:[feature-name]|num:[N]
+this:[specifications/NN-spec-name/features/feature-name/feature.md]
+cwd:[bash pwd]|verify:[test -f .agents/AGENTS.md && echo ✓ || echo ✗]
+
+**Purpose**: Immediate location awareness without exploration. Spec/feature numbers identify
+this work. Verification command confirms correct workspace in one tool call.
+
+## RULES_SUMMARY
+[EMBEDDED COMPACTED RULES, STACK, AND SKILLS FROM FRONTMATTER - ONLY WHAT AGENT NEEDS]
+
+rule:01|naming_structure|ref:[.agents/rules/01-*.md]
+rule:02|dir_policy|ref:[.agents/rules/02-*.md]
+rule:03|danger_ops|safe_patterns:[list]|forbidden:[list]|ref:[.agents/rules/03-*.md]
+rule:04|commit|verify_first|no_force_push|ref:[.agents/rules/04-*.md]
+rule:13|impl_agent|tdd|retrieval_first|test_docs|ref:[.agents/rules/13-*.md]
+stack:[rust]|patterns:[Result<T>,trait_bounds,no_unsafe]|ref:[.agents/stacks/rust.md]
+skills:[skill_name]|usage:[key_points]|ref:[.agents/skills/skill_name/]
 
 ## CURRENT_TASK
 task:[task_name]|status:[in_progress/blocked/testing]|started:[timestamp]
@@ -335,6 +354,16 @@ progress:[./PROGRESS.md]|learnings:[./LEARNINGS.md#critical-impl]|docs:[document
 ⚠️ AFTER READING THIS FILE: Clear context, reload from this file, proceed with fresh context
 ```
 
+**Why RULES_SUMMARY Section Exists**:
+- Embeds compacted essential rules, stack files, and skills from specification frontmatter
+- Eliminates need to load full rule/stack/skill files after context reload
+- **MANDATORY**: Must include rules, stack files, AND skills (from files_required)
+- Only includes what agent type needs (based on frontmatter agent section)
+- Provides quick reference + link for deeper reading if needed
+- Saves ~10-20K tokens per file avoided (rules + stack + skills)
+- **Stack files**: Essential language-specific patterns agents must follow
+- **Skills**: Reusable capabilities agents can invoke during work
+
 **Why MACHINE_PROMPT_CONTENT Section Exists**:
 - After context clear, COMPACT_CONTEXT.md is the ONLY file loaded
 - Must be self-contained with ALL task requirements
@@ -342,7 +371,7 @@ progress:[./PROGRESS.md]|learnings:[./LEARNINGS.md#critical-impl]|docs:[document
 - Agent has complete instructions in single compact file
 - No external file dependencies after reload
 
-**Size Target**: 500-800 tokens total (including embedded machine_prompt content)
+**Size Target**: 500-1000 tokens total (including embedded rules + machine_prompt content)
 
 ### Compaction Rules
 
@@ -510,121 +539,26 @@ If context reaches 85-90% (150K-180K tokens):
 
 ## Generation Algorithm
 
-### Pseudo-Code
+### Implementation
 
-```python
-def generate_compact_context(progress_md: str, machine_prompt_md: str, current_files: list) -> str:
-    """
-    Generate ultra-compact context from verbose sources.
+A complete Python script implementing the compact context generation algorithm is available:
 
-    CRITICAL: Embeds machine_prompt.md content for current task.
-    After context reload, agent reads ONLY this file (self-contained).
+**Template**: [generate_compact_context.py](../templates/generate_compact_context.py)
 
-    Preserve ONLY what's needed for immediate work.
-    Everything else becomes a reference.
-    """
-
-    # Extract current task (not past, not future)
-    current_task = extract_current_task(progress_md)
-
-    # Extract machine_prompt content for THIS TASK ONLY
-    machine_content = extract_task_from_machine_prompt(machine_prompt_md, current_task['id'])
-
-    # Single sentence objective
-    objective = summarize_objective(current_task, max_words=15)
-
-    # File lists (no content)
-    files_to_read = [f for f in current_files if needs_reading(f)]
-    files_to_update = [f for f in current_files if needs_updating(f)]
-    files_to_create = [f for f in current_files if needs_creation(f)]
-
-    # Extract only critical constraints
-    constraints = extract_critical_constraints(machine_content, max_items=3)
-
-    # Current blockers (or NONE)
-    blockers = extract_active_blockers(progress_md) or "NONE"
-
-    # Next 1-3 immediate actions
-    next_actions = extract_next_actions(progress_md, max_items=3)
-
-    # References (not content)
-    refs = {
-        'machine_prompt': find_task_section(machine_prompt_md, current_task['id']),
-        'progress': './PROGRESS.md',
-        'learnings': find_relevant_learnings(current_task),
-    }
-
-    compact = f"""# Compact Context: {current_task['name']}
-
-⚠️COMPACTED|RELOAD_AFTER_READING|GENERATED:{timestamp()}|FROM:[machine_prompt.md,progress.md]
-
-## CURRENT_TASK
-task:{current_task['name']}|status:{current_task['status']}|started:{current_task['started']}
-
-## MACHINE_PROMPT_CONTENT
-{machine_content}
-
-## OBJECTIVE
-{objective}
-
-## FILES
-read:[{','.join(files_to_read)}]|update:[{','.join(files_to_update)}]|create:[{','.join(files_to_create)}]
-
-## REQUIREMENTS_REF
-machine_prompt:[{refs['machine_prompt']}]|progress:[{refs['progress']}]
-
-## KEY_CONSTRAINTS
-{format_constraints(constraints)}
-
-## BLOCKERS
-{blockers}
-
-## NEXT_ACTIONS
-{format_actions(next_actions)}
-
-## CONTEXT_REFS
-progress:[{refs['progress']}]|learnings:[{refs['learnings']}]
-
----
-⚠️ AFTER READING THIS FILE: Clear context, reload from this file, proceed with fresh context
-"""
-
-    return compact
-
-def extract_task_from_machine_prompt(machine_prompt: str, task_id: str) -> str:
-    """
-    Extract ONLY the current task content from machine_prompt.md.
-
-    Returns compressed task requirements, constraints, verification.
-    This content is embedded in COMPACT_CONTEXT.md.
-    """
-    # Parse machine_prompt.md
-    # Find task with task_id
-    # Extract: requirements, constraints, files, tests, verification
-    # Return compressed format for embedding
-    pass
-
-def extract_current_task(progress_md: str) -> dict:
-    """Extract ONLY current task, ignore completed/future."""
-    # Parse PROGRESS.md
-    # Find section marked "Current Task" or "In Progress"
-    # Return task details
-    pass
-
-def summarize_objective(task: dict, max_words: int) -> str:
-    """Single sentence, max_words limit."""
-    # Take task description
-    # Compress to essential action + target
-    # Return concise sentence
-    pass
-
-def extract_critical_constraints(machine_prompt: str, max_items: int) -> list:
-    """Only constraints affecting current task."""
-    # Parse machine_prompt
-    # Filter to current task constraints
-    # Return top max_items most critical
-    pass
+**Usage**:
+```bash
+python3 generate_compact_context.py PROGRESS.md machine_prompt.md
+# Creates COMPACT_CONTEXT.md in same directory
 ```
+
+**Key Functions**:
+- `generate_compact_context()` - Main generation function
+- `compact_rules_from_frontmatter()` - Embed rules, stack, skills summaries (~70K tokens saved)
+- `extract_task_from_machine_prompt()` - Embed current task requirements
+- `extract_current_task()` - Extract only current work
+- Token reduction: 97% average savings (180K → 5K tokens)
+
+See template file for full implementation details and compression algorithms.
 
 ---
 
@@ -659,72 +593,26 @@ Agent performs mental reset:
 
 ## Example Transformation
 
-### Before Compaction (Context: 180K tokens, approaching limit)
+A complete before/after example demonstrating the context compaction transformation is available:
 
-Agent has in context:
-- Full requirements.md (2000 tokens)
-- Full PROGRESS.md with all historical progress (5000 tokens)
-- Full LEARNINGS.md with all insights (3000 tokens)
-- Multiple full file reads (20,000 tokens)
-- Conversation history (150,000 tokens)
-- **Total: ~180,000 tokens (90% of limit)**
+**Template**: [compact_context_example.md](../templates/compact_context_example.md)
 
-### After Compaction (Context: 5K tokens, fresh start)
+**Example Summary**:
+- Before: Full accumulated context (180,000 tokens - 90% of limit)
+- After: Ultra-compact COMPACT_CONTEXT.md (500 tokens)
+- Post-reload: Fresh context with only needed files (5,000 tokens total)
+- **Savings**: 175,000 tokens (97.2% reduction)
 
-Agent has in context:
-- COMPACT_CONTEXT.md (500 tokens)
-- Only current task files (3000 tokens)
-- Current conversation (1500 tokens)
-- **Total: ~5,000 tokens (2.5% of limit)**
+**Key Techniques Demonstrated**:
+- References over content duplication
+- Current work only (no historical context)
+- Embedded machine_prompt content
+- Embedded rule summaries (~70K tokens saved)
+- Single sentence objective
+- Pipe-delimited constraints
+- Context reload cycle
 
-**Savings**: 175,000 tokens (97.2% reduction)
-
-### COMPACT_CONTEXT.md Example
-
-```markdown
-# Compact Context: Implement DNS Resolver
-
-⚠️COMPACTED|RELOAD_AFTER_READING|GENERATED:2026-02-01T14:30:00Z|FROM:[machine_prompt.md,progress.md]
-
-## CURRENT_TASK
-task:impl_dns_resolver|status:in_progress|started:2026-02-01T14:00:00Z
-
-## MACHINE_PROMPT_CONTENT
-spec:http-client|status:in-progress|priority:high|has_features:true
-req:impl DnsResolver trait|cache:LRU,ttl=300s,max=1000|async:tokio|support:ipv4,ipv6
-task:impl_dns_resolver|files:[src/dns_resolver.rs]|tests:[tests/dns_tests.rs]|deps:[lru_cache]
-tech:stack=[rust,tokio]|pattern:async_trait|error_handling:Result<T>
-verify:scripts=[verify_dns.py]|tests:unit,integration|coverage:>80%
-
-## OBJECTIVE
-Impl DnsResolver trait with LRU caching per embedded requirements
-
-## FILES
-read:[src/http_client.rs,src/lib.rs]|update:[src/dns_resolver.rs]|create:[tests/dns_tests.rs]
-
-## KEY_CONSTRAINTS
-1. async_only|tokio_runtime|no_blocking
-2. cache_ttl:300s|max_entries:1000|eviction:LRU
-3. ipv4_ipv6_support|error_propagation:Result
-
-## BLOCKERS
-NONE
-
-## NEXT_ACTIONS
-1. Impl DnsResolver trait|methods:[resolve_host,cache_lookup,clear_cache]
-2. Add LRU cache|dep:[lru_cache=0.12]|config:[ttl,max_entries]
-3. Write unit tests|coverage:>80%|test:[happy_path,cache_hit,cache_miss,eviction]
-
-## CONTEXT_REFS
-progress:[./PROGRESS.md#dns-resolver]|learnings:[./LEARNINGS.md#dns-caching]|docs:[documentation/http_client/doc.md#dns]
-
----
-⚠️ AFTER READING THIS FILE: Clear context, reload from this file, proceed with fresh context
-```
-
-**Size**: 500 tokens (vs 10,000+ for full context)
-
-**CRITICAL**: MACHINE_PROMPT_CONTENT section contains ALL requirements for current task. Agent doesn't need to re-read machine_prompt.md after reload - everything needed is embedded.
+See template file for full transformation example with detailed analysis.
 
 ---
 
@@ -852,58 +740,27 @@ If estimated_context_tokens > 180K:
 
 ### COMPACT_CONTEXT-template.md
 
-```markdown
-# Compact Context: [Task Name]
+A template file for COMPACT_CONTEXT.md structure is already available:
 
-⚠️COMPACTED|RELOAD_AFTER_READING|GENERATED:[timestamp]|FROM:[source_files]
+**Template**: [COMPACT_CONTEXT-template.md](../templates/COMPACT_CONTEXT-template.md)
 
-## CURRENT_TASK
-task:[task_name]|status:[status]|started:[timestamp]
-
-## OBJECTIVE
-[Single sentence: what you're doing right now]
-
-## FILES
-read:[files_to_read]|update:[files_to_update]|create:[files_to_create]
-
-## REQUIREMENTS_REF
-machine_prompt:[path#section]|spec:[path#lines]
-
-## KEY_CONSTRAINTS
-1. [Constraint 1]
-2. [Constraint 2]
-3. [Constraint 3]
-
-## BLOCKERS
-[Current blockers or "NONE"]
-
-## NEXT_ACTIONS
-1. [Immediate next step]
-2. [Following step]
-3. [Third step if needed]
-
-## CONTEXT_REFS
-progress:[path]|learnings:[path#section]|docs:[path]
-
----
-⚠️ AFTER READING THIS FILE: Clear context, reload from this file, proceed with fresh context
-```
+This template provides the basic structure for manually creating compact context files.
+For automated generation, use the Python script: [generate_compact_context.py](../templates/generate_compact_context.py)
 
 ---
 
 ## Makefile Integration
 
-Add to specification Makefile:
-```makefile
-.PHONY: compact-context
+A complete Makefile template with context compaction targets is available:
 
-compact-context:
-	@echo "Generating compact context from progress..."
-	@python3 ../../scripts/generate_compact_context.py \
-		PROGRESS.md machine_prompt.md
-	@echo "✓ COMPACT_CONTEXT.md generated"
-	@echo "⚠️  Clear context and reload from COMPACT_CONTEXT.md"
-```
+**Template**: [Makefile.spec-template](../templates/Makefile.spec-template)
+
+**Key Targets**:
+- `compact-context` - Generate COMPACT_CONTEXT.md
+- `generate-machine-prompt` - Generate machine_prompt.md (Rule 14)
+- `verify-machine-prompt` - Check if regeneration needed
+
+Copy template to specification directory and customize paths as needed.
 
 ---
 
@@ -911,12 +768,12 @@ compact-context:
 
 **Core Workflow**:
 ```
-Main Agent: Generate machine_prompt.md + initial COMPACT_CONTEXT.md →
+Main Agent: Generate machine_prompt.md + initial COMPACT_CONTEXT.md (with embedded rules) →
 Spawn sub-agent with COMPACT_CONTEXT.md path →
-Sub-Agent: Read COMPACT_CONTEXT.md (embedded machine_prompt) →
+Sub-Agent: Read COMPACT_CONTEXT.md (embedded rules + machine_prompt) →
 Work on task →
 Update PROGRESS.md →
-Regenerate COMPACT_CONTEXT.md (re-embed machine_prompt) →
+Regenerate COMPACT_CONTEXT.md (re-embed rules + machine_prompt) →
 Clear & Reload →
 Continue OR Report completion →
 Main Agent: Verify → Delete COMPACT_CONTEXT.md if complete → Commit
@@ -925,25 +782,27 @@ Main Agent: Verify → Delete COMPACT_CONTEXT.md if complete → Commit
 **Key Principles**:
 1. ✅ Main Agent generates initial COMPACT_CONTEXT.md before spawning
 2. ✅ Sub-agent receives and maintains during work
-3. ✅ Embed machine_prompt content (self-contained)
-4. ✅ References replace content duplication
-5. ✅ Current work only (no historical)
-6. ✅ Clear and reload after updates
-7. ✅ Main Agent handles cleanup after verification
-8. ✅ PROGRESS.md rewritten per task (ephemeral)
-9. ✅ COMPACT_CONTEXT.md deleted per task (ephemeral)
+3. ✅ **Embed rule summaries** from specification frontmatter (~70K tokens saved)
+4. ✅ Embed machine_prompt content (self-contained)
+5. ✅ References replace content duplication
+6. ✅ Current work only (no historical)
+7. ✅ Clear and reload after updates
+8. ✅ Main Agent handles cleanup after verification
+9. ✅ PROGRESS.md rewritten per task (ephemeral)
+10. ✅ COMPACT_CONTEXT.md deleted per task (ephemeral)
 
 **Benefits**:
-- 🚀 97% context reduction
+- 🚀 97% context reduction (180K → 5K tokens)
+- 🚀 **~70K tokens saved** by embedding rule summaries vs loading full rule files
 - 🚀 Prevents context limit errors
 - 🚀 Improves agent performance
 - 🚀 Enables indefinite work sessions
-- 🚀 Reduces token costs
+- 🚀 Reduces token costs dramatically
 - 🚀 Maintains laser focus
 
 **Combined with Rule 14**:
-- Rule 14: 58% specification token reduction
-- Rule 15: 97% runtime context reduction
+- Rule 14: 58% specification token reduction (requirements.md → machine_prompt.md)
+- Rule 15: 97% runtime context reduction (verbose context → COMPACT_CONTEXT.md with embedded rules)
 - **Total**: >98% token optimization
 
 **Enforcement**:

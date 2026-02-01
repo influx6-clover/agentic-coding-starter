@@ -1,23 +1,43 @@
 ---
-feature: feature-name
+# Identification
+spec_name: "[NN-spec-name]"  # Parent spec (e.g., "02-build-http-client")
+spec_number: NN
+feature_name: "feature-name"  # This feature's name (e.g., "compression")
+feature_number: N  # Feature number within spec (e.g., 3)
 description: Brief one-sentence description of what this feature implements
+
+# Location Context
+# How to find: Run `bash pwd` to get CWD, this file is at CWD/specifications/[NN-spec-name]/features/[feature-name]/feature.md
+# Workspace root is CWD and contains: .agents/, specifications/, documentation/, backends/
+workspace_name: "ewe_platform"
+spec_directory: "specifications/[NN-spec-name]"
+feature_directory: "specifications/[NN-spec-name]/features/[feature-name]"
+this_file: "specifications/[NN-spec-name]/features/[feature-name]/feature.md"
+
+# Status
 status: pending
 priority: medium
-depends_on: []
+depends_on: []  # Other features this depends on (e.g., ["foundation", "connection"])
 estimated_effort: medium
 created: YYYY-MM-DD
 last_updated: YYYY-MM-DD
 author: Main Agent
-machine_optimized: true  # Main Agent MUST generate machine_prompt.md before spawning sub-agents
-machine_prompt_file: ./machine_prompt.md  # Sub-agents read this (NOT feature.md) for 58% token savings
-context_optimization: true  # Sub-agents MUST generate COMPACT_CONTEXT.md before work, reload after updates
-compact_context_file: ./COMPACT_CONTEXT.md  # Ultra-compact current task context (97% reduction)
-context_reload_required: true  # Clear and reload from compact context regularly to prevent context limit errors
+
+# Context Optimization
+machine_optimized: true
+machine_prompt_file: ./machine_prompt.md
+context_optimization: true
+compact_context_file: ./COMPACT_CONTEXT.md
+context_reload_required: true
+
+# Tasks
 tasks:
   completed: 0
   uncompleted: 0
   total: 0
   completion_percentage: 0
+
+# Files Required by Agents
 files_required:
   implementation_agent:
     rules:
@@ -47,6 +67,49 @@ files_required:
 ---
 
 # [Feature Name]
+
+## 📍 Location Reference
+
+**How to find your location**:
+1. Run `bash pwd` to get current working directory (CWD)
+2. This file is at: `CWD/specifications/[NN-spec-name]/features/[feature-name]/feature.md`
+3. Workspace root is CWD (contains `.agents/`, `specifications/`, `documentation/`, `backends/`)
+
+**Quick paths** (all relative to workspace root = CWD):
+- Parent spec: `specifications/[NN-spec-name]/requirements.md`
+- This feature: `specifications/[NN-spec-name]/features/[feature-name]/`
+- This file: `specifications/[NN-spec-name]/features/[feature-name]/feature.md`
+- Machine prompt: `specifications/[NN-spec-name]/features/[feature-name]/machine_prompt.md`
+- Templates: `specifications/[NN-spec-name]/features/[feature-name]/templates/` (if exists)
+- Parent progress: `specifications/[NN-spec-name]/PROGRESS.md`
+- Parent learnings: `specifications/[NN-spec-name]/LEARNINGS.md`
+- Agent rules: `.agents/rules/`
+- Stack files: `.agents/stacks/`
+
+**Verification**: If you can read `.agents/AGENTS.md` from CWD, you're in the right place!
+
+**Quick Navigation Commands**:
+```bash
+# Verify you're in workspace root
+test -f .agents/AGENTS.md && echo "✓ In workspace root" || echo "✗ Wrong location"
+
+# View parent spec
+cat specifications/[NN-spec-name]/requirements.md
+
+# List all features in parent spec
+ls -d specifications/[NN-spec-name]/features/*/
+
+# Check feature dependencies (other features listed in depends_on)
+cat specifications/[NN-spec-name]/features/[dependency-name]/feature.md
+
+# View this feature's structure
+tree specifications/[NN-spec-name]/features/[feature-name]/
+
+# Find related code (adjust pattern to your feature)
+find backends/ -name "*[relevant-pattern]*" -type f
+```
+
+---
 
 ## 🔍 CRITICAL: Retrieval-Led Reasoning Required
 
@@ -318,6 +381,46 @@ cargo build --package [package]
 - Follow TDD: Write tests FIRST, verify they fail, then implement
 - Self-review before reporting completion
 - Document learnings in ../LEARNINGS.md
+
+---
+
+## ⚠️ CRITICAL: Verification Requirements for Completion
+
+**NO feature can be marked complete (status: completed) until ALL of these are verified:**
+
+### 1. Zero Incomplete Implementations
+- [ ] **NO TODO comments** in production code (tests OK)
+- [ ] **NO FIXME comments** anywhere
+- [ ] **NO unimplemented!() macros**
+- [ ] **NO todo!() macros**
+- [ ] **NO stub methods** (functions that just return Ok(()), default values, or empty implementations)
+- [ ] **All public functions have real implementations** (not just type signatures)
+
+### 2. All Verification Checks Pass
+- [ ] Format check passes (cargo fmt, prettier, black)
+- [ ] Lint check passes with **zero warnings** (clippy, eslint, ruff)
+- [ ] Type check passes with **zero errors** (tsc, mypy)
+- [ ] **All tests pass** (no skipped/ignored tests without justification)
+- [ ] Build succeeds in all configurations
+- [ ] Security audit clean
+- [ ] Code coverage meets project standards
+
+### 3. Feature-Specific Requirements Met
+- [ ] All tasks in Tasks section marked [x] complete
+- [ ] All Success Criteria checked off
+- [ ] All verification commands execute successfully
+- [ ] Integration with dependent features verified
+- [ ] Documentation complete (if required)
+
+### 4. User Approval Required
+
+**BEFORE marking feature complete, Main Agent MUST:**
+1. Present verification report to user showing all checks passed
+2. Show incomplete implementation scan results (zero found)
+3. Confirm all tasks and success criteria met
+4. **Get explicit user approval** to mark feature complete
+
+**User decides** - NOT agents - when feature is truly complete.
 
 ---
 

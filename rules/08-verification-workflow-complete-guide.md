@@ -89,34 +89,45 @@ Task/Feature Complete → Report → Verify → Pass? → Commit → Push
 - Main Agent analyzes changed files to identify language(s) modified
 - Main Agent spawns **ONE verification agent per language stack** (NEVER more)
 - Verification agent receives context (files, description, specification)
+- **Verification agent MUST check for incomplete implementations FIRST** (see Incomplete Implementation Check below)
 - Verification agent runs **ALL checks** defined in stack file:
 
+**Incomplete Implementation Check** (MANDATORY FIRST):
+1. Search all modified files for: `TODO`, `FIXME`, `unimplemented!()`, `todo!()`, `panic!("not implemented")`
+2. Check for stub methods: functions that just return default values or Ok(())
+3. Verify all public methods have real implementations (not just structure)
+4. If ANY incomplete implementations found → **FAIL IMMEDIATELY** with detailed report
+5. **CRITICAL**: Features/specifications claiming "complete" status MUST have zero incomplete implementations
+
 **For Rust** (from `.agents/stacks/rust.md`):
-1. `cargo fmt -- --check` (format)
-2. `cargo clippy -- -D warnings` (lint, zero warnings)
-3. `cargo test` or `cargo test --package [crate]` (tests)
-4. `cargo build --all-features` (build)
-5. `cargo doc --no-deps` (documentation)
-6. `cargo audit` (security)
-7. Standards compliance checks (no unwrap(), proper docs, etc.)
+1. **Incomplete implementation check** (MANDATORY - see above)
+2. `cargo fmt -- --check` (format)
+3. `cargo clippy -- -D warnings` (lint, zero warnings)
+4. `cargo test` or `cargo test --package [crate]` (tests)
+5. `cargo build --all-features` (build)
+6. `cargo doc --no-deps` (documentation)
+7. `cargo audit` (security)
+8. Standards compliance checks (no unwrap(), proper docs, etc.)
 
 **For JavaScript/TypeScript** (from `.agents/stacks/javascript.md`):
-1. `npx prettier --check .` (format)
-2. `npx tsc --noEmit` (type check, zero errors)
-3. `npx eslint . --max-warnings 0` (lint, zero warnings)
-4. `npm test` (tests with coverage)
-5. `npm run build` (build)
-6. `npm audit` (security)
-7. Standards compliance checks (no `any` type, etc.)
+1. **Incomplete implementation check** (MANDATORY - check for TODO, FIXME, stub functions)
+2. `npx prettier --check .` (format)
+3. `npx tsc --noEmit` (type check, zero errors)
+4. `npx eslint . --max-warnings 0` (lint, zero warnings)
+5. `npm test` (tests with coverage)
+6. `npm run build` (build)
+7. `npm audit` (security)
+8. Standards compliance checks (no `any` type, etc.)
 
 **For Python** (from `.agents/stacks/python.md`):
-1. `black --check .` (format)
-2. `ruff check .` (lint, zero errors)
-3. `mypy .` (type check, strict mode)
-4. `pytest --cov` (tests with coverage)
-5. `python -m py_compile src/**/*.py` (import check)
-6. `pip-audit` or `bandit` (security)
-7. Standards compliance checks (no mutable defaults, etc.)
+1. **Incomplete implementation check** (MANDATORY - check for TODO, FIXME, NotImplementedError, pass-only functions)
+2. `black --check .` (format)
+3. `ruff check .` (lint, zero errors)
+4. `mypy .` (type check, strict mode)
+5. `pytest --cov` (tests with coverage)
+6. `python -m py_compile src/**/*.py` (import check)
+7. `pip-audit` or `bandit` (security)
+8. Standards compliance checks (no mutable defaults, etc.)
 
 **Verification Agent Generates Report:**
 ```markdown
@@ -128,13 +139,27 @@ Task/Feature Complete → Report → Verify → Pass? → Commit → Push
 - [list of files]
 
 ## Check Results
-1. Format: PASS ✅ / FAIL ❌
-2. Lint: PASS ✅ / FAIL ❌
-3. Type Check: PASS ✅ / FAIL ❌
-4. Tests: PASS ✅ / FAIL ❌ ([N] passed, [N] failed)
-5. Build: PASS ✅ / FAIL ❌
-6. Security: PASS ✅ / FAIL ❌
-7. Standards: PASS ✅ / FAIL ❌
+1. **Incomplete Implementation Check**: PASS ✅ / FAIL ❌
+   - TODO/FIXME markers: [count] found
+   - Stub methods: [count] found
+   - Unimplemented macros: [count] found
+   - **CRITICAL**: If ANY found → FAIL (cannot mark feature/spec complete)
+2. Format: PASS ✅ / FAIL ❌
+3. Lint: PASS ✅ / FAIL ❌
+4. Type Check: PASS ✅ / FAIL ❌
+5. Tests: PASS ✅ / FAIL ❌ ([N] passed, [N] failed)
+6. Build: PASS ✅ / FAIL ❌
+7. Security: PASS ✅ / FAIL ❌
+8. Standards: PASS ✅ / FAIL ❌
+
+## Incomplete Implementations (if any)
+**FILE: [file_path]**
+- Line [N]: TODO: [description]
+- Line [M]: FIXME: [description]
+- Line [K]: Function `foo()` - stub implementation (just returns Ok(()))
+- Line [L]: unimplemented!() macro found
+
+[Repeat for each file with issues]
 
 ## Test Results
 - Total: [N]
@@ -397,6 +422,9 @@ The following are **CRITICAL VIOLATIONS** with **ZERO TOLERANCE**:
 4. ❌ **Multiple verification agents for same language** (race condition)
 5. ❌ **Committing code with failed verification** (quality breach)
 6. ❌ **Not updating specification on verification failure** (lost tracking)
+7. ❌ **Marking feature/spec complete with TODO/FIXME/unimplemented!() present** (incomplete implementation)
+8. ❌ **Verification agent doesn't check for incomplete implementations** (missing critical check)
+9. ❌ **Stub methods in code marked complete** (non-functional code)
 
 ### Consequences
 
