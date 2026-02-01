@@ -290,12 +290,22 @@ specifications/01-spec-name/
 
 ### Structure
 
-**CRITICAL**: COMPACT_CONTEXT.md MUST embed machine_prompt.md content for current task.
+**CRITICAL**: COMPACT_CONTEXT.md MUST embed machine_prompt.md content AND relevant rule summaries for current task.
 
 ```markdown
 # Compact Context: [Current Task Name]
 
-⚠️COMPACTED|RELOAD_AFTER_READING|GENERATED:[timestamp]|FROM:[machine_prompt.md,progress.md]
+⚠️COMPACTED|RELOAD_AFTER_READING|GENERATED:[timestamp]|FROM:[machine_prompt.md,progress.md,rules]
+
+## RULES_SUMMARY
+[EMBEDDED COMPACTED RULES FROM FRONTMATTER - ONLY RULES AGENT NEEDS]
+
+rule:01|naming_structure|ref:[.agents/rules/01-*.md]
+rule:02|dir_policy|ref:[.agents/rules/02-*.md]
+rule:03|danger_ops|safe_patterns:[list]|forbidden:[list]|ref:[.agents/rules/03-*.md]
+rule:04|commit|verify_first|no_force_push|ref:[.agents/rules/04-*.md]
+rule:13|impl_agent|tdd|retrieval_first|test_docs|ref:[.agents/rules/13-*.md]
+stack:[rust]|patterns:[discovered_patterns]|ref:[.agents/stacks/rust.md]
 
 ## CURRENT_TASK
 task:[task_name]|status:[in_progress/blocked/testing]|started:[timestamp]
@@ -335,6 +345,13 @@ progress:[./PROGRESS.md]|learnings:[./LEARNINGS.md#critical-impl]|docs:[document
 ⚠️ AFTER READING THIS FILE: Clear context, reload from this file, proceed with fresh context
 ```
 
+**Why RULES_SUMMARY Section Exists**:
+- Embeds compacted essential rules from specification frontmatter
+- Eliminates need to load full rule files after context reload
+- Only includes rules agent type needs (from files_required)
+- Provides quick reference + link for deeper reading if needed
+- Saves ~10-20K tokens per rule file avoided
+
 **Why MACHINE_PROMPT_CONTENT Section Exists**:
 - After context clear, COMPACT_CONTEXT.md is the ONLY file loaded
 - Must be self-contained with ALL task requirements
@@ -342,7 +359,7 @@ progress:[./PROGRESS.md]|learnings:[./LEARNINGS.md#critical-impl]|docs:[document
 - Agent has complete instructions in single compact file
 - No external file dependencies after reload
 
-**Size Target**: 500-800 tokens total (including embedded machine_prompt content)
+**Size Target**: 500-1000 tokens total (including embedded rules + machine_prompt content)
 
 ### Compaction Rules
 
@@ -513,11 +530,11 @@ If context reaches 85-90% (150K-180K tokens):
 ### Pseudo-Code
 
 ```python
-def generate_compact_context(progress_md: str, machine_prompt_md: str, current_files: list) -> str:
+def generate_compact_context(progress_md: str, machine_prompt_md: str, spec_frontmatter: dict, agent_type: str, current_files: list) -> str:
     """
     Generate ultra-compact context from verbose sources.
 
-    CRITICAL: Embeds machine_prompt.md content for current task.
+    CRITICAL: Embeds BOTH rule summaries AND machine_prompt.md content for current task.
     After context reload, agent reads ONLY this file (self-contained).
 
     Preserve ONLY what's needed for immediate work.
@@ -526,6 +543,9 @@ def generate_compact_context(progress_md: str, machine_prompt_md: str, current_f
 
     # Extract current task (not past, not future)
     current_task = extract_current_task(progress_md)
+
+    # Extract and compact rules from frontmatter
+    rules_summary = compact_rules_from_frontmatter(spec_frontmatter, agent_type)
 
     # Extract machine_prompt content for THIS TASK ONLY
     machine_content = extract_task_from_machine_prompt(machine_prompt_md, current_task['id'])
@@ -556,7 +576,10 @@ def generate_compact_context(progress_md: str, machine_prompt_md: str, current_f
 
     compact = f"""# Compact Context: {current_task['name']}
 
-⚠️COMPACTED|RELOAD_AFTER_READING|GENERATED:{timestamp()}|FROM:[machine_prompt.md,progress.md]
+⚠️COMPACTED|RELOAD_AFTER_READING|GENERATED:{timestamp()}|FROM:[machine_prompt.md,progress.md,rules]
+
+## RULES_SUMMARY
+{rules_summary}
 
 ## CURRENT_TASK
 task:{current_task['name']}|status:{current_task['status']}|started:{current_task['started']}
@@ -603,6 +626,54 @@ def extract_task_from_machine_prompt(machine_prompt: str, task_id: str) -> str:
     # Extract: requirements, constraints, files, tests, verification
     # Return compressed format for embedding
     pass
+
+def compact_rules_from_frontmatter(spec_frontmatter: dict, agent_type: str) -> str:
+    """
+    Compact rules from specification frontmatter for specific agent type.
+
+    Returns ultra-compact rule summaries with references.
+    Avoids need to load full rule files after context reload.
+
+    Example output:
+    rule:01|naming_structure|ref:[.agents/rules/01-*.md]
+    rule:03|danger_ops|safe:[git_status,git_diff]|forbidden:[force_push,reset_hard]|ref:[.agents/rules/03-*.md]
+    rule:13|impl|tdd|retrieval_first|doc_tests:WHY+WHAT|ref:[.agents/rules/13-*.md]
+    stack:[rust]|patterns:[Result<T>,trait_bounds,no_unsafe]|ref:[.agents/stacks/rust.md]
+    """
+    rules_list = spec_frontmatter.get('files_required', {}).get(agent_type, {}).get('rules', [])
+
+    compacted_rules = []
+
+    for rule_path in rules_list:
+        # Extract rule number/name from path
+        rule_name = extract_rule_name(rule_path)  # e.g., "01", "03", "13", "rust"
+
+        # Compact based on rule type
+        if rule_name == "01":
+            compacted_rules.append(f"rule:01|naming_structure|ref:[{rule_path}]")
+        elif rule_name == "02":
+            compacted_rules.append(f"rule:02|dir_policy|ref:[{rule_path}]")
+        elif rule_name == "03":
+            compacted_rules.append(f"rule:03|danger_ops|safe:[git_status,git_diff]|forbidden:[force_push,reset_hard,no_verify]|ref:[{rule_path}]")
+        elif rule_name == "04":
+            compacted_rules.append(f"rule:04|commit|verify_first|no_force_push|co_author:Claude|ref:[{rule_path}]")
+        elif rule_name == "05":
+            compacted_rules.append(f"rule:05|orchestration|main_delegates|spawn_sub_agents|verify_required|ref:[{rule_path}]")
+        elif rule_name == "06":
+            compacted_rules.append(f"rule:06|specs|retrieval_led|has_features:load_feature_md|ref:[{rule_path}]")
+        elif rule_name == "08":
+            compacted_rules.append(f"rule:08|verification|cargo_test|cargo_clippy|cargo_fmt|ref:[{rule_path}]")
+        elif rule_name == "13":
+            compacted_rules.append(f"rule:13|impl|tdd|retrieval_first|doc_tests:WHY+WHAT|no_commit|ref:[{rule_path}]")
+        elif rule_name == "14":
+            compacted_rules.append(f"rule:14|machine_prompt|58%_reduction|pipe_delimited|ref:[{rule_path}]")
+        elif rule_name == "15":
+            compacted_rules.append(f"rule:15|compact_context|97%_reduction|embed_rules+machine_prompt|ref:[{rule_path}]")
+        elif "rust" in rule_name:
+            compacted_rules.append(f"stack:[rust]|patterns:[Result<T>,trait_bounds,derive_more,no_unsafe]|ref:[{rule_path}]")
+        # Add more rule compaction patterns as needed
+
+    return '\n'.join(compacted_rules)
 
 def extract_current_task(progress_md: str) -> dict:
     """Extract ONLY current task, ignore completed/future."""
@@ -684,7 +755,16 @@ Agent has in context:
 ```markdown
 # Compact Context: Implement DNS Resolver
 
-⚠️COMPACTED|RELOAD_AFTER_READING|GENERATED:2026-02-01T14:30:00Z|FROM:[machine_prompt.md,progress.md]
+⚠️COMPACTED|RELOAD_AFTER_READING|GENERATED:2026-02-01T14:30:00Z|FROM:[machine_prompt.md,progress.md,rules]
+
+## RULES_SUMMARY
+rule:01|naming_structure|ref:[.agents/rules/01-*.md]
+rule:03|danger_ops|safe:[git_status,git_diff]|forbidden:[force_push,reset_hard,no_verify]|ref:[.agents/rules/03-*.md]
+rule:04|commit|verify_first|no_force_push|co_author:Claude|ref:[.agents/rules/04-*.md]
+rule:13|impl|tdd|retrieval_first|doc_tests:WHY+WHAT|no_commit|ref:[.agents/rules/13-*.md]
+rule:14|machine_prompt|58%_reduction|pipe_delimited|ref:[.agents/rules/14-*.md]
+rule:15|compact_context|97%_reduction|embed_rules+machine_prompt|ref:[.agents/rules/15-*.md]
+stack:[rust]|patterns:[Result<T>,trait_bounds,derive_more,no_unsafe]|ref:[.agents/stacks/rust.md]
 
 ## CURRENT_TASK
 task:impl_dns_resolver|status:in_progress|started:2026-02-01T14:00:00Z
@@ -722,9 +802,18 @@ progress:[./PROGRESS.md#dns-resolver]|learnings:[./LEARNINGS.md#dns-caching]|doc
 ⚠️ AFTER READING THIS FILE: Clear context, reload from this file, proceed with fresh context
 ```
 
-**Size**: 500 tokens (vs 10,000+ for full context)
+**Size**: 700 tokens (vs 10,000+ for full context without rules)
 
-**CRITICAL**: MACHINE_PROMPT_CONTENT section contains ALL requirements for current task. Agent doesn't need to re-read machine_prompt.md after reload - everything needed is embedded.
+**Token Savings from Embedded Rules**:
+- Without embedding: Agent loads 7 rule files (~10K tokens each = 70K total)
+- With embedding: Compact summaries (~100 tokens total)
+- **Savings**: ~69,900 tokens from rule compaction alone
+
+**CRITICAL**:
+- RULES_SUMMARY contains essential rule guidance - no need to load full rule files
+- MACHINE_PROMPT_CONTENT contains ALL requirements for current task
+- Agent doesn't need to re-read machine_prompt.md or rule files after reload
+- Everything needed is embedded in this single file
 
 ---
 
@@ -911,12 +1000,12 @@ compact-context:
 
 **Core Workflow**:
 ```
-Main Agent: Generate machine_prompt.md + initial COMPACT_CONTEXT.md →
+Main Agent: Generate machine_prompt.md + initial COMPACT_CONTEXT.md (with embedded rules) →
 Spawn sub-agent with COMPACT_CONTEXT.md path →
-Sub-Agent: Read COMPACT_CONTEXT.md (embedded machine_prompt) →
+Sub-Agent: Read COMPACT_CONTEXT.md (embedded rules + machine_prompt) →
 Work on task →
 Update PROGRESS.md →
-Regenerate COMPACT_CONTEXT.md (re-embed machine_prompt) →
+Regenerate COMPACT_CONTEXT.md (re-embed rules + machine_prompt) →
 Clear & Reload →
 Continue OR Report completion →
 Main Agent: Verify → Delete COMPACT_CONTEXT.md if complete → Commit
@@ -925,25 +1014,27 @@ Main Agent: Verify → Delete COMPACT_CONTEXT.md if complete → Commit
 **Key Principles**:
 1. ✅ Main Agent generates initial COMPACT_CONTEXT.md before spawning
 2. ✅ Sub-agent receives and maintains during work
-3. ✅ Embed machine_prompt content (self-contained)
-4. ✅ References replace content duplication
-5. ✅ Current work only (no historical)
-6. ✅ Clear and reload after updates
-7. ✅ Main Agent handles cleanup after verification
-8. ✅ PROGRESS.md rewritten per task (ephemeral)
-9. ✅ COMPACT_CONTEXT.md deleted per task (ephemeral)
+3. ✅ **Embed rule summaries** from specification frontmatter (~70K tokens saved)
+4. ✅ Embed machine_prompt content (self-contained)
+5. ✅ References replace content duplication
+6. ✅ Current work only (no historical)
+7. ✅ Clear and reload after updates
+8. ✅ Main Agent handles cleanup after verification
+9. ✅ PROGRESS.md rewritten per task (ephemeral)
+10. ✅ COMPACT_CONTEXT.md deleted per task (ephemeral)
 
 **Benefits**:
-- 🚀 97% context reduction
+- 🚀 97% context reduction (180K → 5K tokens)
+- 🚀 **~70K tokens saved** by embedding rule summaries vs loading full rule files
 - 🚀 Prevents context limit errors
 - 🚀 Improves agent performance
 - 🚀 Enables indefinite work sessions
-- 🚀 Reduces token costs
+- 🚀 Reduces token costs dramatically
 - 🚀 Maintains laser focus
 
 **Combined with Rule 14**:
-- Rule 14: 58% specification token reduction
-- Rule 15: 97% runtime context reduction
+- Rule 14: 58% specification token reduction (requirements.md → machine_prompt.md)
+- Rule 15: 97% runtime context reduction (verbose context → COMPACT_CONTEXT.md with embedded rules)
 - **Total**: >98% token optimization
 
 **Enforcement**:
