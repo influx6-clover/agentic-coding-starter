@@ -3,7 +3,7 @@
 ⚠️COMPACTED|RELOAD_AFTER_READING|GENERATED:[YYYY-MM-DDTHH:MM:SSZ]|FROM:[machine_prompt.md,progress.md,rules]
 
 ## RULES_SUMMARY
-[EMBEDDED COMPACTED RULES FROM SPECIFICATION FRONTMATTER - ONLY RULES THIS AGENT TYPE NEEDS]
+[EMBEDDED COMPACTED RULES, STACK, AND SKILLS FROM SPECIFICATION FRONTMATTER - ONLY WHAT THIS AGENT TYPE NEEDS]
 
 rule:01|naming_structure|ref:[.agents/rules/01-*.md]
 rule:02|dir_policy|ref:[.agents/rules/02-*.md]
@@ -13,6 +13,7 @@ rule:13|impl|tdd|retrieval_first|doc_tests:WHY+WHAT|no_commit|ref:[.agents/rules
 rule:14|machine_prompt|58%_reduction|pipe_delimited|ref:[.agents/rules/14-*.md]
 rule:15|compact_context|97%_reduction|embed_rules+machine_prompt|ref:[.agents/rules/15-*.md]
 stack:[language]|patterns:[key_patterns]|ref:[.agents/stacks/language.md]
+skills:[skill_name]|usage:[key_points]|ref:[.agents/skills/skill_name/]
 
 ## CURRENT_TASK
 task:[task_name]|status:[in_progress/blocked/testing]|started:[YYYY-MM-DDTHH:MM:SSZ]
@@ -58,9 +59,14 @@ progress:[./PROGRESS.md#current-section]|learnings:[./LEARNINGS.md#relevant-sect
 
 **CRITICAL**: This file is self-contained. After context clear, read ONLY this file.
 
-**Rules Summary**: The RULES_SUMMARY section contains compacted essential rules from
-specification frontmatter. You do NOT need to load full rule files after reload - only
-refer to them if you need deeper detail (use ref links).
+**Rules Summary**: The RULES_SUMMARY section contains compacted essential rules, stack files,
+and skills from specification frontmatter. **MANDATORY**: Must include all three (rules, stack, skills).
+You do NOT need to load full rule/stack/skill files after reload - only refer to them if you need
+deeper detail (use ref links).
+
+**Stack Files**: Language-specific patterns and conventions you must follow (e.g., Rust idioms).
+
+**Skills**: Reusable capabilities you can invoke during work (e.g., testing, documentation).
 
 **Machine Prompt Content**: The MACHINE_PROMPT_CONTENT section contains all requirements
 for current task. You do NOT need to read machine_prompt.md separately after reload.

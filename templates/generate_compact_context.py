@@ -132,23 +132,28 @@ def extract_task_from_machine_prompt(machine_prompt: str, task_id: str) -> str:
 
 def compact_rules_from_frontmatter(spec_frontmatter: dict, agent_type: str) -> str:
     """
-    Compact rules from specification frontmatter for specific agent type.
+    Compact rules, stack files, and skills from specification frontmatter for specific agent type.
 
-    Returns ultra-compact rule summaries with references.
-    Avoids need to load full rule files after context reload.
+    Returns ultra-compact summaries with references for rules, stack, and skills.
+    Avoids need to load full files after context reload.
 
-    Token Savings: ~70K tokens (vs loading full rule files)
+    MANDATORY: Must include rules, stack files, AND skills.
+
+    Token Savings: ~70K tokens (vs loading full rule/stack/skill files)
 
     Example output:
         rule:01|naming_structure|ref:[.agents/rules/01-*.md]
         rule:03|danger_ops|safe:[git_status,git_diff]|forbidden:[force_push,reset_hard]|ref:[.agents/rules/03-*.md]
         rule:13|impl|tdd|retrieval_first|doc_tests:WHY+WHAT|ref:[.agents/rules/13-*.md]
         stack:[rust]|patterns:[Result<T>,trait_bounds,no_unsafe]|ref:[.agents/stacks/rust.md]
+        skills:[skill_name]|usage:[key_points]|ref:[.agents/skills/skill_name/]
     """
     rules_list = spec_frontmatter.get('files_required', {}).get(agent_type, {}).get('rules', [])
+    skills_list = spec_frontmatter.get('files_required', {}).get(agent_type, {}).get('skills', [])
 
     compacted_rules = []
 
+    # Compact rules and stack files
     for rule_path in rules_list:
         # Extract rule number/name from path
         rule_name = extract_rule_name(rule_path)  # e.g., "01", "03", "13", "rust"
@@ -177,6 +182,13 @@ def compact_rules_from_frontmatter(spec_frontmatter: dict, agent_type: str) -> s
         elif "rust" in rule_name:
             compacted_rules.append(f"stack:[rust]|patterns:[Result<T>,trait_bounds,derive_more,no_unsafe]|ref:[{rule_path}]")
         # Add more rule compaction patterns as needed
+
+    # Compact skills
+    for skill_path in skills_list:
+        skill_name = extract_skill_name(skill_path)
+        # Read skill frontmatter to get key usage points
+        # For now, provide a generic template
+        compacted_rules.append(f"skills:[{skill_name}]|usage:[see_skill_doc]|ref:[{skill_path}]")
 
     return '\n'.join(compacted_rules)
 
@@ -233,6 +245,18 @@ def format_constraints(constraints: list) -> str:
 def format_actions(actions: list) -> str:
     """Format actions as numbered list."""
     return '\n'.join(f"{i}. {a}" for i, a in enumerate(actions, 1))
+
+
+def extract_skill_name(skill_path: str) -> str:
+    """Extract skill name from path."""
+    # Example: ".agents/skills/testing/" -> "testing"
+    # Example: ".agents/skills/documentation/skill.md" -> "documentation"
+    parts = skill_path.strip('/').split('/')
+    if 'skills' in parts:
+        idx = parts.index('skills')
+        if idx + 1 < len(parts):
+            return parts[idx + 1]
+    return "unknown"
 
 
 def needs_reading(file_path: str) -> bool:

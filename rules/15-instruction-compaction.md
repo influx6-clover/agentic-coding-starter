@@ -290,7 +290,7 @@ specifications/01-spec-name/
 
 ### Structure
 
-**CRITICAL**: COMPACT_CONTEXT.md MUST embed machine_prompt.md content AND relevant rule summaries for current task.
+**CRITICAL**: COMPACT_CONTEXT.md MUST embed machine_prompt.md content, relevant rule summaries, stack files, and skills for current task.
 
 ```markdown
 # Compact Context: [Current Task Name]
@@ -298,14 +298,15 @@ specifications/01-spec-name/
 ⚠️COMPACTED|RELOAD_AFTER_READING|GENERATED:[timestamp]|FROM:[machine_prompt.md,progress.md,rules]
 
 ## RULES_SUMMARY
-[EMBEDDED COMPACTED RULES FROM FRONTMATTER - ONLY RULES AGENT NEEDS]
+[EMBEDDED COMPACTED RULES, STACK, AND SKILLS FROM FRONTMATTER - ONLY WHAT AGENT NEEDS]
 
 rule:01|naming_structure|ref:[.agents/rules/01-*.md]
 rule:02|dir_policy|ref:[.agents/rules/02-*.md]
 rule:03|danger_ops|safe_patterns:[list]|forbidden:[list]|ref:[.agents/rules/03-*.md]
 rule:04|commit|verify_first|no_force_push|ref:[.agents/rules/04-*.md]
 rule:13|impl_agent|tdd|retrieval_first|test_docs|ref:[.agents/rules/13-*.md]
-stack:[rust]|patterns:[discovered_patterns]|ref:[.agents/stacks/rust.md]
+stack:[rust]|patterns:[Result<T>,trait_bounds,no_unsafe]|ref:[.agents/stacks/rust.md]
+skills:[skill_name]|usage:[key_points]|ref:[.agents/skills/skill_name/]
 
 ## CURRENT_TASK
 task:[task_name]|status:[in_progress/blocked/testing]|started:[timestamp]
@@ -346,11 +347,14 @@ progress:[./PROGRESS.md]|learnings:[./LEARNINGS.md#critical-impl]|docs:[document
 ```
 
 **Why RULES_SUMMARY Section Exists**:
-- Embeds compacted essential rules from specification frontmatter
-- Eliminates need to load full rule files after context reload
-- Only includes rules agent type needs (from files_required)
+- Embeds compacted essential rules, stack files, and skills from specification frontmatter
+- Eliminates need to load full rule/stack/skill files after context reload
+- **MANDATORY**: Must include rules, stack files, AND skills (from files_required)
+- Only includes what agent type needs (based on frontmatter agent section)
 - Provides quick reference + link for deeper reading if needed
-- Saves ~10-20K tokens per rule file avoided
+- Saves ~10-20K tokens per file avoided (rules + stack + skills)
+- **Stack files**: Essential language-specific patterns agents must follow
+- **Skills**: Reusable capabilities agents can invoke during work
 
 **Why MACHINE_PROMPT_CONTENT Section Exists**:
 - After context clear, COMPACT_CONTEXT.md is the ONLY file loaded
@@ -541,7 +545,7 @@ python3 generate_compact_context.py PROGRESS.md machine_prompt.md
 
 **Key Functions**:
 - `generate_compact_context()` - Main generation function
-- `compact_rules_from_frontmatter()` - Embed rule summaries (~70K tokens saved)
+- `compact_rules_from_frontmatter()` - Embed rules, stack, skills summaries (~70K tokens saved)
 - `extract_task_from_machine_prompt()` - Embed current task requirements
 - `extract_current_task()` - Extract only current work
 - Token reduction: 97% average savings (180K → 5K tokens)
