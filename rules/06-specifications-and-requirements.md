@@ -119,6 +119,11 @@ Agent: "Let me summarize what success looks like..."
 ```
 specifications/01-simple-spec/
 ├── requirements.md          # Complete requirements with integrated tasks
+├── scripts/                 # Automated verification/validation scripts (MANDATORY if applicable)
+│   ├── verify_requirements.py   # Verifies requirement expectations met
+│   ├── verify_completion.py     # Verifies completed code elements
+│   └── validate_features.py     # Validates feature implementation
+├── Makefile                 # Encodes verification commands (MANDATORY if scripts exist)
 ├── LEARNINGS.md            # All learnings (permanent)
 ├── REPORT.md               # All reports (permanent)
 ├── VERIFICATION.md         # Verification signoff (permanent)
@@ -134,9 +139,15 @@ specifications/01-simple-spec/
 ```
 specifications/02-feature-spec/
 ├── requirements.md          # High-level overview + feature index ONLY
+├── scripts/                 # Automated verification/validation scripts (MANDATORY if applicable)
+│   ├── verify_requirements.py   # Verifies requirement expectations met
+│   ├── verify_features.py       # Verifies all features complete
+│   └── validate_integration.py  # Validates feature integration
+├── Makefile                 # Encodes verification commands (MANDATORY if scripts exist)
 ├── features/
 │   ├── 00-foundation/
 │   │   ├── feature.md      # Detailed feature requirements + tasks
+│   │   ├── scripts/        # Feature-specific verification scripts (optional)
 │   │   └── templates/      # Feature-specific templates (optional)
 │   ├── 01-core-api/
 │   │   └── feature.md
@@ -230,6 +241,8 @@ Each specification directory MUST contain ONLY these files:
 | File              | Status    | Purpose                                                                              |
 | ----------------- | --------- | ------------------------------------------------------------------------------------ |
 | `requirements.md` | Permanent | Requirements with integrated tasks                                                   |
+| `scripts/`        | Permanent | Automated verification/validation scripts (MANDATORY if applicable)                  |
+| `Makefile`        | Permanent | Encodes verification commands (MANDATORY if scripts exist)                           |
 | `LEARNINGS.md`    | Permanent | ALL learnings consolidated (technical + process, with efficient writing for context) |
 | `REPORT.md`       | Permanent | ALL reports consolidated (work sessions, testing, completion)                        |
 | `VERIFICATION.md` | Permanent | Verification signoff                                                                 |
@@ -371,6 +384,399 @@ files_required:
 **Benefits**: Agents know exactly what to load, no guessing
 
 **See**: `.agents/templates/requirements-template.md` for complete structure
+
+## Automated Verification Scripts (MANDATORY IF APPLICABLE)
+
+### Purpose
+
+Shift from text-based verification to **executable, automated validation** using scripts that encode expectations in runnable code. This reduces agent cognitive load, ensures consistency, and enables continuous verification.
+
+### When Scripts Are MANDATORY
+
+Create automated verification scripts when:
+- ✅ Requirements can be programmatically validated (file existence, structure, patterns)
+- ✅ Code completeness can be checked (functions exist, signatures match, exports present)
+- ✅ Feature implementation can be verified (API endpoints work, integration points exist)
+- ✅ Validation logic can be encoded (input validation, output formatting, error handling)
+- ✅ Completion criteria can be tested (all modules present, all tests exist, coverage met)
+
+Skip scripts when:
+- ❌ Requirements are purely subjective (code readability, architecture elegance)
+- ❌ Verification requires human judgment
+- ❌ Writing script is more complex than manual check
+
+**Default Stance**: If in doubt, CREATE THE SCRIPT. Automation > manual verification.
+
+### Script Location and Structure
+
+#### Specification-Level Scripts
+
+**Location**: `specifications/[NN-spec-name]/scripts/`
+
+**Standard Scripts**:
+```
+specifications/01-example-spec/
+├── scripts/
+│   ├── verify_requirements.py    # Verifies requirement expectations met
+│   ├── verify_completion.py      # Verifies all code elements complete
+│   ├── validate_features.py      # Validates feature implementation
+│   ├── check_integration.py      # Checks integration points
+│   └── run_all_checks.py         # Runs all verification scripts
+└── Makefile                      # Encodes script execution commands
+```
+
+#### Feature-Level Scripts (Optional)
+
+**Location**: `specifications/[NN-spec-name]/features/[feature-name]/scripts/`
+
+For complex features that need feature-specific validation beyond spec-wide checks.
+
+#### Project-Level Scripts (If No Specification)
+
+**Location**: `scripts/` at project root
+
+For ad-hoc validation or project-wide checks not tied to a specific specification.
+
+### Script Requirements
+
+#### 1. Python as Default Language
+
+**Prefer Python** unless:
+- User explicitly requests another language
+- Language-specific validation requires native tooling (e.g., Rust validation using cargo)
+- Project is polyglot and Python adds dependency burden
+
+**Why Python**:
+- Universal availability
+- Easy to read and maintain
+- Rich stdlib for file operations, subprocess, JSON/YAML parsing
+- Excellent error messages
+
+#### 2. Script Structure
+
+Every verification script MUST:
+
+```python
+#!/usr/bin/env python3
+"""
+verify_requirements.py - Verifies all requirements are met
+
+This script encodes requirement expectations in executable form:
+- Checks file existence and structure
+- Validates code patterns and signatures
+- Verifies integration points
+- Tests completion criteria
+
+Exit Codes:
+    0: All checks passed
+    1: One or more checks failed
+    2: Script error (invalid args, missing dependencies)
+
+Usage:
+    python3 verify_requirements.py [--verbose] [--fix]
+"""
+
+import sys
+import os
+from pathlib import Path
+from typing import List, Tuple
+
+# ANSI colors for output
+GREEN = "\033[92m"
+RED = "\033[91m"
+YELLOW = "\033[93m"
+BLUE = "\033[94m"
+RESET = "\033[0m"
+
+class VerificationResult:
+    def __init__(self, passed: bool, message: str, details: str = ""):
+        self.passed = passed
+        self.message = message
+        self.details = details
+
+def check_requirement_1() -> VerificationResult:
+    """Check that requirement 1 is satisfied."""
+    # Actual verification logic
+    if condition_met:
+        return VerificationResult(True, "Requirement 1: PASS")
+    else:
+        return VerificationResult(False, "Requirement 1: FAIL", "Details about failure")
+
+def main():
+    """Run all verification checks."""
+    print(f"{BLUE}Running requirement verification...{RESET}\n")
+
+    checks = [
+        ("Requirement 1", check_requirement_1),
+        ("Requirement 2", check_requirement_2),
+        # ... more checks
+    ]
+
+    results = []
+    for name, check_fn in checks:
+        result = check_fn()
+        results.append(result)
+
+        status = f"{GREEN}✓{RESET}" if result.passed else f"{RED}✗{RESET}"
+        print(f"{status} {result.message}")
+        if result.details:
+            print(f"  {YELLOW}{result.details}{RESET}")
+
+    # Summary
+    passed = sum(1 for r in results if r.passed)
+    total = len(results)
+    print(f"\n{passed}/{total} checks passed")
+
+    return 0 if all(r.passed for r in results) else 1
+
+if __name__ == "__main__":
+    sys.exit(main())
+```
+
+#### 3. Script Capabilities
+
+Scripts SHOULD:
+- ✅ Check file existence and structure
+- ✅ Verify function/class/module signatures
+- ✅ Validate exports and public APIs
+- ✅ Test integration points (imports work, services respond)
+- ✅ Check code patterns (error handling present, logging configured)
+- ✅ Verify test coverage and test existence
+- ✅ Validate configuration files
+- ✅ Check documentation presence
+- ✅ Provide clear, actionable error messages
+- ✅ Support `--verbose` flag for detailed output
+- ✅ Support `--fix` flag for auto-fixable issues (optional)
+- ✅ Exit with 0 on success, 1 on failure, 2 on error
+
+#### 4. Makefile Integration (MANDATORY)
+
+Every specification with scripts/ MUST have a Makefile:
+
+```makefile
+# Makefile for specification verification
+
+.PHONY: help verify verify-requirements verify-completion verify-features verify-all clean
+
+help:
+	@echo "Specification Verification Commands:"
+	@echo "  make verify              - Run all verification checks"
+	@echo "  make verify-requirements - Verify requirements met"
+	@echo "  make verify-completion   - Verify code completion"
+	@echo "  make verify-features     - Verify feature implementation"
+	@echo "  make clean               - Clean temporary verification files"
+
+verify: verify-requirements verify-completion verify-features
+	@echo "✓ All verification checks passed"
+
+verify-requirements:
+	@python3 scripts/verify_requirements.py
+
+verify-completion:
+	@python3 scripts/verify_completion.py
+
+verify-features:
+	@python3 scripts/validate_features.py
+
+verify-all: verify
+	@echo "✓ Comprehensive verification complete"
+
+clean:
+	@rm -rf __pycache__
+	@find scripts -type d -name __pycache__ -exec rm -rf {} +
+```
+
+### Main Agent Responsibilities
+
+When creating specification, Main Agent MUST:
+
+1. **Ask user about automated checks**:
+   ```
+   "Can any of these requirements be verified programmatically?
+    - File/module existence?
+    - Function signatures?
+    - Integration points?
+    - API endpoints?
+    - Configuration files?
+
+   Would you like me to create automated verification scripts?"
+   ```
+
+2. **Create scripts/ directory** if user approves or if requirements are clearly automatable
+
+3. **Generate verification scripts** that encode:
+   - Requirement validation logic
+   - Completion criteria checks
+   - Feature verification tests
+   - Integration point validation
+
+4. **Create Makefile** with appropriate targets
+
+5. **Document scripts in requirements.md**:
+   ```markdown
+   ## Automated Verification
+
+   This specification includes automated verification scripts:
+
+   - `scripts/verify_requirements.py` - Checks all requirements met
+   - `scripts/verify_completion.py` - Verifies code completion
+   - `scripts/validate_features.py` - Validates feature implementation
+
+   Run all checks:
+   ```bash
+   make verify
+   ```
+   ```
+
+6. **Update scripts as requirements evolve** throughout implementation
+
+### Implementation Agent Responsibilities
+
+After completing work, implementation agent MUST:
+
+1. **Run verification scripts**:
+   ```bash
+   cd specifications/[NN-spec-name]
+   make verify
+   ```
+
+2. **Fix failures** before reporting completion
+
+3. **Update scripts** if new requirements discovered during implementation
+
+4. **Report script results** to Main Agent:
+   ```
+   Task completed:
+   - Files changed: [list]
+   - Automated verification: make verify - ALL PASSED ✓
+   - Script updates: [if any scripts were updated/added]
+   ```
+
+### Verification Agent Responsibilities
+
+Verification agent MUST:
+
+1. **Check for scripts/** directory in specification
+
+2. **If scripts exist**:
+   - Run `make verify` FIRST (before standard language checks)
+   - Treat script failures as verification FAILURE
+   - Include script output in verification report
+
+3. **If scripts don't exist**:
+   - Note in report: "No automated verification scripts present"
+   - Recommend creating scripts if requirements seem automatable
+
+4. **Report format**:
+   ```markdown
+   ## Automated Verification Scripts
+
+   Status: FOUND / NOT FOUND
+
+   ### Script Execution Results
+
+   ```bash
+   $ make verify
+   ✓ Verify requirements - PASSED
+   ✓ Verify completion - PASSED
+   ✓ Verify features - PASSED
+   ```
+
+   Exit Code: 0 (success)
+   ```
+
+### Script Evolution
+
+Scripts are **living documents** that evolve with specification:
+
+**During Implementation**:
+- Update scripts as requirements clarify
+- Add new checks for discovered edge cases
+- Refine validation logic based on actual code
+
+**After Implementation**:
+- Keep scripts for regression testing
+- Use for future work building on specification
+- Valuable reference for similar specifications
+
+### Benefits of Automated Verification
+
+1. **Consistency**: Same checks run every time, no human error
+2. **Speed**: Instant feedback vs. manual text reading
+3. **Automation**: Integrate into CI/CD pipelines
+4. **Documentation**: Scripts encode expectations in executable form
+5. **Regression Prevention**: Rerun scripts to catch regressions
+6. **Agent Efficiency**: Less cognitive load reading text, more focus on implementation
+7. **Maintenance**: Scripts are easier to update than documentation
+
+### Examples of Scriptable Checks
+
+**File/Module Existence**:
+```python
+def check_module_exists():
+    required_files = [
+        "src/http_client.rs",
+        "src/dns_resolver.rs",
+        "src/connection.rs",
+    ]
+    missing = [f for f in required_files if not Path(f).exists()]
+    if missing:
+        return VerificationResult(False, "Missing files", f"Not found: {missing}")
+    return VerificationResult(True, "All required files present")
+```
+
+**Function Signature Validation**:
+```python
+def check_function_signatures():
+    # Parse source code and check function signatures
+    with open("src/http_client.rs") as f:
+        content = f.read()
+
+    required_sigs = [
+        "pub fn new() -> Self",
+        "pub async fn get(&self, url: &str) -> Result<Response>",
+    ]
+
+    for sig in required_sigs:
+        if sig not in content:
+            return VerificationResult(False, f"Missing signature: {sig}")
+
+    return VerificationResult(True, "All function signatures present")
+```
+
+**API Endpoint Validation**:
+```python
+def check_api_endpoints():
+    # Test that API endpoints exist and respond
+    import subprocess
+
+    # Start server (if needed)
+    proc = subprocess.Popen(["cargo", "run", "--bin", "server"])
+    time.sleep(2)  # Wait for startup
+
+    try:
+        response = requests.get("http://localhost:8080/health")
+        if response.status_code == 200:
+            return VerificationResult(True, "API endpoint reachable")
+        else:
+            return VerificationResult(False, f"API returned {response.status_code}")
+    finally:
+        proc.terminate()
+```
+
+### Integration with Existing Rules
+
+**Rule 05 (Verification Workflow)**:
+- Verification agents run automated scripts BEFORE standard checks
+- Script failures block commit just like test failures
+
+**Rule 08 (Verification Details)**:
+- Verification reports include automated script results
+- Scripts become part of standard verification checklist
+
+**Rule 04 (Commit Rules)**:
+- Commits must pass automated verification scripts
+- Script updates committed with implementation changes
 
 ## Module Documentation
 
@@ -635,7 +1041,7 @@ Central dashboard at `specifications/Spec.md`:
 
 ## Summary
 
-**Core workflow**: Deep requirements gathering (Socratic method) → Document → User approval of spec → Autonomous implementation → Verification → **Update Documentation** → Completion
+**Core workflow**: Deep requirements gathering (Socratic method) → Document → User approval of spec → **Create Automated Verification Scripts** → Autonomous implementation → **Run Automated Verification** → Verification → **Update Documentation** → Completion
 
 **Requirements Excellence**:
 - Use Socratic method to probe deeply
@@ -648,21 +1054,29 @@ Central dashboard at `specifications/Spec.md`:
 - MANDATORY approval: Specifications, requirements, success criteria
 - NO approval needed: Implementation details, fixing tests, following specs
 
+**Automated Verification** (NEW):
+- Create scripts/ directory with executable verification scripts (Python default)
+- Encode requirements, completion, and feature validation in runnable code
+- Makefile targets for easy execution (`make verify`)
+- Reduces agent cognitive load (scripts > text reading)
+- Scripts evolve with specification, serve as regression tests
+- Verification agents run automated scripts BEFORE standard checks
+
 **Documentation Workflow** (NEW):
 - Documentation created/updated AFTER implementation and verification
 - Code is source of truth, documentation reflects reality
 - **Performance optimizations REQUIRE comprehensive documentation**: fundamentals, reasoning, benchmarks, trade-offs
 - Commit code and documentation together
 
-**File structure**: requirements.md (with tasks) + LEARNINGS.md + REPORT.md + VERIFICATION.md + PROGRESS.md (ephemeral)
+**File structure**: requirements.md (with tasks) + scripts/ + Makefile + LEARNINGS.md + REPORT.md + VERIFICATION.md + PROGRESS.md (ephemeral)
 
 **Consolidation**: All learnings in one file, all reports in one file, one verification file
 
-**Quality**: Pre-work review, continuous verification, final verification signoff
+**Quality**: Automated verification scripts, pre-work review, continuous verification, final verification signoff
 
 **Templates**: `.agents/templates/requirements-template.md`, `LEARNINGS-template.md`, `REPORT-template.md`, `VERIFICATION-template.md`
 
 ---
 
 _Created: 2026-01-11_
-_Last Updated: 2026-02-01 (Changed: Documentation workflow - now AFTER implementation, not before. Added mandatory performance optimization documentation with fundamentals, reasoning, benchmarks, and trade-offs.)_
+_Last Updated: 2026-02-01 (Added: Automated verification scripts requirement. Changed: Documentation workflow - now AFTER implementation. Added: Performance optimization documentation requirements.)_

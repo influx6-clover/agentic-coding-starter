@@ -649,44 +649,59 @@ Context Package:
 
 Each verification agent **MUST** execute ALL checks for their language, including any user-specified verification scripts/commands.
 
-##### User-Specified Verification Scripts (MANDATORY)
+##### Automated and User-Specified Verification Scripts (MANDATORY)
 
-**CRITICAL**: Before executing standard language checks, verification agents **MUST** check for and execute user-specified verification scripts or commands.
+**CRITICAL**: Before executing standard language checks, verification agents **MUST** check for and execute automated verification scripts and user-specified commands.
 
-**Where to Find Verification Scripts**:
+**Where to Find Verification Scripts (Priority Order)**:
 
-1. **Specification requirements.md** (PRIMARY SOURCE):
-   - Check for `## Verification Scripts` or `## Verification Commands` section
-   - Contains scripts/commands specific to this specification
-   - Main Agent MUST ask user during specification creation what scripts to run
-   - Main Agent MUST document these in requirements.md
+1. **Specification scripts/ directory** (HIGHEST PRIORITY - PRIMARY SOURCE):
+   - Check for `specifications/[NN-spec-name]/scripts/` directory
+   - If exists: Check for `Makefile` in specification directory
+   - Run `make verify` (or equivalent target) from specification directory
+   - These are automated requirement/completion verification scripts
+   - Created by Main Agent, encode expectations in executable form
 
-2. **Project Makefile/makefile** (SECONDARY SOURCE):
+2. **Specification requirements.md** (SECONDARY SOURCE):
+   - Check for `## Automated Verification` or `## Custom Verification Commands` section
+   - Contains user-specified scripts/commands specific to this specification
+   - Main Agent documents these during specification creation
+
+3. **Project Makefile/makefile** (TERTIARY SOURCE):
    - Look for common verification targets: `make verify`, `make check`, `make security-scan`, `make lint`, `make test-all`
    - If Makefile exists and contains verification targets, run them
 
-3. **Package scripts** (TERTIARY SOURCE):
+4. **Package scripts** (QUATERNARY SOURCE):
    - `package.json` → `"scripts": { "verify": "...", "security": "..." }`
    - `Cargo.toml` → `[package.metadata.verification]`
    - `pyproject.toml` → `[tool.verification]`
 
 **Execution Order**:
 ```
-1. User-specified scripts from requirements.md (if present)
-2. Makefile targets (if present and user didn't specify scripts)
-3. Standard language checks (always run)
+1. Specification scripts/ (make verify from spec directory) - HIGHEST PRIORITY
+2. Custom verification commands from requirements.md
+3. Project Makefile targets (if no spec-specific scripts)
+4. Package manager scripts (if no Makefile)
+5. Standard language checks (always run last)
 ```
 
 **Verification Agent Script Execution**:
 
-When verification agent finds user-specified scripts:
+When verification agent finds scripts:
 
-1. ✅ Read verification scripts from requirements.md
-2. ✅ Execute each script in order specified
+1. ✅ Check `specifications/[NN-spec-name]/scripts/` directory exists
+2. ✅ If exists and has Makefile:
+   ```bash
+   cd specifications/[NN-spec-name]
+   make verify
+   ```
 3. ✅ Capture full output (stdout and stderr)
 4. ✅ Check exit codes (0 = success, non-zero = failure)
-5. ✅ Include script results in verification report
-6. ✅ If ANY script fails → Report FAIL to Main Agent
+5. ✅ If script fails → Report FAIL to Main Agent (do NOT continue to standard checks)
+6. ✅ If script passes → Continue to custom commands from requirements.md
+7. ✅ Execute each custom command in order specified
+8. ✅ If ANY command fails → Report FAIL to Main Agent
+9. ✅ Only run standard language checks if ALL scripts/commands pass
 7. ✅ Continue to standard language checks regardless of script results
 
 **Benefits of User-Specified Scripts**:
@@ -705,29 +720,40 @@ When creating a specification, Main Agent **MUST** ask user:
 
 ```
 Main Agent Questions:
-1. "Are there any custom verification scripts or commands that should be run during verification?"
-2. "Do you have a Makefile with verification targets I should use?"
-3. "Are there security scans, compliance checks, or enterprise tools that need to run?"
-4. "What commands should verification agents execute beyond standard language checks?"
+1. "Can any requirements be verified programmatically (file existence, function signatures, API endpoints)?"
+2. "Should I create automated verification scripts for this specification?"
+3. "Are there any custom verification scripts or commands that should be run during verification?"
+4. "Do you have a Makefile with verification targets I should use?"
+5. "Are there security scans, compliance checks, or enterprise tools that need to run?"
+6. "What commands should verification agents execute beyond standard language checks?"
 ```
 
-Main Agent **MUST** document user responses in requirements.md:
-```markdown
-## Verification Scripts
+Main Agent **MUST** then:
 
-[Document all scripts/commands user specified]
+1. **Create scripts/ directory** in specification if requirements are automatable
+2. **Generate verification scripts** (see Rule 06: Automated Verification Scripts)
+3. **Create Makefile** with verification targets
+4. **Document scripts** and user-specified commands in requirements.md:
+
+```markdown
+## Automated Verification
+
+This specification includes automated verification scripts:
+- `scripts/verify_requirements.py` - Checks requirements met
+- `scripts/verify_completion.py` - Verifies code completion
+- `scripts/validate_features.py` - Validates features
+
+Run: `make verify`
+
+## Custom Verification Commands
+
+[Document all user-specified scripts/commands]
 
 ### Script 1: [Name]
 ```bash
 [command]
 ```
 [Description of what it does]
-
-### Script 2: [Name]
-```bash
-[command]
-```
-[Description]
 ```
 
 **Why This Matters**:
@@ -790,13 +816,34 @@ Each verification agent returns:
 ## Files Verified
 - [list of files checked]
 
-## User-Specified Scripts (if any)
-1. [Script Name]: PASS ✅ / FAIL ❌
+## Automated Verification Scripts (if found)
+**Location**: `specifications/[NN-spec-name]/scripts/`
+
+**Makefile Target**: `make verify`
+
+**Results**:
+```bash
+$ cd specifications/[NN-spec-name]
+$ make verify
+✓ verify-requirements - PASSED
+✓ verify-completion - PASSED
+✓ verify-features - PASSED
+All verification checks passed
+```
+
+**Exit Code**: 0 (success) / 1 (failure)
+
+**Duration**: [X.X]s
+
+**Notes**: [If scripts don't exist: "No automated verification scripts found"]
+
+## Custom Verification Commands (if any)
+1. [Command Name]: PASS ✅ / FAIL ❌
    - Command: `[command executed]`
    - Duration: [X.X]s
    - Output: [summary or full output if failed]
 
-## Standard Check Results
+## Standard Language Check Results
 1. Format: PASS ✅ / FAIL ❌
 2. Lint: PASS ✅ / FAIL ❌
 3. Type Check: PASS ✅ / FAIL ❌

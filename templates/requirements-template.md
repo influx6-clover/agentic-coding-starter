@@ -185,6 +185,31 @@ files_required:
 - [ ] All tasks complete
 - [ ] All tests passing
 - [ ] Code quality checks pass
+- [ ] Automated verification scripts pass (`make verify`)
+
+### Automated Verification (MANDATORY IF APPLICABLE)
+
+**Main Agent: Ask user during spec creation:**
+> "Can any requirements be verified programmatically (file existence, function signatures, API endpoints)? Should I create automated verification scripts?"
+
+If YES or requirements are clearly automatable:
+
+Create `scripts/` directory with:
+- `verify_requirements.py` - Checks requirements met
+- `verify_completion.py` - Verifies code completion
+- `validate_features.py` - Validates features
+
+Create `Makefile` with targets:
+```makefile
+verify: verify-requirements verify-completion verify-features
+verify-requirements:
+	python3 scripts/verify_requirements.py
+# ... more targets
+```
+
+**Benefits**: Executable validation > text-based checking. Reduces agent cognitive load.
+
+See Rule 06: Automated Verification Scripts for complete guidelines.
 
 ### Module Documentation References
 - **Module**: `documentation/[module]/doc.md`
@@ -258,6 +283,38 @@ files_required:
 - [ ] VERIFICATION.md created with signoff
 - [ ] fundamentals/ directory created (if has_fundamentals: true)
 - [ ] fundamentals/00-overview.md covers usage, patterns, examples
+
+**Automated Verification**:
+- [ ] scripts/ directory created with verification scripts (if applicable)
+- [ ] Makefile created with `make verify` target
+- [ ] All automated verification scripts pass
+
+### Automated Verification (MANDATORY IF APPLICABLE)
+
+**Main Agent: Ask user during spec creation:**
+> "Can any requirements be verified programmatically (file existence, function signatures, API endpoints, feature integration)? Should I create automated verification scripts?"
+
+If YES or requirements are clearly automatable:
+
+Create `scripts/` directory with:
+- `verify_requirements.py` - Checks spec-wide requirements met
+- `verify_features.py` - Verifies all features complete
+- `validate_integration.py` - Validates feature integration
+
+Create `Makefile` with targets:
+```makefile
+verify: verify-requirements verify-features validate-integration
+verify-requirements:
+	python3 scripts/verify_requirements.py
+verify-features:
+	python3 scripts/verify_features.py
+validate-integration:
+	python3 scripts/validate_integration.py
+```
+
+**Benefits**: Executable validation > text-based checking. Reduces agent cognitive load. Enables regression testing.
+
+See Rule 06: Automated Verification Scripts for complete guidelines.
 
 ### Module Documentation References
 
