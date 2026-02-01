@@ -395,33 +395,88 @@ learnings:[./LEARNINGS.md#conn-pool-insights]
 
 ## Generation Workflow
 
-### Main Agent Responsibility
+### Main Agent Responsibility (CRITICAL)
 
-**Never generates COMPACT_CONTEXT.md** - only sub-agents generate for their own work
+**Main Agent MUST generate initial COMPACT_CONTEXT.md before spawning sub-agents**:
+
+```
+BEFORE SPAWNING SUB-AGENT:
+
+1. ✅ Generate machine_prompt.md from requirements.md/feature.md (Rule 14)
+2. ✅ Clear context and reload from machine_prompt.md
+3. ✅ Read PROGRESS.md (or create fresh if starting first task)
+4. ✅ Generate initial COMPACT_CONTEXT.md:
+   a. Extract first/current task from machine_prompt.md
+   b. EMBED machine_prompt content for current task
+   c. Extract/create initial status
+   d. List files for current task
+   e. Create ultra-compact self-contained file (500-800 tokens)
+5. ✅ Save COMPACT_CONTEXT.md
+6. ✅ Spawn sub-agent with path to COMPACT_CONTEXT.md
+7. ✅ Sub-agent starts with clean compact context (no need to generate initially)
+```
+
+**AFTER SUB-AGENT COMPLETES AND REPORTS BACK**:
+
+```
+1. ✅ Receive completion report from sub-agent
+2. ✅ Run verification (Rule 05)
+3. ✅ If verification passes:
+   - Update specifications (mark tasks complete)
+   - Update documentation (Rule 06)
+   - DELETE COMPACT_CONTEXT.md (task complete)
+   - Commit changes
+4. ✅ If verification fails:
+   - Update PROGRESS.md with failure details
+   - Regenerate COMPACT_CONTEXT.md (embed fix requirements)
+   - Resume/spawn sub-agent with updated COMPACT_CONTEXT.md
+```
+
+**Main Agent maintains COMPACT_CONTEXT.md ownership**:
+- Generates initial version before spawning
+- Regenerates when resuming sub-agent after verification
+- Deletes when task completes
+- Ensures sub-agent always starts with correct compact context
 
 ### Sub-Agent Responsibility (MANDATORY)
 
-#### Before Starting Work
+**Sub-Agent receives COMPACT_CONTEXT.md from Main Agent**:
 
 ```
-1. ✅ Load machine_prompt.md (58% compressed from requirements.md)
-2. ✅ Load PROGRESS.md to understand current task
-3. ✅ Generate COMPACT_CONTEXT.md by:
-   a. Extract current task section from machine_prompt.md
-   b. EMBED machine_prompt content for current task in MACHINE_PROMPT_CONTENT section
-   c. Extract current status from PROGRESS.md
-   d. List files relevant to current task
-   e. Create ultra-compact self-contained file (500-800 tokens)
-4. ✅ Save COMPACT_CONTEXT.md
-5. ✅ CLEAR ENTIRE CONTEXT (drop everything loaded so far)
-6. ✅ RELOAD: Read ONLY COMPACT_CONTEXT.md (self-contained with embedded machine_prompt)
-7. ✅ Read files from FILES section only (not machine_prompt.md - already embedded)
-8. ✅ Proceed with fresh, compact context (5K-10K tokens total)
+ON STARTUP (spawned by Main Agent):
+
+1. ✅ Main Agent provides path to COMPACT_CONTEXT.md (already generated)
+2. ✅ Read COMPACT_CONTEXT.md (self-contained with embedded machine_prompt)
+3. ✅ Read files from FILES section
+4. ✅ Begin work with clean compact context (~5K tokens)
+5. ✅ NO need to generate COMPACT_CONTEXT.md initially (Main Agent did this)
 ```
 
-**CRITICAL**: After reload, agent does NOT re-read machine_prompt.md because its content is already embedded in COMPACT_CONTEXT.md.
+**DURING WORK (Sub-Agent Updates)**:
 
-#### After Updating PROGRESS.md
+```
+1. ✅ Make progress on task
+2. ✅ Update PROGRESS.md with current progress
+3. ✅ Regenerate COMPACT_CONTEXT.md:
+   a. Re-read machine_prompt.md (extract current task)
+   b. Re-embed machine_prompt content
+   c. Update status from new PROGRESS.md
+   d. Update FILES list if changed
+   e. Update NEXT_ACTIONS based on progress
+4. ✅ CLEAR ENTIRE CONTEXT (drop everything)
+5. ✅ RELOAD: Read ONLY COMPACT_CONTEXT.md (freshly regenerated)
+6. ✅ Continue work with refreshed minimal context
+```
+
+**Sub-Agent maintains COMPACT_CONTEXT.md during work**:
+- Receives initial version from Main Agent
+- Regenerates after each PROGRESS.md update
+- Keeps file current throughout task work
+- Reports completion (does NOT delete - Main Agent handles cleanup)
+
+**CRITICAL**: Sub-agent regenerates COMPACT_CONTEXT.md for updates, but Main Agent generates initial version and handles final cleanup.
+
+**DURING WORK (After PROGRESS.md Updates)**:
 
 ```
 1. ✅ Update PROGRESS.md with current task progress
@@ -438,7 +493,7 @@ learnings:[./LEARNINGS.md#conn-pool-insights]
 
 **CRITICAL**: Regeneration pulls fresh task content from machine_prompt.md each time, ensuring COMPACT_CONTEXT.md stays current.
 
-#### When Approaching Context Limit
+**WHEN APPROACHING CONTEXT LIMIT**:
 
 If context reaches 85-90% (150K-180K tokens):
 
@@ -856,24 +911,27 @@ compact-context:
 
 **Core Workflow**:
 ```
-Load machine_prompt.md + PROGRESS.md →
-Generate COMPACT_CONTEXT.md (ultra-minimal) →
-Clear context (drop everything) →
-Reload from COMPACT_CONTEXT.md only →
-Read referenced files (not all files) →
-Work with 97% less context →
-Repeat cycle when context grows
+Main Agent: Generate machine_prompt.md + initial COMPACT_CONTEXT.md →
+Spawn sub-agent with COMPACT_CONTEXT.md path →
+Sub-Agent: Read COMPACT_CONTEXT.md (embedded machine_prompt) →
+Work on task →
+Update PROGRESS.md →
+Regenerate COMPACT_CONTEXT.md (re-embed machine_prompt) →
+Clear & Reload →
+Continue OR Report completion →
+Main Agent: Verify → Delete COMPACT_CONTEXT.md if complete → Commit
 ```
 
 **Key Principles**:
-1. ✅ Compact before every new task
-2. ✅ References replace content duplication
-3. ✅ Current work only (no historical)
-4. ✅ Clear and reload regularly
-5. ✅ Monitor context usage
-6. ✅ Emergency compact at 85%+
-7. ✅ Single sentence objectives
-8. ✅ File lists not file contents
+1. ✅ Main Agent generates initial COMPACT_CONTEXT.md before spawning
+2. ✅ Sub-agent receives and maintains during work
+3. ✅ Embed machine_prompt content (self-contained)
+4. ✅ References replace content duplication
+5. ✅ Current work only (no historical)
+6. ✅ Clear and reload after updates
+7. ✅ Main Agent handles cleanup after verification
+8. ✅ PROGRESS.md rewritten per task (ephemeral)
+9. ✅ COMPACT_CONTEXT.md deleted per task (ephemeral)
 
 **Benefits**:
 - 🚀 97% context reduction
@@ -897,5 +955,6 @@ Repeat cycle when context grows
 ---
 
 *Created: 2026-02-01*
+*Last Updated: 2026-02-01 (Clarified: Main Agent generates initial COMPACT_CONTEXT.md, sub-agent maintains during work, Main Agent handles cleanup.)*
 *Purpose: Prevent context exhaustion through radical compaction and reload cycles*
 *Inspiration: Concise system prompt principles - every word earns its place*

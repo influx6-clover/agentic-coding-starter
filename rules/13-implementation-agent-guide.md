@@ -91,23 +91,18 @@ When multiple tasks or issues exist:
 5. ✅ Load Rule 11 (if using skills)
 6. ✅ Load your agent documentation (`.agents/agents/[name].md`)
 7. ✅ Load relevant stack file (`.agents/stacks/[language].md`)
-8. ✅ **Read `machine_prompt.md`** (NOT requirements.md/feature.md - 58% token savings):
-   - **If has_features: false**: Read `specifications/[NN-spec]/machine_prompt.md`
-   - **If has_features: true**: Read `specifications/[NN-spec]/features/[name]/machine_prompt.md`
-9. ✅ Parse DOCS_TO_READ section and read only listed files
-10. ✅ Read PROGRESS.md to understand current context
-11. ✅ **Generate COMPACT_CONTEXT.md** (Rule 15 - 97% context reduction):
-    - Extract current task from machine_prompt.md
-    - Extract current status from PROGRESS.md
-    - Create ultra-compact summary
-    - List files to read/update/create
-    - Reference requirements (not duplicate)
-12. ✅ **CLEAR ENTIRE CONTEXT** (drop everything loaded so far)
-13. ✅ **RELOAD from COMPACT_CONTEXT.md ONLY**
-14. ✅ Read only files listed in FILES section of COMPACT_CONTEXT.md
-15. ✅ Proceed with clean, minimal context (5K-10K tokens vs 150K+)
+8. ✅ **Main Agent provides COMPACT_CONTEXT.md path** (already generated for you):
+   - COMPACT_CONTEXT.md is self-contained with embedded machine_prompt.md content
+   - Main Agent generated this before spawning you
+   - Contains ONLY current task information
+9. ✅ **Read COMPACT_CONTEXT.md** (NOT requirements.md or machine_prompt.md):
+   - Self-contained: includes embedded machine_prompt content for current task
+   - ~500-800 tokens (vs 2000+ for verbose files)
+   - 97% context reduction
+10. ✅ Parse FILES section and read ONLY listed files
+11. ✅ Begin work with clean, minimal context (~5K tokens total)
 
-**CRITICAL**: Steps 11-15 (compact → clear → reload) are MANDATORY to prevent context limit errors.
+**CRITICAL**: Main Agent generates initial COMPACT_CONTEXT.md. You maintain/update it during work. Main Agent handles cleanup after completion.
 
 ---
 
@@ -395,10 +390,11 @@ After reporting:
 
 **Core Workflow**:
 ```
-Load machine_prompt.md + PROGRESS.md → Generate COMPACT_CONTEXT.md → Clear Context →
-Reload from Compact → Priority Check (fix tests first) → TDD (Test → Red → Code → Green → Refactor) →
-Self-Review → Document Learnings → Update PROGRESS.md → Regenerate COMPACT_CONTEXT.md →
-Clear & Reload → Report → WAIT
+[Main Agent provides COMPACT_CONTEXT.md] → Read COMPACT_CONTEXT.md (embedded machine_prompt) →
+Read FILES section files → Priority Check (fix tests first) →
+TDD (Test → Red → Code → Green → Refactor) → Self-Review → Document Learnings →
+Update PROGRESS.md → Regenerate COMPACT_CONTEXT.md (re-embed machine_prompt) →
+Clear & Reload → Continue OR Report → WAIT
 ```
 
 **Golden Rules**:
@@ -417,5 +413,5 @@ Clear & Reload → Report → WAIT
 ---
 
 *Created: 2026-01-19*
-*Last Updated: 2026-02-01 (Added: Retrieval-led reasoning, machine_prompt.md usage, COMPACT_CONTEXT.md generation and reload protocol for context optimization.)*
+*Last Updated: 2026-02-01 (Added: Retrieval-led reasoning. Clarified: Main Agent generates initial COMPACT_CONTEXT.md, sub-agent maintains during work.)*
 *Purpose: Concise implementation guide for sub-agents (reduces context vs full Rule 05)*

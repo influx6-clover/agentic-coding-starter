@@ -198,10 +198,20 @@ See **Rule 06: Specification Versioning and Evolution** for complete details.
 #### Main Agent Responsibilities
 1. **Breaks down work** into specific tasks
 2. **Identifies specifications** (references `specifications/NN-spec-name/`)
-3. **Generates machine_prompt.md** from requirements.md/feature.md (Rule 14 - token efficiency)
-4. **Launches implementation agents** (up to 10 concurrent) with path to machine_prompt.md
-5. **WAITS for completion reports** from all agents
-6. **DOES NOT COMMIT** anything yet
+3. **Generates machine_prompt.md** from requirements.md/feature.md (Rule 14 - 58% token efficiency)
+4. **Clears context and reloads** from machine_prompt.md
+5. **Generates initial COMPACT_CONTEXT.md** for first task (Rule 15 - 97% context reduction):
+   - Embeds machine_prompt content for current task
+   - Creates self-contained compact file
+   - Prepares clean starting context for sub-agent
+6. **Launches implementation agents** (up to 10 concurrent) with path to COMPACT_CONTEXT.md
+7. **WAITS for completion reports** from all agents
+8. **DOES NOT COMMIT** anything yet
+
+**After Sub-Agent Reports**:
+- Runs verification
+- If passes: Deletes COMPACT_CONTEXT.md, commits
+- If fails: Regenerates COMPACT_CONTEXT.md with fix requirements, resumes sub-agent
 
 #### Implementation Agent Requirements
 Each implementation agent **MUST**:
@@ -213,12 +223,14 @@ Each implementation agent **MUST**:
 
 **Before Starting Work**:
 1. ✅ Read `AGENTS.md` file
-2. ✅ Load all rules from `.agents/rules/*` (especially Rule 14: Machine-Optimized Prompts)
-3. ✅ **Read `machine_prompt.md`** (NOT requirements.md - use token-optimized version for 58% savings)
-4. ✅ Parse DOCS_TO_READ section from machine_prompt.md
-5. ✅ Read only files listed in DOCS_TO_READ (reduces context)
+2. ✅ Load all rules from `.agents/rules/*` (especially Rule 14: Machine-Optimized Prompts, Rule 15: Context Compaction)
+3. ✅ **Main Agent provides COMPACT_CONTEXT.md path** (already generated - no need to create)
+4. ✅ **Read COMPACT_CONTEXT.md** (self-contained with embedded machine_prompt content)
+5. ✅ Parse FILES section and read only listed files
 6. ✅ Read relevant language stack files from `.agents/stacks/[language].md`
-7. ✅ Understand what to build and standards to follow
+7. ✅ Begin work with clean, compact context (~5K tokens)
+
+**CRITICAL**: Main Agent generates initial COMPACT_CONTEXT.md. Sub-agent reads it and updates it during work.
 
 **During Work**:
 
@@ -1287,7 +1299,7 @@ Implement (TDD: Test → Red → Code → Green → Refactor) → Self-Review �
 
 ---
 *Created: 2026-01-11*
-*Last Updated: 2026-02-01 (Added: Retrieval-led reasoning as Core Principle #1. Updated workflow to include documentation updates after verification passes.)*
+*Last Updated: 2026-02-01 (Added: Retrieval-led reasoning, automated verification scripts, Main Agent generates initial COMPACT_CONTEXT.md before spawning sub-agents.)*
 
 ---
 
