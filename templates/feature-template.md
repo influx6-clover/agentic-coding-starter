@@ -384,5 +384,45 @@ cargo build --package [package]
 
 ---
 
+## ⚠️ CRITICAL: Verification Requirements for Completion
+
+**NO feature can be marked complete (status: completed) until ALL of these are verified:**
+
+### 1. Zero Incomplete Implementations
+- [ ] **NO TODO comments** in production code (tests OK)
+- [ ] **NO FIXME comments** anywhere
+- [ ] **NO unimplemented!() macros**
+- [ ] **NO todo!() macros**
+- [ ] **NO stub methods** (functions that just return Ok(()), default values, or empty implementations)
+- [ ] **All public functions have real implementations** (not just type signatures)
+
+### 2. All Verification Checks Pass
+- [ ] Format check passes (cargo fmt, prettier, black)
+- [ ] Lint check passes with **zero warnings** (clippy, eslint, ruff)
+- [ ] Type check passes with **zero errors** (tsc, mypy)
+- [ ] **All tests pass** (no skipped/ignored tests without justification)
+- [ ] Build succeeds in all configurations
+- [ ] Security audit clean
+- [ ] Code coverage meets project standards
+
+### 3. Feature-Specific Requirements Met
+- [ ] All tasks in Tasks section marked [x] complete
+- [ ] All Success Criteria checked off
+- [ ] All verification commands execute successfully
+- [ ] Integration with dependent features verified
+- [ ] Documentation complete (if required)
+
+### 4. User Approval Required
+
+**BEFORE marking feature complete, Main Agent MUST:**
+1. Present verification report to user showing all checks passed
+2. Show incomplete implementation scan results (zero found)
+3. Confirm all tasks and success criteria met
+4. **Get explicit user approval** to mark feature complete
+
+**User decides** - NOT agents - when feature is truly complete.
+
+---
+
 *Created: YYYY-MM-DD*
 *Last Updated: YYYY-MM-DD*

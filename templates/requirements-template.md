@@ -489,6 +489,133 @@ Based on Review Agent assessment:
 
 ---
 
+## ⚠️ CRITICAL: Verification Requirements for Completion
+
+**NO specification/feature can be marked complete (status: completed) until ALL of these are verified:**
+
+### 1. Zero Incomplete Implementations (MANDATORY)
+- [ ] **NO TODO comments** in production code (tests OK)
+- [ ] **NO FIXME comments** anywhere
+- [ ] **NO unimplemented!() macros** (Rust)
+- [ ] **NO todo!() macros** (Rust)
+- [ ] **NO NotImplementedError** (Python)
+- [ ] **NO stub methods** (functions that just return Ok(()), default values, empty implementations, or pass-only bodies)
+- [ ] **All public methods have real implementations** (not just type signatures)
+- [ ] **All state machine states implemented** (no states that just return Pending forever)
+- [ ] **All action handlers implemented** (not just Ok(()) stubs)
+
+**Verification Command (run this before marking complete)**:
+```bash
+# Search for incomplete implementations
+grep -r "TODO\|FIXME\|unimplemented!\|todo!" --include="*.rs" --include="*.py" --include="*.ts" --include="*.js" [code_directory]
+
+# Rust: Check for unimplemented macros
+rg "unimplemented!\|todo!" --type rust [code_directory]
+
+# Check for stub implementations (empty or trivial returns)
+# This requires manual code review - verify each function has real logic
+```
+
+### 2. All Verification Checks Pass
+- [ ] Format check passes (cargo fmt, prettier, black)
+- [ ] Lint check passes with **zero warnings** (clippy -D warnings, eslint --max-warnings 0, ruff)
+- [ ] Type check passes with **zero errors** (tsc --noEmit, mypy)
+- [ ] **All tests pass** (no skipped/ignored tests without justification)
+- [ ] Build succeeds in all configurations (debug, release, all features)
+- [ ] Security audit clean (cargo audit, npm audit, pip-audit)
+- [ ] Code coverage meets project standards
+- [ ] Documentation builds successfully
+
+### 3. Specification-Specific Requirements Met
+
+**For has_features: false (simple specs)**:
+- [ ] All tasks in Tasks section marked [x] complete
+- [ ] All Success Criteria checked off
+- [ ] All verification commands execute successfully
+- [ ] Integration with dependencies verified
+- [ ] Automated verification scripts pass (if created)
+
+**For has_features: true (feature-based specs)**:
+- [ ] ALL features in Feature Index marked ✅ Complete
+- [ ] Each feature has passed individual verification
+- [ ] Inter-feature integration tests passing
+- [ ] Cross-feature functionality verified
+- [ ] Spec-wide quality checks pass (all features)
+- [ ] LEARNINGS.md created
+- [ ] fundamentals/ directory created (if has_fundamentals: true)
+- [ ] Automated verification scripts pass (if created)
+
+### 4. User Approval Required (MANDATORY)
+
+**BEFORE marking specification/feature complete, Main Agent MUST:**
+
+1. **Run Incomplete Implementation Scan**:
+   ```bash
+   # Example for Rust HTTP client
+   grep -rn "TODO\|FIXME\|unimplemented!\|todo!" backends/foundation_core/src/wire/simple_http/client/
+   ```
+
+2. **Present Comprehensive Report to User**:
+   ```markdown
+   ## Completion Verification Report
+
+   **Specification**: [NN-spec-name]
+   **Date**: [timestamp]
+
+   ### Incomplete Implementation Scan
+   - TODO markers: 0 found ✅
+   - FIXME markers: 0 found ✅
+   - Unimplemented macros: 0 found ✅
+   - Stub methods: 0 found ✅
+
+   ### Verification Status
+   - Format: PASS ✅
+   - Lint: PASS ✅ (0 warnings)
+   - Type Check: PASS ✅ (0 errors)
+   - Tests: PASS ✅ ([N]/[N] passing)
+   - Build: PASS ✅ (all configurations)
+   - Security: PASS ✅ (0 vulnerabilities)
+   - Coverage: [N]% ✅
+
+   ### Tasks/Features Status
+   - Completed: [N]/[N] (100%)
+   - All Success Criteria: MET ✅
+   - Integration Tests: PASS ✅
+
+   ### Ready for Completion
+   All requirements met. Request user approval to mark complete.
+   ```
+
+3. **Ask User Explicitly**:
+   > "All verification checks passed and no incomplete implementations found. May I mark [spec/feature name] as complete (status: completed)?"
+
+4. **Wait for User Confirmation**:
+   - ✅ User says "yes" → Mark complete, create REPORT.md, create VERIFICATION.md
+   - ❌ User says "no" or has concerns → Address concerns first
+   - ❓ User wants to review → Provide detailed information
+
+**User decides** - NOT agents - when work is truly complete.
+
+### 5. Why User Approval is Mandatory
+
+**Prevents Premature Completion**:
+- Agents may miss context or nuances
+- User may have additional requirements
+- Hidden TODOs may exist that scans miss
+- Integration issues may not be caught by tests
+- User's definition of "complete" is authoritative
+
+**Examples of Issues User Might Catch**:
+- "That's structurally complete but doesn't handle edge case X"
+- "Tests pass but performance is unacceptable"
+- "Implementation works but doesn't match my original intent"
+- "Missing error handling for scenario Y"
+- "Need additional documentation before calling this done"
+
+**THE USER WILL BE UPSET** if agents mark work complete without approval and it's actually incomplete.
+
+---
+
 > **INSTRUCTION FOR SPECIFICATION AGENT**:
 >
 > Copy the content from ONE of these files below based on `has_features` value:
