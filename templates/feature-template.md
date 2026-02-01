@@ -8,6 +8,8 @@ estimated_effort: medium
 created: YYYY-MM-DD
 last_updated: YYYY-MM-DD
 author: Main Agent
+machine_optimized: true  # Main Agent MUST generate machine_prompt.md before spawning sub-agents
+machine_prompt_file: ./machine_prompt.md  # Sub-agents read this (NOT feature.md) for 58% token savings
 tasks:
   completed: 0
   uncompleted: 0

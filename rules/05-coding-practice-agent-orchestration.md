@@ -198,9 +198,10 @@ See **Rule 06: Specification Versioning and Evolution** for complete details.
 #### Main Agent Responsibilities
 1. **Breaks down work** into specific tasks
 2. **Identifies specifications** (references `specifications/NN-spec-name/`)
-3. **Launches implementation agents** (up to 10 concurrent)
-4. **WAITS for completion reports** from all agents
-5. **DOES NOT COMMIT** anything yet
+3. **Generates machine_prompt.md** from requirements.md/feature.md (Rule 14 - token efficiency)
+4. **Launches implementation agents** (up to 10 concurrent) with path to machine_prompt.md
+5. **WAITS for completion reports** from all agents
+6. **DOES NOT COMMIT** anything yet
 
 #### Implementation Agent Requirements
 Each implementation agent **MUST**:
@@ -212,10 +213,12 @@ Each implementation agent **MUST**:
 
 **Before Starting Work**:
 1. ✅ Read `AGENTS.md` file
-2. ✅ Load all rules from `.agents/rules/*`
-3. ✅ Read specification `requirements.md` (which includes integrated tasks)
-4. ✅ Read relevant language stack files from `.agents/stacks/[language].md`
-5. ✅ Understand what to build and standards to follow
+2. ✅ Load all rules from `.agents/rules/*` (especially Rule 14: Machine-Optimized Prompts)
+3. ✅ **Read `machine_prompt.md`** (NOT requirements.md - use token-optimized version for 58% savings)
+4. ✅ Parse DOCS_TO_READ section from machine_prompt.md
+5. ✅ Read only files listed in DOCS_TO_READ (reduces context)
+6. ✅ Read relevant language stack files from `.agents/stacks/[language].md`
+7. ✅ Understand what to build and standards to follow
 
 **During Work**:
 

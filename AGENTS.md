@@ -1,7 +1,7 @@
 ---
 purpose: Central entry point for AI agent configuration
 description: Minimal configuration directing agents to load rules selectively
-version: 5.2.0
+version: 5.3.0
 last_updated: 2026-02-01
 ---
 
@@ -70,16 +70,17 @@ Agents load rules **selectively** based on role and task to optimize context win
 | [02](./rules/02-rules-directory-policy.md) | Directory policies |
 | [03](./rules/03-dangerous-operations-safety.md) | Dangerous operations safety |
 | [04](./rules/04-work-commit-and-push-rules.md) | Work commit and push rules |
+| [14](./rules/14-machine-optimized-prompts.md) | Machine-optimized prompts (token efficiency) |
 
 ### By Role
 
 | Agent Type | Load These Rules |
 |------------|------------------|
-| **Main Agent** | 01-04, [05](./rules/05-coding-practice-agent-orchestration.md), [06](./rules/06-specifications-and-requirements.md) (+ [09](./rules/09-skills-identification-and-creation.md), [10](./rules/10-agent-documentation-and-registry.md) when creating skills/agents) |
-| **Implementation Agent** | 01-04, [13](./rules/13-implementation-agent-guide.md), [11](./rules/11-skills-usage.md) (if skills), stack file (includes [07](./rules/07-language-conventions-and-standards.md)), spec |
-| **Verification Agent** | 01-04, [08](./rules/08-verification-workflow-complete-guide.md), stack file (includes [07](./rules/07-language-conventions-and-standards.md)) |
-| **Specification Agent** | 01-04, [06](./rules/06-specifications-and-requirements.md) |
-| **Any Sub-Agent** | 01-04, [12](./rules/12-agent-registry-usage.md), own agent doc, relevant stack (includes [07](./rules/07-language-conventions-and-standards.md) if applicable) |
+| **Main Agent** | 01-04, 14, [05](./rules/05-coding-practice-agent-orchestration.md), [06](./rules/06-specifications-and-requirements.md) (+ [09](./rules/09-skills-identification-and-creation.md), [10](./rules/10-agent-documentation-and-registry.md) when creating skills/agents) |
+| **Implementation Agent** | 01-04, 14, [13](./rules/13-implementation-agent-guide.md), [11](./rules/11-skills-usage.md) (if skills), stack file (includes [07](./rules/07-language-conventions-and-standards.md)), machine_prompt.md (from spec) |
+| **Verification Agent** | 01-04, 14, [08](./rules/08-verification-workflow-complete-guide.md), stack file (includes [07](./rules/07-language-conventions-and-standards.md)) |
+| **Specification Agent** | 01-04, 14, [06](./rules/06-specifications-and-requirements.md) |
+| **Any Sub-Agent** | 01-04, 14, [12](./rules/12-agent-registry-usage.md), own agent doc, relevant stack (includes [07](./rules/07-language-conventions-and-standards.md) if applicable) |
 
 ---
 
@@ -97,6 +98,7 @@ Agents load rules **selectively** based on role and task to optimize context win
 | 11 | Sub-agents | Skills usage (concise) |
 | 12 | Sub-agents | Agent registry usage (concise) |
 | 13 | Implementation agents | Coding practice guide (concise) |
+| 14 | All | Machine-optimized prompts (token efficiency) |
 
 ---
 
@@ -121,8 +123,9 @@ documentation/          # Read for modules you're changing
 
 Include in spawn prompt:
 ```
-MANDATORY: Load Rules 01-04, Rule 12, your doc at .agents/agents/[name].md
-OPTIONAL: Rule 11 (skills), Rule 13 (implementation), stack file, spec
+MANDATORY: Load Rules 01-04, Rule 14 (machine prompts), Rule 12, your doc at .agents/agents/[name].md
+OPTIONAL: Rule 11 (skills), Rule 13 (implementation), stack file, machine_prompt.md (from spec)
+READ: specifications/[NN-spec]/machine_prompt.md (NOT requirements.md - use token-optimized version)
 ```
 
 ---
@@ -130,14 +133,15 @@ OPTIONAL: Rule 11 (skills), Rule 13 (implementation), stack file, spec
 ## Critical Reminders
 
 1. **Retrieval-Led Reasoning**: Read codebase FIRST, follow discovered patterns, verify assumptions (NOT pretraining guessing)
-2. **Main Agent**: Orchestrator only - delegates ALL work
-3. **Verification Required**: NO commits without verification passing
-4. **Documentation After Implementation**: Update docs AFTER successful implementation and verification
-5. **Context Optimization**: Load ONLY what you need
-6. **Sub-agents**: Never commit directly, never spawn verification agents
+2. **Machine-Optimized Prompts**: Sub-agents read machine_prompt.md (NOT requirements.md) for 58% token savings
+3. **Main Agent**: Orchestrator only - delegates ALL work, generates machine_prompt.md before spawning
+4. **Verification Required**: NO commits without verification passing
+5. **Documentation After Implementation**: Update docs AFTER successful implementation and verification
+6. **Context Optimization**: Load ONLY what you need
+7. **Sub-agents**: Never commit directly, never spawn verification agents
 
 ---
 
-_Version: 5.2.0 - Last Updated: 2026-02-01_
+_Version: 5.3.0 - Last Updated: 2026-02-01_
 
 _For complete version history, see [CHANGELOG.md](./CHANGELOG.md)_

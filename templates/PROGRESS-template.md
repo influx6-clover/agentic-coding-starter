@@ -5,6 +5,8 @@
 > **Purpose**: Track current task/feature progress. All permanent insights → LEARNINGS.md
 >
 > **Commit Strategy**: Update this file during work. Commit happens AFTER task/feature verification passes (Rule 04).
+>
+> **⚠️ Machine Optimization**: Sub-agents should read `machine_prompt.md` (NOT requirements.md/feature.md) for 58% token savings. See Rule 14.
 
 ---
 

@@ -85,14 +85,18 @@ When multiple tasks or issues exist:
 ## Before Starting Work
 
 1. ✅ Load Rules 01-04 (mandatory)
-2. ✅ Load Rule 12 (agent registry usage)
-3. ✅ Load Rule 11 (if using skills)
-4. ✅ Load your agent documentation (`.agents/agents/[name].md`)
-5. ✅ Load relevant stack file (`.agents/stacks/[language].md`)
-6. ✅ Read specification files:
-   - **If has_features: false**: Read `requirements.md` (contains complete requirements + tasks)
-   - **If has_features: true**: Read `requirements.md` (overview) + specific `features/[name]/feature.md` (detailed requirements + tasks)
-7. ✅ Understand what to build and standards to follow
+2. ✅ Load Rule 14 (machine-optimized prompts - token efficiency)
+3. ✅ Load Rule 12 (agent registry usage)
+4. ✅ Load Rule 11 (if using skills)
+5. ✅ Load your agent documentation (`.agents/agents/[name].md`)
+6. ✅ Load relevant stack file (`.agents/stacks/[language].md`)
+7. ✅ **Read `machine_prompt.md`** (NOT requirements.md/feature.md - 58% token savings):
+   - **If has_features: false**: Read `specifications/[NN-spec]/machine_prompt.md`
+   - **If has_features: true**: Read `specifications/[NN-spec]/features/[name]/machine_prompt.md`
+8. ✅ Parse DOCS_TO_READ section and read only listed files
+9. ✅ Understand what to build and standards to follow
+
+**CRITICAL**: Always prefer machine_prompt.md over verbose human-readable files for token efficiency.
 
 ---
 
@@ -398,5 +402,5 @@ Self-Review → Document Learnings → Report → WAIT
 ---
 
 *Created: 2026-01-19*
-*Last Updated: 2026-02-01 (Added: Retrieval-led reasoning section. Updated reporting to include modules affected for documentation updates.)*
+*Last Updated: 2026-02-01 (Added: Retrieval-led reasoning section, machine_prompt.md usage for token efficiency.)*
 *Purpose: Concise implementation guide for sub-agents (reduces context vs full Rule 05)*
