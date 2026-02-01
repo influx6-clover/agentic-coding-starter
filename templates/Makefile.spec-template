@@ -1,0 +1,52 @@
+# Makefile Targets for Specification Workflows
+#
+# This template provides automation targets for specifications that use
+# machine-optimized prompts (Rule 14) and context compaction (Rule 15).
+#
+# Usage:
+#   1. Copy this file to your specification directory as "Makefile"
+#   2. Adjust paths if your scripts are in different locations
+#   3. Run targets: make generate-machine-prompt, make compact-context
+#
+# See:
+#   - .agents/rules/14-machine-optimized-prompts.md
+#   - .agents/rules/15-instruction-compaction.md
+
+.PHONY: generate-machine-prompt
+generate-machine-prompt:
+	@echo "Generating machine-optimized prompts..."
+	@python3 ../../scripts/generate_machine_prompt.py requirements.md
+	@if [ -d features ]; then \
+		for feature in features/*/feature.md; do \
+			dir=$$(dirname $$feature); \
+			python3 ../../scripts/generate_machine_prompt.py $$feature; \
+		done \
+	fi
+	@echo "✓ Machine prompts generated"
+
+.PHONY: compact-context
+compact-context:
+	@echo "Generating compact context from progress..."
+	@python3 ../../scripts/generate_compact_context.py \
+		PROGRESS.md machine_prompt.md
+	@echo "✓ COMPACT_CONTEXT.md generated"
+	@echo "⚠️  Clear context and reload from COMPACT_CONTEXT.md"
+
+.PHONY: verify-machine-prompt
+verify-machine-prompt:
+	@echo "Checking if machine_prompt.md is current..."
+	@if [ requirements.md -nt machine_prompt.md ]; then \
+		echo "⚠️ machine_prompt.md is stale, regenerating..."; \
+		make generate-machine-prompt; \
+	else \
+		echo "✓ machine_prompt.md is current"; \
+	fi
+
+.PHONY: help
+help:
+	@echo "Available targets:"
+	@echo "  generate-machine-prompt - Generate machine_prompt.md from requirements.md and features"
+	@echo "  compact-context         - Generate COMPACT_CONTEXT.md from PROGRESS.md"
+	@echo "  verify-machine-prompt   - Check if machine_prompt.md needs regeneration"
+	@echo ""
+	@echo "See .agents/templates/Makefile.spec-template for full documentation"

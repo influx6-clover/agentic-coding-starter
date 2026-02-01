@@ -527,175 +527,26 @@ If context reaches 85-90% (150K-180K tokens):
 
 ## Generation Algorithm
 
-### Pseudo-Code
+### Implementation
 
-```python
-def generate_compact_context(progress_md: str, machine_prompt_md: str, spec_frontmatter: dict, agent_type: str, current_files: list) -> str:
-    """
-    Generate ultra-compact context from verbose sources.
+A complete Python script implementing the compact context generation algorithm is available:
 
-    CRITICAL: Embeds BOTH rule summaries AND machine_prompt.md content for current task.
-    After context reload, agent reads ONLY this file (self-contained).
+**Template**: [generate_compact_context.py](../templates/generate_compact_context.py)
 
-    Preserve ONLY what's needed for immediate work.
-    Everything else becomes a reference.
-    """
-
-    # Extract current task (not past, not future)
-    current_task = extract_current_task(progress_md)
-
-    # Extract and compact rules from frontmatter
-    rules_summary = compact_rules_from_frontmatter(spec_frontmatter, agent_type)
-
-    # Extract machine_prompt content for THIS TASK ONLY
-    machine_content = extract_task_from_machine_prompt(machine_prompt_md, current_task['id'])
-
-    # Single sentence objective
-    objective = summarize_objective(current_task, max_words=15)
-
-    # File lists (no content)
-    files_to_read = [f for f in current_files if needs_reading(f)]
-    files_to_update = [f for f in current_files if needs_updating(f)]
-    files_to_create = [f for f in current_files if needs_creation(f)]
-
-    # Extract only critical constraints
-    constraints = extract_critical_constraints(machine_content, max_items=3)
-
-    # Current blockers (or NONE)
-    blockers = extract_active_blockers(progress_md) or "NONE"
-
-    # Next 1-3 immediate actions
-    next_actions = extract_next_actions(progress_md, max_items=3)
-
-    # References (not content)
-    refs = {
-        'machine_prompt': find_task_section(machine_prompt_md, current_task['id']),
-        'progress': './PROGRESS.md',
-        'learnings': find_relevant_learnings(current_task),
-    }
-
-    compact = f"""# Compact Context: {current_task['name']}
-
-⚠️COMPACTED|RELOAD_AFTER_READING|GENERATED:{timestamp()}|FROM:[machine_prompt.md,progress.md,rules]
-
-## RULES_SUMMARY
-{rules_summary}
-
-## CURRENT_TASK
-task:{current_task['name']}|status:{current_task['status']}|started:{current_task['started']}
-
-## MACHINE_PROMPT_CONTENT
-{machine_content}
-
-## OBJECTIVE
-{objective}
-
-## FILES
-read:[{','.join(files_to_read)}]|update:[{','.join(files_to_update)}]|create:[{','.join(files_to_create)}]
-
-## REQUIREMENTS_REF
-machine_prompt:[{refs['machine_prompt']}]|progress:[{refs['progress']}]
-
-## KEY_CONSTRAINTS
-{format_constraints(constraints)}
-
-## BLOCKERS
-{blockers}
-
-## NEXT_ACTIONS
-{format_actions(next_actions)}
-
-## CONTEXT_REFS
-progress:[{refs['progress']}]|learnings:[{refs['learnings']}]
-
----
-⚠️ AFTER READING THIS FILE: Clear context, reload from this file, proceed with fresh context
-"""
-
-    return compact
-
-def extract_task_from_machine_prompt(machine_prompt: str, task_id: str) -> str:
-    """
-    Extract ONLY the current task content from machine_prompt.md.
-
-    Returns compressed task requirements, constraints, verification.
-    This content is embedded in COMPACT_CONTEXT.md.
-    """
-    # Parse machine_prompt.md
-    # Find task with task_id
-    # Extract: requirements, constraints, files, tests, verification
-    # Return compressed format for embedding
-    pass
-
-def compact_rules_from_frontmatter(spec_frontmatter: dict, agent_type: str) -> str:
-    """
-    Compact rules from specification frontmatter for specific agent type.
-
-    Returns ultra-compact rule summaries with references.
-    Avoids need to load full rule files after context reload.
-
-    Example output:
-    rule:01|naming_structure|ref:[.agents/rules/01-*.md]
-    rule:03|danger_ops|safe:[git_status,git_diff]|forbidden:[force_push,reset_hard]|ref:[.agents/rules/03-*.md]
-    rule:13|impl|tdd|retrieval_first|doc_tests:WHY+WHAT|ref:[.agents/rules/13-*.md]
-    stack:[rust]|patterns:[Result<T>,trait_bounds,no_unsafe]|ref:[.agents/stacks/rust.md]
-    """
-    rules_list = spec_frontmatter.get('files_required', {}).get(agent_type, {}).get('rules', [])
-
-    compacted_rules = []
-
-    for rule_path in rules_list:
-        # Extract rule number/name from path
-        rule_name = extract_rule_name(rule_path)  # e.g., "01", "03", "13", "rust"
-
-        # Compact based on rule type
-        if rule_name == "01":
-            compacted_rules.append(f"rule:01|naming_structure|ref:[{rule_path}]")
-        elif rule_name == "02":
-            compacted_rules.append(f"rule:02|dir_policy|ref:[{rule_path}]")
-        elif rule_name == "03":
-            compacted_rules.append(f"rule:03|danger_ops|safe:[git_status,git_diff]|forbidden:[force_push,reset_hard,no_verify]|ref:[{rule_path}]")
-        elif rule_name == "04":
-            compacted_rules.append(f"rule:04|commit|verify_first|no_force_push|co_author:Claude|ref:[{rule_path}]")
-        elif rule_name == "05":
-            compacted_rules.append(f"rule:05|orchestration|main_delegates|spawn_sub_agents|verify_required|ref:[{rule_path}]")
-        elif rule_name == "06":
-            compacted_rules.append(f"rule:06|specs|retrieval_led|has_features:load_feature_md|ref:[{rule_path}]")
-        elif rule_name == "08":
-            compacted_rules.append(f"rule:08|verification|cargo_test|cargo_clippy|cargo_fmt|ref:[{rule_path}]")
-        elif rule_name == "13":
-            compacted_rules.append(f"rule:13|impl|tdd|retrieval_first|doc_tests:WHY+WHAT|no_commit|ref:[{rule_path}]")
-        elif rule_name == "14":
-            compacted_rules.append(f"rule:14|machine_prompt|58%_reduction|pipe_delimited|ref:[{rule_path}]")
-        elif rule_name == "15":
-            compacted_rules.append(f"rule:15|compact_context|97%_reduction|embed_rules+machine_prompt|ref:[{rule_path}]")
-        elif "rust" in rule_name:
-            compacted_rules.append(f"stack:[rust]|patterns:[Result<T>,trait_bounds,derive_more,no_unsafe]|ref:[{rule_path}]")
-        # Add more rule compaction patterns as needed
-
-    return '\n'.join(compacted_rules)
-
-def extract_current_task(progress_md: str) -> dict:
-    """Extract ONLY current task, ignore completed/future."""
-    # Parse PROGRESS.md
-    # Find section marked "Current Task" or "In Progress"
-    # Return task details
-    pass
-
-def summarize_objective(task: dict, max_words: int) -> str:
-    """Single sentence, max_words limit."""
-    # Take task description
-    # Compress to essential action + target
-    # Return concise sentence
-    pass
-
-def extract_critical_constraints(machine_prompt: str, max_items: int) -> list:
-    """Only constraints affecting current task."""
-    # Parse machine_prompt
-    # Filter to current task constraints
-    # Return top max_items most critical
-    pass
+**Usage**:
+```bash
+python3 generate_compact_context.py PROGRESS.md machine_prompt.md
+# Creates COMPACT_CONTEXT.md in same directory
 ```
+
+**Key Functions**:
+- `generate_compact_context()` - Main generation function
+- `compact_rules_from_frontmatter()` - Embed rule summaries (~70K tokens saved)
+- `extract_task_from_machine_prompt()` - Embed current task requirements
+- `extract_current_task()` - Extract only current work
+- Token reduction: 97% average savings (180K → 5K tokens)
+
+See template file for full implementation details and compression algorithms.
 
 ---
 
@@ -730,90 +581,26 @@ Agent performs mental reset:
 
 ## Example Transformation
 
-### Before Compaction (Context: 180K tokens, approaching limit)
+A complete before/after example demonstrating the context compaction transformation is available:
 
-Agent has in context:
-- Full requirements.md (2000 tokens)
-- Full PROGRESS.md with all historical progress (5000 tokens)
-- Full LEARNINGS.md with all insights (3000 tokens)
-- Multiple full file reads (20,000 tokens)
-- Conversation history (150,000 tokens)
-- **Total: ~180,000 tokens (90% of limit)**
+**Template**: [compact_context_example.md](../templates/compact_context_example.md)
 
-### After Compaction (Context: 5K tokens, fresh start)
+**Example Summary**:
+- Before: Full accumulated context (180,000 tokens - 90% of limit)
+- After: Ultra-compact COMPACT_CONTEXT.md (500 tokens)
+- Post-reload: Fresh context with only needed files (5,000 tokens total)
+- **Savings**: 175,000 tokens (97.2% reduction)
 
-Agent has in context:
-- COMPACT_CONTEXT.md (500 tokens)
-- Only current task files (3000 tokens)
-- Current conversation (1500 tokens)
-- **Total: ~5,000 tokens (2.5% of limit)**
+**Key Techniques Demonstrated**:
+- References over content duplication
+- Current work only (no historical context)
+- Embedded machine_prompt content
+- Embedded rule summaries (~70K tokens saved)
+- Single sentence objective
+- Pipe-delimited constraints
+- Context reload cycle
 
-**Savings**: 175,000 tokens (97.2% reduction)
-
-### COMPACT_CONTEXT.md Example
-
-```markdown
-# Compact Context: Implement DNS Resolver
-
-⚠️COMPACTED|RELOAD_AFTER_READING|GENERATED:2026-02-01T14:30:00Z|FROM:[machine_prompt.md,progress.md,rules]
-
-## RULES_SUMMARY
-rule:01|naming_structure|ref:[.agents/rules/01-*.md]
-rule:03|danger_ops|safe:[git_status,git_diff]|forbidden:[force_push,reset_hard,no_verify]|ref:[.agents/rules/03-*.md]
-rule:04|commit|verify_first|no_force_push|co_author:Claude|ref:[.agents/rules/04-*.md]
-rule:13|impl|tdd|retrieval_first|doc_tests:WHY+WHAT|no_commit|ref:[.agents/rules/13-*.md]
-rule:14|machine_prompt|58%_reduction|pipe_delimited|ref:[.agents/rules/14-*.md]
-rule:15|compact_context|97%_reduction|embed_rules+machine_prompt|ref:[.agents/rules/15-*.md]
-stack:[rust]|patterns:[Result<T>,trait_bounds,derive_more,no_unsafe]|ref:[.agents/stacks/rust.md]
-
-## CURRENT_TASK
-task:impl_dns_resolver|status:in_progress|started:2026-02-01T14:00:00Z
-
-## MACHINE_PROMPT_CONTENT
-spec:http-client|status:in-progress|priority:high|has_features:true
-req:impl DnsResolver trait|cache:LRU,ttl=300s,max=1000|async:tokio|support:ipv4,ipv6
-task:impl_dns_resolver|files:[src/dns_resolver.rs]|tests:[tests/dns_tests.rs]|deps:[lru_cache]
-tech:stack=[rust,tokio]|pattern:async_trait|error_handling:Result<T>
-verify:scripts=[verify_dns.py]|tests:unit,integration|coverage:>80%
-
-## OBJECTIVE
-Impl DnsResolver trait with LRU caching per embedded requirements
-
-## FILES
-read:[src/http_client.rs,src/lib.rs]|update:[src/dns_resolver.rs]|create:[tests/dns_tests.rs]
-
-## KEY_CONSTRAINTS
-1. async_only|tokio_runtime|no_blocking
-2. cache_ttl:300s|max_entries:1000|eviction:LRU
-3. ipv4_ipv6_support|error_propagation:Result
-
-## BLOCKERS
-NONE
-
-## NEXT_ACTIONS
-1. Impl DnsResolver trait|methods:[resolve_host,cache_lookup,clear_cache]
-2. Add LRU cache|dep:[lru_cache=0.12]|config:[ttl,max_entries]
-3. Write unit tests|coverage:>80%|test:[happy_path,cache_hit,cache_miss,eviction]
-
-## CONTEXT_REFS
-progress:[./PROGRESS.md#dns-resolver]|learnings:[./LEARNINGS.md#dns-caching]|docs:[documentation/http_client/doc.md#dns]
-
----
-⚠️ AFTER READING THIS FILE: Clear context, reload from this file, proceed with fresh context
-```
-
-**Size**: 700 tokens (vs 10,000+ for full context without rules)
-
-**Token Savings from Embedded Rules**:
-- Without embedding: Agent loads 7 rule files (~10K tokens each = 70K total)
-- With embedding: Compact summaries (~100 tokens total)
-- **Savings**: ~69,900 tokens from rule compaction alone
-
-**CRITICAL**:
-- RULES_SUMMARY contains essential rule guidance - no need to load full rule files
-- MACHINE_PROMPT_CONTENT contains ALL requirements for current task
-- Agent doesn't need to re-read machine_prompt.md or rule files after reload
-- Everything needed is embedded in this single file
+See template file for full transformation example with detailed analysis.
 
 ---
 
@@ -941,58 +728,27 @@ If estimated_context_tokens > 180K:
 
 ### COMPACT_CONTEXT-template.md
 
-```markdown
-# Compact Context: [Task Name]
+A template file for COMPACT_CONTEXT.md structure is already available:
 
-⚠️COMPACTED|RELOAD_AFTER_READING|GENERATED:[timestamp]|FROM:[source_files]
+**Template**: [COMPACT_CONTEXT-template.md](../templates/COMPACT_CONTEXT-template.md)
 
-## CURRENT_TASK
-task:[task_name]|status:[status]|started:[timestamp]
-
-## OBJECTIVE
-[Single sentence: what you're doing right now]
-
-## FILES
-read:[files_to_read]|update:[files_to_update]|create:[files_to_create]
-
-## REQUIREMENTS_REF
-machine_prompt:[path#section]|spec:[path#lines]
-
-## KEY_CONSTRAINTS
-1. [Constraint 1]
-2. [Constraint 2]
-3. [Constraint 3]
-
-## BLOCKERS
-[Current blockers or "NONE"]
-
-## NEXT_ACTIONS
-1. [Immediate next step]
-2. [Following step]
-3. [Third step if needed]
-
-## CONTEXT_REFS
-progress:[path]|learnings:[path#section]|docs:[path]
-
----
-⚠️ AFTER READING THIS FILE: Clear context, reload from this file, proceed with fresh context
-```
+This template provides the basic structure for manually creating compact context files.
+For automated generation, use the Python script: [generate_compact_context.py](../templates/generate_compact_context.py)
 
 ---
 
 ## Makefile Integration
 
-Add to specification Makefile:
-```makefile
-.PHONY: compact-context
+A complete Makefile template with context compaction targets is available:
 
-compact-context:
-	@echo "Generating compact context from progress..."
-	@python3 ../../scripts/generate_compact_context.py \
-		PROGRESS.md machine_prompt.md
-	@echo "✓ COMPACT_CONTEXT.md generated"
-	@echo "⚠️  Clear context and reload from COMPACT_CONTEXT.md"
-```
+**Template**: [Makefile.spec-template](../templates/Makefile.spec-template)
+
+**Key Targets**:
+- `compact-context` - Generate COMPACT_CONTEXT.md
+- `generate-machine-prompt` - Generate machine_prompt.md (Rule 14)
+- `verify-machine-prompt` - Check if regeneration needed
+
+Copy template to specification directory and customize paths as needed.
 
 ---
 
