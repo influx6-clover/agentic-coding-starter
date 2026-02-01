@@ -77,11 +77,11 @@ Agents load rules **selectively** based on role and task to optimize context win
 
 | Agent Type | Load These Rules |
 |------------|------------------|
-| **Main Agent** | 01-04, 14-15, [05](./rules/05-coding-practice-agent-orchestration.md), [06](./rules/06-specifications-and-requirements.md) (+ [09](./rules/09-skills-identification-and-creation.md), [10](./rules/10-agent-documentation-and-registry.md) when creating skills/agents) |
-| **Implementation Agent** | 01-04, 14-15, [13](./rules/13-implementation-agent-guide.md), [11](./rules/11-skills-usage.md) (if skills), stack file (includes [07](./rules/07-language-conventions-and-standards.md)), machine_prompt.md (from spec) |
-| **Verification Agent** | 01-04, 14-15, [08](./rules/08-verification-workflow-complete-guide.md), stack file (includes [07](./rules/07-language-conventions-and-standards.md)) |
-| **Specification Agent** | 01-04, 14-15, [06](./rules/06-specifications-and-requirements.md) |
-| **Any Sub-Agent** | 01-04, 14-15, [12](./rules/12-agent-registry-usage.md), own agent doc, relevant stack (includes [07](./rules/07-language-conventions-and-standards.md) if applicable) |
+| **Main Agent** | [01-04](./rules/), [14](./rules/14-machine-optimized-prompts.md), [15](./rules/15-instruction-compaction.md), [05](./rules/05-coding-practice-agent-orchestration.md), [06](./rules/06-specifications-and-requirements.md) (+ [09](./rules/09-skills-identification-and-creation.md), [10](./rules/10-agent-documentation-and-registry.md) when creating skills/agents) |
+| **Implementation Agent** | [01-04](./rules/), [14](./rules/14-machine-optimized-prompts.md), [15](./rules/15-instruction-compaction.md), [13](./rules/13-implementation-agent-guide.md), [11](./rules/11-skills-usage.md) (if skills), [stack file](./stacks/) (includes [07](./rules/07-language-conventions-and-standards.md)), [machine_prompt.md](../specifications/) (from spec) |
+| **Verification Agent** | [01-04](./rules/), [14](./rules/14-machine-optimized-prompts.md), [15](./rules/15-instruction-compaction.md), [08](./rules/08-verification-workflow-complete-guide.md), [stack file](./stacks/) (includes [07](./rules/07-language-conventions-and-standards.md)) |
+| **Specification Agent** | [01-04](./rules/), [14](./rules/14-machine-optimized-prompts.md), [15](./rules/15-instruction-compaction.md), [06](./rules/06-specifications-and-requirements.md) |
+| **Any Sub-Agent** | [01-04](./rules/), [14](./rules/14-machine-optimized-prompts.md), [15](./rules/15-instruction-compaction.md), [12](./rules/12-agent-registry-usage.md), [own agent doc](./agents/), [relevant stack](./stacks/) (includes [07](./rules/07-language-conventions-and-standards.md) if applicable) |
 
 ---
 
@@ -89,18 +89,18 @@ Agents load rules **selectively** based on role and task to optimize context win
 
 | Rule | For | Purpose |
 |------|-----|---------|
-| 01-04 | All | Core mandatory rules |
-| 05 | Main Agent | Agent orchestration and verification coordination |
-| 06 | Main Agent, Spec agents | Specifications and requirements |
-| 07 | Code writers (via stack files) | Language conventions (embedded in stack files) |
-| 08 | Verification agents | Verification workflow |
-| 09 | Main Agent | Skills creation and review |
-| 10 | Main Agent | Agent documentation and creation |
-| 11 | Sub-agents | Skills usage (concise) |
-| 12 | Sub-agents | Agent registry usage (concise) |
-| 13 | Implementation agents | Coding practice guide (concise) |
-| 14 | All | Machine-optimized prompts (token efficiency) |
-| 15 | All Sub-Agents | Instruction compaction (context optimization) |
+| [01-04](./rules/) | All | Core mandatory rules |
+| [05](./rules/05-coding-practice-agent-orchestration.md) | Main Agent | Agent orchestration and verification coordination |
+| [06](./rules/06-specifications-and-requirements.md) | Main Agent, Spec agents | Specifications and requirements |
+| [07](./rules/07-language-conventions-and-standards.md) | Code writers (via stack files) | Language conventions (embedded in stack files) |
+| [08](./rules/08-verification-workflow-complete-guide.md) | Verification agents | Verification workflow |
+| [09](./rules/09-skills-identification-and-creation.md) | Main Agent | Skills creation and review |
+| [10](./rules/10-agent-documentation-and-registry.md) | Main Agent | Agent documentation and creation |
+| [11](./rules/11-skills-usage.md) | Sub-agents | Skills usage (concise) |
+| [12](./rules/12-agent-registry-usage.md) | Sub-agents | Agent registry usage (concise) |
+| [13](./rules/13-implementation-agent-guide.md) | Implementation agents | Coding practice guide (concise) |
+| [14](./rules/14-machine-optimized-prompts.md) | All | Machine-optimized prompts (token efficiency) |
+| [15](./rules/15-instruction-compaction.md) | All Sub-Agents | Instruction compaction (context optimization) |
 
 ---
 
@@ -109,7 +109,7 @@ Agents load rules **selectively** based on role and task to optimize context win
 ```
 .agents/
 ├── AGENTS.md           # This file
-├── rules/              # Load selectively
+├── rules/              # Load selectively - see Rule Loading table above
 ├── stacks/             # Load for your language only
 ├── skills/             # Scan frontmatter, read when using
 ├── agents/             # Scan frontmatter, read own doc
@@ -119,30 +119,46 @@ specifications/         # Read when working on features
 documentation/          # Read for modules you're changing
 ```
 
+**Key Directories**:
+- [rules/](./rules/) - Agent behavior rules ([01-04](./rules/), [05-15](./rules/))
+- [stacks/](./stacks/) - Language-specific conventions
+- [skills/](./skills/) - Reusable agent skills
+- [agents/](./agents/) - Agent documentation registry
+- [templates/](./templates/) - File templates (requirements, features, learnings, etc.)
+
+**Project Directories**:
+- [specifications/](../specifications/) - Requirements and features
+- [documentation/](../documentation/) - Module documentation
+
 ---
 
 ## Spawning Sub-Agents
 
 Include in spawn prompt:
 ```
-MANDATORY: Load Rules 01-04, Rule 14 (machine prompts), Rule 15 (context compaction), Rule 12, your doc at .agents/agents/[name].md
-OPTIONAL: Rule 11 (skills), Rule 13 (implementation), stack file, machine_prompt.md (from spec)
+MANDATORY: Load Rules [01-04](./rules/), Rule [14](./rules/14-machine-optimized-prompts.md) (machine prompts), Rule [15](./rules/15-instruction-compaction.md) (context compaction), Rule [12](./rules/12-agent-registry-usage.md), your doc at .agents/agents/[name].md
+OPTIONAL: Rule [11](./rules/11-skills-usage.md) (skills), Rule [13](./rules/13-implementation-agent-guide.md) (implementation), [stack file](./stacks/), machine_prompt.md (from spec)
 READ: specifications/[NN-spec]/machine_prompt.md (NOT requirements.md - use token-optimized version)
 THEN: Generate COMPACT_CONTEXT.md, clear context, reload from compact file
 ```
+
+**See**:
+- [Agent Documentation Template](./templates/agent-documentation-template.md)
+- [Agent Registry](./agents/)
+- [Stack Files](./stacks/)
 
 ---
 
 ## Critical Reminders
 
-1. **Retrieval-Led Reasoning**: Read codebase FIRST, follow discovered patterns, verify assumptions (NOT pretraining guessing)
-2. **Machine-Optimized Prompts**: Sub-agents read machine_prompt.md (NOT requirements.md) for 58% token savings
-3. **Context Compaction**: Generate COMPACT_CONTEXT.md before work, reload after updates for 97% context reduction
-4. **Main Agent**: Orchestrator only - delegates ALL work, generates machine_prompt.md before spawning
-5. **Verification Required**: NO commits without verification passing
-6. **Documentation After Implementation**: Update docs AFTER successful implementation and verification
-7. **Context Optimization**: Load ONLY what you need, compact regularly
-8. **Sub-agents**: Never commit directly, never spawn verification agents, MUST compact context
+1. **Retrieval-Led Reasoning**: Read codebase FIRST, follow discovered patterns, verify assumptions (NOT pretraining guessing) - See [AGENTS.md Core Principle](#retrieval-led-reasoning-mandatory)
+2. **Machine-Optimized Prompts**: Sub-agents read [machine_prompt.md](../specifications/) (NOT requirements.md) for 58% token savings - See [Rule 14](./rules/14-machine-optimized-prompts.md)
+3. **Context Compaction**: Generate [COMPACT_CONTEXT.md](./templates/COMPACT_CONTEXT-template.md) before work, reload after updates for 97% context reduction - See [Rule 15](./rules/15-instruction-compaction.md)
+4. **Main Agent**: Orchestrator only - delegates ALL work, generates machine_prompt.md before spawning - See [Rule 05](./rules/05-coding-practice-agent-orchestration.md)
+5. **Verification Required**: NO commits without verification passing - See [Rule 08](./rules/08-verification-workflow-complete-guide.md)
+6. **Documentation After Implementation**: Update docs AFTER successful implementation and verification - See [Rule 06](./rules/06-specifications-and-requirements.md)
+7. **Context Optimization**: Load ONLY what you need, compact regularly - See [Rules 14](./rules/14-machine-optimized-prompts.md) & [15](./rules/15-instruction-compaction.md)
+8. **Sub-agents**: Never commit directly, never spawn verification agents, MUST compact context - See [Rule 13](./rules/13-implementation-agent-guide.md)
 
 ---
 
