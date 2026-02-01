@@ -7,6 +7,49 @@
 - **Official Docs**: https://doc.rust-lang.org/
 - **The Rust Book**: https://doc.rust-lang.org/book/
 
+## Visibility Policy
+
+**Project Convention**: ALL types are public by default.
+
+- ✅ Use `pub` for all structs, enums, functions, traits, fields
+- ❌ DO NOT use `pub(crate)` - everything is public
+- ❌ DO NOT use `pub(super)` - everything is public
+- ✅ Module-level organization for API structure
+- ✅ Use `#[doc(hidden)]` if truly internal (rare)
+
+**Rationale**:
+- Simpler mental model (no visibility complexity)
+- Better API discoverability
+- Enables easier testing and extension
+- Follows principle: "build libraries, not frameworks"
+- Documentation (not visibility) indicates "internal" vs "public API"
+
+**Example**:
+```rust
+// ✅ Good - all public
+pub struct MyStruct {
+    pub field: String,
+}
+
+pub fn helper_function() {
+    // Implementation
+}
+
+// ❌ Bad - don't use pub(crate)
+pub(crate) struct Internal {}  // NO! Use pub instead
+
+// ❌ Bad - don't use pub(super)
+pub(super) fn internal_fn() {}  // NO! Use pub instead
+```
+
+**Module Organization**:
+- Privacy achieved through clear documentation, not visibility modifiers
+- Public internal modules are acceptable
+- Use clear module naming to indicate intent:
+  - `internal::` prefix for truly internal modules (still public)
+  - Document modules as "Internal" or "Public API"
+- Consumers guided by documentation, not forced by compiler
+
 ## Skill References (MANDATORY)
 
 **ALL Rust skills MUST be consulted based on task type. Load skills selectively to optimize context.**
