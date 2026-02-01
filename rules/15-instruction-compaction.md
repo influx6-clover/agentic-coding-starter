@@ -21,7 +21,245 @@ Establish mandatory practice of creating ultra-compact instruction summaries tha
 
 ---
 
-## When to Compact (MANDATORY)
+## CRITICAL: Ephemeral Nature of COMPACT_CONTEXT.md
+
+### COMPACT_CONTEXT.md Lifecycle (MANDATORY)
+
+**COMPACT_CONTEXT.md is EPHEMERAL and TASK-SPECIFIC**:
+
+1. ✅ **Generated fresh** for each new task
+2. ✅ **Contains ONLY current task** - no history, no future tasks
+3. ✅ **Regenerated** every time PROGRESS.md updates
+4. ✅ **Cleared and rewritten** from scratch when task completes
+5. ✅ **Never accumulates** - always reflects "now" only
+6. ✅ **Deleted** when task fully complete (before starting next task)
+
+**What COMPACT_CONTEXT.md CONTAINS**:
+- ✅ Current task name and status
+- ✅ Current objective (what you're doing RIGHT NOW)
+- ✅ Files relevant to current task only
+- ✅ Key constraints affecting current work
+- ✅ Current blockers (if any)
+- ✅ Immediate next actions (1-3 steps)
+- ✅ **Embedded machine_prompt.md content** for current task
+- ✅ References to other files (not their content)
+
+**What COMPACT_CONTEXT.md MUST NOT CONTAIN**:
+- ❌ Historical context (completed tasks)
+- ❌ Future tasks or plans
+- ❌ Full file contents (use references)
+- ❌ Verbose explanations
+- ❌ Accumulated progress from multiple tasks
+- ❌ Content from previous task iterations
+
+**Lifecycle Pattern**:
+```
+Task 1 starts → Generate COMPACT_CONTEXT.md (task 1 only) →
+Task 1 updates → Regenerate COMPACT_CONTEXT.md (task 1 only) →
+Task 1 completes → DELETE COMPACT_CONTEXT.md →
+Task 2 starts → Generate NEW COMPACT_CONTEXT.md (task 2 only) →
+[Repeat for each task]
+```
+
+**Size Limit**: COMPACT_CONTEXT.md should NEVER exceed 500-800 tokens. If larger, compress more aggressively.
+
+---
+
+## CRITICAL: machine_prompt.md Integration
+
+### machine_prompt.md Generation and Usage
+
+**WHEN machine_prompt.md IS GENERATED** (Rule 14):
+
+1. ✅ **Project start**: Main Agent generates for new specification
+2. ✅ **Specification creation**: Generated when requirements.md finalized
+3. ✅ **Feature creation**: Generated for each feature.md
+4. ✅ **Specification updates**: Regenerated when requirements.md changes
+5. ✅ **Feature updates**: Regenerated when feature.md changes
+
+**ONCE GENERATED** (CRITICAL WORKFLOW):
+
+```
+1. machine_prompt.md is generated from requirements.md/feature.md
+   ↓
+2. Main Agent CLEARS context
+   ↓
+3. Main Agent RELOADS from machine_prompt.md
+   ↓
+4. machine_prompt.md becomes source of truth for agent instructions
+   ↓
+5. Human files (requirements.md/feature.md) still updated normally
+   ↓
+6. When human files change → Regenerate machine_prompt.md → Clear → Reload
+   ↓
+7. machine_prompt.md stays in sync with human files
+```
+
+### COMPACT_CONTEXT.md Embeds machine_prompt.md Content
+
+**CRITICAL RELATIONSHIP**:
+
+When generating COMPACT_CONTEXT.md, it **MUST include machine_prompt.md content** for current task:
+
+```markdown
+# Compact Context: Implement DNS Resolver
+
+⚠️COMPACTED|RELOAD_AFTER_READING|GENERATED:[timestamp]|FROM:[machine_prompt.md,progress.md]
+
+## CURRENT_TASK
+task:impl_dns_resolver|status:in_progress|started:[timestamp]
+
+## MACHINE_PROMPT_CONTENT
+[EMBEDDED CONTENT FROM machine_prompt.md FOR THIS SPECIFIC TASK]
+
+spec:http-client|priority:high
+req:impl DnsResolver trait|cache:LRU,ttl=300s|async:tokio
+task:impl_dns_resolver|files:[src/dns.rs]|tests:[tests/dns_tests.rs]
+constraints:async_only|no_blocking|ipv4_ipv6
+
+## OBJECTIVE
+Impl DnsResolver trait with LRU caching per machine_prompt.md#TASK_1
+
+## FILES
+read:[src/http_client.rs,src/lib.rs]|update:[src/dns_resolver.rs]|create:[tests/dns_tests.rs]
+
+## REQUIREMENTS_REF
+machine_prompt:[./machine_prompt.md#TASK_1]
+
+[... rest of compact context ...]
+```
+
+**Why Embed**:
+- COMPACT_CONTEXT.md is the ONLY file loaded after context clear
+- Must be self-contained with all critical task information
+- Embedding machine_prompt.md task content ensures completeness
+- Agent doesn't need to read machine_prompt.md separately after reload
+
+### Agent Reading Flow
+
+```
+INITIAL LOAD (Before Compaction):
+1. Read machine_prompt.md (58% compressed from requirements.md)
+2. Read PROGRESS.md
+3. Understand full context
+
+GENERATE COMPACT_CONTEXT.md:
+1. Extract current task from machine_prompt.md
+2. Extract current status from PROGRESS.md
+3. EMBED machine_prompt.md content for current task
+4. Add files, constraints, next actions
+5. Create ultra-compact self-contained file
+
+AFTER COMPACTION (Clean Slate):
+1. CLEAR entire context
+2. Read ONLY COMPACT_CONTEXT.md (contains embedded machine_prompt content)
+3. Read ONLY files listed in FILES section
+4. No need to re-read machine_prompt.md (content already embedded)
+5. Work with minimal focused context
+```
+
+### Dual File Maintenance
+
+**Human-Readable Files** (requirements.md, feature.md):
+- ✅ **Always updated** as normal workflow
+- ✅ **Source of truth** for human understanding
+- ✅ **Never deleted** - permanent record
+- ✅ **Edited directly** when requirements change
+- ✅ **Committed with changes** to version control
+
+**Machine-Optimized Files** (machine_prompt.md):
+- ✅ **Generated** from human files (Rule 14)
+- ✅ **Regenerated** when human files change
+- ✅ **Used by agents** for instructions
+- ✅ **Stays in sync** with human files
+- ✅ **Committed** alongside human files
+- ❌ **Never hand-edited** - always generated
+
+**Ultra-Compact Files** (COMPACT_CONTEXT.md):
+- ✅ **Generated** for each task from machine_prompt.md + PROGRESS.md
+- ✅ **Embeds** machine_prompt.md content for current task
+- ✅ **Regenerated** on every PROGRESS.md update
+- ✅ **Deleted** when task completes
+- ✅ **Current task only** - no history
+- ❌ **Never accumulates** - always fresh per task
+- ❌ **Never committed** - ephemeral working file
+
+### File Relationship Summary
+
+```
+requirements.md (human, permanent, 2000 tokens)
+    ↓ [Generate via Rule 14]
+machine_prompt.md (machine, permanent, 900 tokens, 58% reduction)
+    ↓ [Extract current task + embed]
+COMPACT_CONTEXT.md (ultra-compact, ephemeral, 500 tokens, 97% reduction)
+    ↓ [Contains embedded machine_prompt content for current task]
+Agent reads ONLY this after context clear (self-contained)
+```
+
+**Token Flow**:
+- Human file: 2000 tokens (never loaded by sub-agents)
+- Machine file: 900 tokens (loaded once, content embedded in compact)
+- Compact file: 500 tokens (loaded after clear, includes embedded machine content)
+- **Final context**: 500 tokens + FILES section (~3-5K total)
+
+---
+
+## CRITICAL: PROGRESS.md Lifecycle
+
+### PROGRESS.md Must Be Rewritten Per Task
+
+**MANDATORY BEHAVIOR** (Confirming/Reinforcing):
+
+**PROGRESS.md is EPHEMERAL and TASK-SPECIFIC** (just like COMPACT_CONTEXT.md):
+
+1. ✅ **Rewritten from scratch** when starting new task
+2. ✅ **Contains ONLY current task** - no cumulative history
+3. ✅ **Updated** as current task progresses
+4. ✅ **Cleared completely** when task completes
+5. ✅ **Rewritten fresh** for next task
+6. ✅ **Deleted** when specification 100% complete
+
+**What PROGRESS.md CONTAINS**:
+- ✅ Current task/feature being worked on RIGHT NOW
+- ✅ Current status and progress on THIS task
+- ✅ Blockers for THIS task
+- ✅ Next steps for THIS task
+- ✅ Recent work on THIS task only
+
+**What PROGRESS.md MUST NOT CONTAIN**:
+- ❌ Historical progress from previous tasks
+- ❌ Completed task summaries (goes to REPORT.md)
+- ❌ Accumulated updates from multiple tasks
+- ❌ Future task plans
+
+**Lifecycle Pattern** (Same as COMPACT_CONTEXT.md):
+```
+Task 1 starts → Create PROGRESS.md (task 1 only) →
+Task 1 updates → Update PROGRESS.md (task 1 only) →
+Task 1 completes → CLEAR PROGRESS.md completely →
+Task 2 starts → REWRITE PROGRESS.md from scratch (task 2 only) →
+[Repeat for each task]
+```
+
+**When Task Completes**:
+1. ✅ Extract learnings → Add to LEARNINGS.md (permanent)
+2. ✅ Extract completion summary → Add to REPORT.md (permanent)
+3. ✅ CLEAR PROGRESS.md completely (delete all content)
+4. ✅ DELETE COMPACT_CONTEXT.md
+5. ✅ Ready for next task with clean slate
+
+**Synchronization with COMPACT_CONTEXT.md**:
+```
+Update PROGRESS.md →
+Regenerate COMPACT_CONTEXT.md from machine_prompt.md + PROGRESS.md →
+Clear context →
+Reload from COMPACT_CONTEXT.md →
+Continue work
+```
+
+---
+
+## Key Insight
 
 ### ALWAYS Compact When:
 
@@ -52,22 +290,32 @@ specifications/01-spec-name/
 
 ### Structure
 
+**CRITICAL**: COMPACT_CONTEXT.md MUST embed machine_prompt.md content for current task.
+
 ```markdown
 # Compact Context: [Current Task Name]
 
-⚠️COMPACTED|RELOAD_AFTER_READING|GENERATED:[timestamp]|FROM:[progress.md,machine_prompt.md]
+⚠️COMPACTED|RELOAD_AFTER_READING|GENERATED:[timestamp]|FROM:[machine_prompt.md,progress.md]
 
 ## CURRENT_TASK
 task:[task_name]|status:[in_progress/blocked/testing]|started:[timestamp]
 
+## MACHINE_PROMPT_CONTENT
+[EMBEDDED CONTENT FROM machine_prompt.md FOR THIS SPECIFIC TASK ONLY]
+
+spec:[name]|status:[status]|priority:[priority]
+req:[current_task_requirement]|constraints:[...]|success:[...]
+task:[current_task]|files:[...]|tests:[...]|verification:[...]
+tech:stack=[...]|loc=[...]|deps=[...]
+
 ## OBJECTIVE
-[Single sentence describing what you're doing RIGHT NOW]
+[Single sentence describing what you're doing RIGHT NOW - max 15 words]
 
 ## FILES
 read:[file1.rs,file2.rs]|update:[file3.rs]|create:[file4.rs]|review:[doc.md]
 
 ## REQUIREMENTS_REF
-machine_prompt:[./machine_prompt.md#TASK_3]|spec:[./requirements.md#L45-67]
+machine_prompt:[./machine_prompt.md#TASK_N]|spec:[./requirements.md#L45-67]
 
 ## KEY_CONSTRAINTS
 1. [Critical constraint affecting current work]
@@ -86,6 +334,15 @@ progress:[./PROGRESS.md]|learnings:[./LEARNINGS.md#critical-impl]|docs:[document
 ---
 ⚠️ AFTER READING THIS FILE: Clear context, reload from this file, proceed with fresh context
 ```
+
+**Why MACHINE_PROMPT_CONTENT Section Exists**:
+- After context clear, COMPACT_CONTEXT.md is the ONLY file loaded
+- Must be self-contained with ALL task requirements
+- Embedding machine_prompt content eliminates need to re-read machine_prompt.md
+- Agent has complete instructions in single compact file
+- No external file dependencies after reload
+
+**Size Target**: 500-800 tokens total (including embedded machine_prompt content)
 
 ### Compaction Rules
 
@@ -147,28 +404,39 @@ learnings:[./LEARNINGS.md#conn-pool-insights]
 #### Before Starting Work
 
 ```
-1. ✅ Load machine_prompt.md (not requirements.md)
-2. ✅ Load PROGRESS.md to understand context
-3. ✅ Generate COMPACT_CONTEXT.md from:
-   - machine_prompt.md (extract current task)
-   - PROGRESS.md (current status)
-   - Own understanding of immediate work
+1. ✅ Load machine_prompt.md (58% compressed from requirements.md)
+2. ✅ Load PROGRESS.md to understand current task
+3. ✅ Generate COMPACT_CONTEXT.md by:
+   a. Extract current task section from machine_prompt.md
+   b. EMBED machine_prompt content for current task in MACHINE_PROMPT_CONTENT section
+   c. Extract current status from PROGRESS.md
+   d. List files relevant to current task
+   e. Create ultra-compact self-contained file (500-800 tokens)
 4. ✅ Save COMPACT_CONTEXT.md
-5. ✅ CLEAR ENTIRE CONTEXT
-6. ✅ RELOAD: Read ONLY COMPACT_CONTEXT.md
-7. ✅ Follow references to read specific files/sections
-8. ✅ Proceed with fresh, compact context
+5. ✅ CLEAR ENTIRE CONTEXT (drop everything loaded so far)
+6. ✅ RELOAD: Read ONLY COMPACT_CONTEXT.md (self-contained with embedded machine_prompt)
+7. ✅ Read files from FILES section only (not machine_prompt.md - already embedded)
+8. ✅ Proceed with fresh, compact context (5K-10K tokens total)
 ```
+
+**CRITICAL**: After reload, agent does NOT re-read machine_prompt.md because its content is already embedded in COMPACT_CONTEXT.md.
 
 #### After Updating PROGRESS.md
 
 ```
-1. ✅ Update PROGRESS.md with progress
-2. ✅ Regenerate COMPACT_CONTEXT.md (reflect new status)
-3. ✅ CLEAR ENTIRE CONTEXT
-4. ✅ RELOAD: Read ONLY COMPACT_CONTEXT.md
-5. ✅ Continue work with fresh context
+1. ✅ Update PROGRESS.md with current task progress
+2. ✅ Regenerate COMPACT_CONTEXT.md:
+   a. Extract current task from machine_prompt.md again
+   b. Re-embed machine_prompt content for current task
+   c. Update status from new PROGRESS.md
+   d. Update FILES list if changed
+   e. Update NEXT_ACTIONS based on new progress
+3. ✅ CLEAR ENTIRE CONTEXT (drop everything)
+4. ✅ RELOAD: Read ONLY COMPACT_CONTEXT.md (freshly regenerated)
+5. ✅ Continue work with refreshed minimal context
 ```
+
+**CRITICAL**: Regeneration pulls fresh task content from machine_prompt.md each time, ensuring COMPACT_CONTEXT.md stays current.
 
 #### When Approaching Context Limit
 
@@ -194,12 +462,18 @@ def generate_compact_context(progress_md: str, machine_prompt_md: str, current_f
     """
     Generate ultra-compact context from verbose sources.
 
+    CRITICAL: Embeds machine_prompt.md content for current task.
+    After context reload, agent reads ONLY this file (self-contained).
+
     Preserve ONLY what's needed for immediate work.
     Everything else becomes a reference.
     """
 
     # Extract current task (not past, not future)
     current_task = extract_current_task(progress_md)
+
+    # Extract machine_prompt content for THIS TASK ONLY
+    machine_content = extract_task_from_machine_prompt(machine_prompt_md, current_task['id'])
 
     # Single sentence objective
     objective = summarize_objective(current_task, max_words=15)
@@ -210,7 +484,7 @@ def generate_compact_context(progress_md: str, machine_prompt_md: str, current_f
     files_to_create = [f for f in current_files if needs_creation(f)]
 
     # Extract only critical constraints
-    constraints = extract_critical_constraints(machine_prompt_md, max_items=3)
+    constraints = extract_critical_constraints(machine_content, max_items=3)
 
     # Current blockers (or NONE)
     blockers = extract_active_blockers(progress_md) or "NONE"
@@ -220,17 +494,20 @@ def generate_compact_context(progress_md: str, machine_prompt_md: str, current_f
 
     # References (not content)
     refs = {
-        'machine_prompt': find_relevant_section(machine_prompt_md, current_task),
+        'machine_prompt': find_task_section(machine_prompt_md, current_task['id']),
         'progress': './PROGRESS.md',
         'learnings': find_relevant_learnings(current_task),
     }
 
     compact = f"""# Compact Context: {current_task['name']}
 
-⚠️COMPACTED|RELOAD_AFTER_READING|GENERATED:{timestamp()}|FROM:[progress.md,machine_prompt.md]
+⚠️COMPACTED|RELOAD_AFTER_READING|GENERATED:{timestamp()}|FROM:[machine_prompt.md,progress.md]
 
 ## CURRENT_TASK
 task:{current_task['name']}|status:{current_task['status']}|started:{current_task['started']}
+
+## MACHINE_PROMPT_CONTENT
+{machine_content}
 
 ## OBJECTIVE
 {objective}
@@ -258,6 +535,19 @@ progress:[{refs['progress']}]|learnings:[{refs['learnings']}]
 """
 
     return compact
+
+def extract_task_from_machine_prompt(machine_prompt: str, task_id: str) -> str:
+    """
+    Extract ONLY the current task content from machine_prompt.md.
+
+    Returns compressed task requirements, constraints, verification.
+    This content is embedded in COMPACT_CONTEXT.md.
+    """
+    # Parse machine_prompt.md
+    # Find task with task_id
+    # Extract: requirements, constraints, files, tests, verification
+    # Return compressed format for embedding
+    pass
 
 def extract_current_task(progress_md: str) -> dict:
     """Extract ONLY current task, ignore completed/future."""
@@ -339,41 +629,47 @@ Agent has in context:
 ```markdown
 # Compact Context: Implement DNS Resolver
 
-⚠️COMPACTED|RELOAD_AFTER_READING|GENERATED:2026-02-01T14:30:00Z|FROM:[progress.md,machine_prompt.md]
+⚠️COMPACTED|RELOAD_AFTER_READING|GENERATED:2026-02-01T14:30:00Z|FROM:[machine_prompt.md,progress.md]
 
 ## CURRENT_TASK
 task:impl_dns_resolver|status:in_progress|started:2026-02-01T14:00:00Z
 
+## MACHINE_PROMPT_CONTENT
+spec:http-client|status:in-progress|priority:high|has_features:true
+req:impl DnsResolver trait|cache:LRU,ttl=300s,max=1000|async:tokio|support:ipv4,ipv6
+task:impl_dns_resolver|files:[src/dns_resolver.rs]|tests:[tests/dns_tests.rs]|deps:[lru_cache]
+tech:stack=[rust,tokio]|pattern:async_trait|error_handling:Result<T>
+verify:scripts=[verify_dns.py]|tests:unit,integration|coverage:>80%
+
 ## OBJECTIVE
-Impl DnsResolver trait with caching per machine_prompt.md#TASK_1
+Impl DnsResolver trait with LRU caching per embedded requirements
 
 ## FILES
 read:[src/http_client.rs,src/lib.rs]|update:[src/dns_resolver.rs]|create:[tests/dns_tests.rs]
 
-## REQUIREMENTS_REF
-machine_prompt:[./machine_prompt.md#TASK_1]|spec:[./requirements.md#L45-67]
-
 ## KEY_CONSTRAINTS
-1. async_only|tokio_runtime
-2. cache_ttl:300s|max_entries:1000
-3. ipv4_ipv6_support
+1. async_only|tokio_runtime|no_blocking
+2. cache_ttl:300s|max_entries:1000|eviction:LRU
+3. ipv4_ipv6_support|error_propagation:Result
 
 ## BLOCKERS
 NONE
 
 ## NEXT_ACTIONS
-1. Impl DnsResolver trait|methods:[resolve_host,cache_lookup]
-2. Add LRU cache|dep:[lru_cache]
-3. Write unit tests|coverage:>80%
+1. Impl DnsResolver trait|methods:[resolve_host,cache_lookup,clear_cache]
+2. Add LRU cache|dep:[lru_cache=0.12]|config:[ttl,max_entries]
+3. Write unit tests|coverage:>80%|test:[happy_path,cache_hit,cache_miss,eviction]
 
 ## CONTEXT_REFS
-progress:[./PROGRESS.md#dns-resolver-work]|learnings:[./LEARNINGS.md#dns-caching]|docs:[documentation/http_client/doc.md#dns]
+progress:[./PROGRESS.md#dns-resolver]|learnings:[./LEARNINGS.md#dns-caching]|docs:[documentation/http_client/doc.md#dns]
 
 ---
 ⚠️ AFTER READING THIS FILE: Clear context, reload from this file, proceed with fresh context
 ```
 
 **Size**: 500 tokens (vs 10,000+ for full context)
+
+**CRITICAL**: MACHINE_PROMPT_CONTENT section contains ALL requirements for current task. Agent doesn't need to re-read machine_prompt.md after reload - everything needed is embedded.
 
 ---
 

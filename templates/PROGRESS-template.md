@@ -1,19 +1,45 @@
 # [Specification Name] - Progress Report
 
-> **⚠️ EPHEMERAL FILE**: This file tracks CURRENT work only. Cleared after completing each major task/feature, DELETED when specification complete.
+> **⚠️ EPHEMERAL FILE - REWRITE PER TASK**: This file is CLEARED and REWRITTEN from scratch for each new task. It contains ONLY current task progress (no history, no future tasks).
 >
-> **Purpose**: Track current task/feature progress. All permanent insights → LEARNINGS.md
+> **Purpose**: Track current task/feature progress ONLY. All permanent insights → LEARNINGS.md. All completion summaries → REPORT.md.
+>
+> **Lifecycle**: Create for Task 1 → Update during Task 1 → CLEAR completely → Rewrite for Task 2 → Repeat
 >
 > **Commit Strategy**: Update this file during work. Commit happens AFTER task/feature verification passes (Rule 04).
 >
-> **⚠️ Machine Optimization**: Sub-agents should read `machine_prompt.md` (NOT requirements.md/feature.md) for 58% token savings. See Rule 14.
+> **⚠️ Machine Optimization** (Rule 14):
+> - Main Agent generates `machine_prompt.md` from requirements.md/feature.md
+> - Sub-agents read `machine_prompt.md` (NOT verbose human files)
+> - 58% token savings: 2000→900 tokens typical
+> - machine_prompt.md regenerated when human files change
+> - Both files committed together (human + machine)
 >
-> **⚠️ Context Optimization** (CRITICAL - Rule 15):
-> - Generate `COMPACT_CONTEXT.md` before starting work
-> - Regenerate after updating this file
-> - Clear context and reload from `COMPACT_CONTEXT.md`
-> - Prevents context limit errors, provides 97% context reduction
-> - MANDATORY: Compact → Clear → Reload cycle
+> **⚠️ Context Optimization** (Rule 15 - CRITICAL):
+> - Generate `COMPACT_CONTEXT.md` before starting any task
+> - EMBED machine_prompt.md content for current task in COMPACT_CONTEXT.md
+> - Regenerate COMPACT_CONTEXT.md after updating this file (MANDATORY)
+> - CLEAR entire context after generating COMPACT_CONTEXT.md
+> - RELOAD from COMPACT_CONTEXT.md only (self-contained with embedded machine_prompt)
+> - 97% context reduction: 180K→5K tokens
+> - COMPACT_CONTEXT.md deleted when task completes
+> - MANDATORY: Compact → Clear → Reload cycle prevents context limit errors
+>
+> **File Relationship**:
+> ```
+> requirements.md (human, 2000 tokens, always updated)
+>     ↓ generate (Rule 14)
+> machine_prompt.md (machine, 900 tokens, 58% savings)
+>     ↓ embed in compact context (Rule 15)
+> COMPACT_CONTEXT.md (ultra-compact, 500 tokens, 97% reduction)
+>     ↓ read after context clear
+> Agent works with 5K total context
+> ```
+>
+> **See**:
+> - Rule 14: .agents/rules/14-machine-optimized-prompts.md
+> - Rule 15: .agents/rules/15-instruction-compaction.md
+> - Template: .agents/templates/COMPACT_CONTEXT-template.md
 
 ---
 

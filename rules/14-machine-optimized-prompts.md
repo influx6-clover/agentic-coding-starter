@@ -50,6 +50,93 @@ specifications/01-spec-name/
 
 ---
 
+## CRITICAL: machine_prompt.md Lifecycle and Usage
+
+### Generation and Context Workflow
+
+**WHEN machine_prompt.md IS GENERATED**:
+
+1. ✅ **Project start**: Main Agent creates new specification
+2. ✅ **Specification creation**: Generated when requirements.md finalized and approved
+3. ✅ **Feature creation**: Generated for each feature.md created
+4. ✅ **Updates**: Regenerated when requirements.md or feature.md changes
+
+**ONCE GENERATED** (CRITICAL WORKFLOW):
+
+```
+Step 1: Generate machine_prompt.md from requirements.md/feature.md
+   ↓
+Step 2: Main Agent CLEARS context
+   ↓
+Step 3: Main Agent RELOADS from machine_prompt.md
+   ↓
+Step 4: machine_prompt.md becomes source of agent instructions
+   ↓
+Step 5: Sub-agents use machine_prompt.md (NOT human files)
+   ↓
+Step 6: Human files (requirements.md/feature.md) STILL updated normally for human readability
+   ↓
+Step 7: When human files change → Regenerate machine_prompt.md → Clear → Reload
+   ↓
+Step 8: machine_prompt.md stays in sync with human files
+```
+
+### Dual File Maintenance (MANDATORY)
+
+**Human-Readable Files** (requirements.md, feature.md):
+- ✅ **Always updated** as normal workflow requires
+- ✅ **Source of truth** for human understanding
+- ✅ **Never deleted** - permanent record
+- ✅ **Edited directly** when requirements change
+- ✅ **Committed to version control** with changes
+- ✅ **Verbose and formatted** for human readability
+
+**Machine-Optimized Files** (machine_prompt.md):
+- ✅ **Generated automatically** from human files
+- ✅ **Regenerated** whenever human files change
+- ✅ **Used by all agents** for instructions
+- ✅ **Stays synchronized** with human files
+- ✅ **Committed to version control** alongside human files
+- ✅ **Compressed and pipe-delimited** for machines
+- ❌ **Never hand-edited** - always generated from source
+- ❌ **Never becomes sole source** - human files remain truth
+
+**Synchronization Pattern**:
+```
+Edit requirements.md (human) →
+Regenerate machine_prompt.md (machine) →
+Clear context →
+Reload from machine_prompt.md →
+Commit BOTH files together →
+Agents use machine_prompt.md →
+Humans read requirements.md
+```
+
+### Integration with Rule 15 (Context Compaction)
+
+**machine_prompt.md → COMPACT_CONTEXT.md Flow**:
+
+```
+1. machine_prompt.md exists (generated from requirements.md)
+   ↓
+2. Sub-agent reads machine_prompt.md initially
+   ↓
+3. Sub-agent generates COMPACT_CONTEXT.md:
+   - Extracts current task from machine_prompt.md
+   - EMBEDS machine_prompt content in MACHINE_PROMPT_CONTENT section
+   - Adds current status from PROGRESS.md
+   ↓
+4. Sub-agent CLEARS context
+   ↓
+5. Sub-agent reads ONLY COMPACT_CONTEXT.md (which contains embedded machine_prompt)
+   ↓
+6. No need to re-read machine_prompt.md (content already in COMPACT_CONTEXT.md)
+```
+
+**Result**: machine_prompt.md content flows into COMPACT_CONTEXT.md, which becomes sole source after context clear.
+
+---
+
 ## machine_prompt.md Format
 
 ### Structure

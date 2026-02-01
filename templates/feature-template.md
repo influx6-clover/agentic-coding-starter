@@ -91,6 +91,55 @@ Before implementing, answer these questions by reading code:
 
 ---
 
+## 🚀 CRITICAL: Token and Context Optimization
+
+**ALL agents implementing this feature MUST follow token and context optimization protocols.**
+
+### Machine-Optimized Prompts (Rule 14)
+
+**Main Agent MUST**:
+1. Generate `machine_prompt.md` from this file (feature.md) when feature created
+2. Use pipe-delimited compression (58% token reduction)
+3. Commit machine_prompt.md alongside feature.md
+4. Regenerate when feature.md updates
+5. Provide machine_prompt.md path to sub-agents (NOT feature.md)
+
+**Sub-Agents MUST**:
+- Read `machine_prompt.md` (NOT this verbose feature.md file)
+- 58% token savings: 600→240 tokens typical
+- Parse DOCS_TO_READ section for files to load
+
+### Context Compaction (Rule 15)
+
+**Sub-Agents MUST** (before starting work):
+1. Read machine_prompt.md and PROGRESS.md
+2. Generate `COMPACT_CONTEXT.md`:
+   - Embed machine_prompt.md content for current task
+   - Extract current status from PROGRESS.md
+   - List files for current task only
+   - Ultra-compact: 500-800 tokens
+3. CLEAR entire context (drop everything)
+4. RELOAD from COMPACT_CONTEXT.md only
+5. Proceed with 97% less context (180K→5K tokens)
+
+**After PROGRESS.md Updates**:
+- Regenerate COMPACT_CONTEXT.md (embed fresh machine_prompt content)
+- Clear and reload
+- Maintain minimal context throughout work
+
+**COMPACT_CONTEXT.md Lifecycle**:
+- Generated fresh per task
+- Contains ONLY current task (no history)
+- Deleted when task completes
+- Rewritten from scratch for next task
+
+**See**:
+- Rule 14: Machine-Optimized Prompts (.agents/rules/14-machine-optimized-prompts.md)
+- Rule 15: Instruction Compaction (.agents/rules/15-instruction-compaction.md)
+- Templates: COMPACT_CONTEXT-template.md for format
+
+---
+
 ## Overview
 
 Brief summary of what this feature implements and its purpose within the larger specification.
