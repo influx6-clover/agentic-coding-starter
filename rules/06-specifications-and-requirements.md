@@ -151,6 +151,7 @@ specifications/02-feature-spec/
 ├── features/
 │   ├── 00-foundation/
 │   │   ├── feature.md       # Detailed feature requirements + tasks
+│   │   ├── IMPLEMENTATION_PLAN.md  # Technical plan (optional, for complex features)
 │   │   ├── machine_prompt.md    # Machine-optimized (Rule 14)
 │   │   ├── COMPACT_CONTEXT.md   # Ultra-compact current task (Rule 15)
 │   │   ├── scripts/        # Feature-specific verification scripts (optional)
@@ -230,6 +231,71 @@ Format: `NN-descriptive-name/` (two-digit number prefix, dash separators, lowerc
 **Good**: `01-build-http-client/`, `features/dns-resolution/`
 **Bad**: `http-client/` (no number), `1-client/` (single digit), `features/DnsResolution/` (wrong case)
 
+### Implementation Plans
+
+**Location**: `specifications/[spec-name]/features/[feature-name]/IMPLEMENTATION_PLAN.md`
+
+**Purpose**: Detailed technical plan for implementing a feature, created during plan mode before implementation begins.
+
+**When to create**:
+- Agent enters plan mode for non-trivial feature implementation
+- User explicitly requests "create a plan" or "plan this feature"
+- Complex feature requiring design decisions and architectural exploration
+- Multiple valid implementation approaches exist
+- Feature affects multiple files or modules
+
+**Contents**:
+- Technical approach and architecture decisions
+- Key framework patterns to use (e.g., valtron patterns for task spawning)
+- Step-by-step implementation tasks with verification commands
+- Success criteria and expected outcomes
+- Trade-offs and alternative approaches considered
+- Links to relevant documentation or examples
+
+**Lifecycle**:
+- Created in plan mode (BEFORE implementation starts)
+- May be updated during implementation if approach changes or issues discovered
+- Kept permanently as part of feature documentation (never delete)
+- Referenced in feature.md: "See IMPLEMENTATION_PLAN.md for implementation details"
+- Serves as historical record of design decisions
+
+**Example structure**:
+```markdown
+# Feature Name Implementation Plan
+
+## Overview
+Brief summary of what will be implemented
+
+## Technical Approach
+Detailed architecture and design decisions
+
+## Valtron Patterns (if applicable)
+Specific framework patterns to use
+
+## Implementation Steps
+1. Step 1 with verification
+2. Step 2 with verification
+...
+
+## Success Criteria
+How to know implementation is complete
+
+## Trade-offs
+What was considered and why this approach was chosen
+```
+
+**Do NOT**:
+- ❌ Create plans in `~/.claude/plans/` (those are temporary working files, not permanent docs)
+- ❌ Put implementation details in requirements.md (too high-level, use feature.md or IMPLEMENTATION_PLAN.md)
+- ❌ Put plans in feature.md itself (keep feature.md clean, link to IMPLEMENTATION_PLAN.md)
+- ❌ Delete plans after implementation (they document WHY decisions were made)
+- ❌ Create plans for trivial features (1-2 file changes, obvious approach)
+
+**When NOT to create implementation plans**:
+- Simple, straightforward features with one obvious approach
+- Features with clear requirements and no architectural decisions
+- Trivial changes (bug fixes, small refactors, single-function additions)
+
 ### Specification Immutability
 
 Once completed (status: completed, REPORT.md and VERIFICATION.md created), specification is LOCKED.
@@ -255,6 +321,7 @@ Each specification directory MUST contain ONLY these files:
 | `REPORT.md`           | Permanent | ALL reports consolidated (work sessions, testing, completion)                        |
 | `VERIFICATION.md`     | Permanent | Verification signoff                                                                 |
 | `PROGRESS.md`         | Ephemeral | Current status (DELETE at 100%)                                                      |
+| `IMPLEMENTATION_PLAN.md` | Permanent | Technical implementation plan for complex features (in feature directories)       |
 | `fundamentals/`       | Permanent | User docs (if has_fundamentals: true)                                                |
 | `features/`           | Permanent | Feature breakdown (if has_features: true)                                            |
 | `templates/`          | Permanent | Code templates (optional)                                                            |

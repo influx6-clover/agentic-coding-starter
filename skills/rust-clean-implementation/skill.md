@@ -6,14 +6,15 @@ created: 2026-01-27
 license: "MIT"
 metadata:
   author: "Main Agent"
-  version: "3.1-approved"
-  last_updated: "2026-01-28"
+  version: "3.2-approved"
+  last_updated: "2026-02-02"
 tags:
   - rust
   - clean-code
   - documentation
   - error-handling
   - no_std
+  - abstraction
 files:
   - examples/documentation-patterns.md: WHY/WHAT/HOW doc patterns with mandatory panic documentation
   - examples/error-handling-guide.md: Error handling with derive_more
@@ -213,6 +214,175 @@ let idx = value.checked_sub(1)
 ```
 
 **See also:** [Test Helper Functions](../rust-testing-excellence/skill.md#test-helper-functions) for when `.unwrap()` is acceptable in test utilities.
+
+### 4. Avoid Unnecessary Abstraction
+
+**CRITICAL PRINCIPLE:** Only create abstraction layers when they solve real problems. Unnecessary abstraction adds complexity, reduces maintainability, and obscures intent.
+
+#### When Abstraction ADDS Value
+
+✅ **Reusable patterns** - Multiple call sites benefit from shared code
+✅ **Complex logic** - Encapsulation aids understanding and testing
+✅ **Required by framework** - API demands specific traits/types
+✅ **Cross-cutting concerns** - Logging, error handling, retry logic
+
+#### When Abstraction REMOVES Value
+
+❌ **Single-use wrappers** - Only one caller, no reuse benefit
+❌ **Pass-through layers** - Just forwarding to another function
+❌ **Premature generalization** - "Might need it someday"
+❌ **Framework over-compliance** - Using complex patterns when simple solutions work
+
+#### Valtron Task Spawning Example
+
+**❌ BAD - Unnecessary action wrapper for single spawn:**
+
+```rust
+// DON'T create custom action just to spawn a task!
+struct SpawnConnectionAction {
+    task: ConnectionTask,
+    sender: Sender<RecvIterator<...>>,
+}
+
+impl ExecutionAction for SpawnConnectionAction {
+    fn apply(&mut self, key: Entry, engine: BoxedExecutionEngine) -> GenericResult<()> {
+        let iter = spawn_builder(engine)
+            .with_task(self.task.take())
+            .lift_ready_iter(...)?;
+        self.sender.send(iter)?; // Unnecessary channel!
+        Ok(())
+    }
+}
+
+// Then pass action through TaskStatus::Spawn...
+// Way too complex for simple spawning!
+```
+
+**✅ GOOD - Direct spawn when outside TaskIterator:**
+
+```rust
+// Spawning happens where you have access to engine
+let connection_task = ConnectionTask::new(url, resolver, timeout);
+let connection_iter = spawn_builder::<ConnectionTask<R>, NoAction>(engine)
+    .with_task(connection_task)
+    .lift_ready_iter(Duration::from_nanos(100))?;
+
+// Pass RecvIterator directly to consumer - no channels needed!
+let http_task = HttpRequestTask::new(request, resolver, max_redirects, connection_iter);
+```
+
+**When ExecutionAction IS needed:**
+- ✅ Spawning from INSIDE TaskIterator::next() (no other way to access engine)
+- ✅ Complex spawning logic with error handling, retries, etc.
+- ✅ Reusable spawn patterns used across multiple tasks
+
+#### Data Flow Principle
+
+**If data flows A → B, pass directly:**
+
+```rust
+// ✅ GOOD
+let data = compute_data();
+let consumer = Consumer::new(data);
+
+// ❌ BAD - unnecessary channel
+let (tx, rx) = channel();
+tx.send(compute_data());
+let consumer = Consumer::new(rx.recv());
+```
+
+**Use channels ONLY for:**
+- ✅ Cross-thread communication
+- ✅ Producer-consumer patterns with timing mismatch
+- ✅ Multiple producers/consumers
+- ❌ NOT for passing data between sequential function calls
+
+#### Type Design Anti-Patterns
+
+**❌ BAD - Over-generic types:**
+
+```rust
+pub struct HttpRequestTask<R: DnsResolver, C, P, A> {
+    connection_iter: Option<RecvIterator<TaskStatus<C, P, A>>>,
+}
+// Why generic if we know the types?
+```
+
+**✅ GOOD - Specific where possible:**
+
+```rust
+pub struct HttpRequestTask<R: DnsResolver> {
+    connection_iter: Option<RecvIterator<TaskStatus<HttpClientConnection, (), NoAction>>>,
+}
+// Clear intent, known types
+```
+
+**❌ BAD - Unnecessary Options:**
+
+```rust
+pub fn new() -> Self {
+    Self { url: None, resolver: None } // Forces runtime validation
+}
+```
+
+**✅ GOOD - Required data in constructor:**
+
+```rust
+pub fn new(url: ParsedUrl, resolver: R) -> Self {
+    Self { url, resolver } // Compile-time guarantees
+}
+```
+
+#### Error Handling Without Over-Wrapping
+
+**✅ GOOD - Let errors propagate:**
+
+```rust
+pub fn do_work() -> Result<Output, Error> {
+    let data = fetch_data()?; // ? operator propagates type
+    Ok(process(data))
+}
+```
+
+**❌ BAD - Unnecessary wrapping loses type info:**
+
+```rust
+pub fn do_work() -> Result<Output, String> {
+    let data = match fetch_data() {
+        Ok(d) => d,
+        Err(e) => return Err(format!("fetch failed: {}", e)), // Lost error type!
+    };
+    Ok(process(data))
+}
+```
+
+#### Review Checklist
+
+Before adding abstraction, ask:
+
+- [ ] Can I pass this data directly instead of through channels/wrappers?
+- [ ] Do I really need this abstraction layer, or is it wrapping a single call?
+- [ ] Am I creating a type/trait for one use case, or will it be reused?
+- [ ] Can I make this type more specific instead of generic?
+- [ ] Does this code reflect the actual problem domain, not just framework patterns?
+
+#### Decision Rule
+
+**Ask:** "If I removed this abstraction, would the code be simpler to understand?"
+
+- **If yes** → remove it
+- **If no** → keep it, but document WHY it exists
+
+**Examples of Good Abstraction:**
+- `ExecutionTaskIteratorBuilder` - Reusable across all task spawning, encapsulates complex setup
+- `HttpClientConnection` - Wraps complex netcap types with clean API, single responsibility
+
+**Anti-Patterns to Avoid:**
+1. Action wrapper for single spawn - just call spawn_builder directly
+2. Channel for sequential data - pass directly in constructor
+3. Generic everything - be specific where types are known
+4. Option soup - require data upfront, not lazy initialization
+5. String errors - use typed errors with derive_more::From
 
 ---
 
