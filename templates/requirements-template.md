@@ -1,32 +1,30 @@
 ---
-# === IDENTIFICATION ===
+# Identification
 spec_name: "[NN-spec-name]"  # e.g., "02-build-http-client" - MUST match directory name
 spec_number: NN  # Two-digit number (e.g., 02, 15)
 description: Brief one-sentence description
 
-# === LOCATION CONTEXT ===
-# To find this file's location:
-# 1. Run: bash pwd  (gets current working directory = CWD)
-# 2. This file is at: CWD/specifications/[NN-spec-name]/requirements.md
-# 3. Workspace root: CWD (contains .agents/, specifications/, documentation/, backends/)
-workspace_name: "ewe_platform"  # Project workspace name (from Cargo.toml workspace.name or root dir)
-spec_directory: "specifications/[NN-spec-name]"  # Relative to CWD (workspace root)
-this_file: "specifications/[NN-spec-name]/requirements.md"  # This file's path from workspace root
+# Location Context
+# How to find: Run `bash pwd` to get CWD, this file is at CWD/specifications/[NN-spec-name]/requirements.md
+# Workspace root is CWD and contains: .agents/, specifications/, documentation/, backends/
+workspace_name: "ewe_platform"
+spec_directory: "specifications/[NN-spec-name]"
+this_file: "specifications/[NN-spec-name]/requirements.md"
 
-# === STATUS ===
+# Status
 status: in-progress
 priority: medium
 created: YYYY-MM-DD
 author: Main Agent
 
-# === CONTEXT OPTIMIZATION ===
-machine_optimized: true  # Main Agent MUST generate machine_prompt.md before spawning sub-agents
-machine_prompt_file: ./machine_prompt.md  # Sub-agents read this (NOT requirements.md) for 58% token savings
-context_optimization: true  # Sub-agents MUST generate COMPACT_CONTEXT.md before work, reload after updates
-compact_context_file: ./COMPACT_CONTEXT.md  # Ultra-compact current task context (97% reduction)
-context_reload_required: true  # Clear and reload from compact context regularly to prevent context limit errors
+# Context Optimization
+machine_optimized: true
+machine_prompt_file: ./machine_prompt.md
+context_optimization: true
+compact_context_file: ./COMPACT_CONTEXT.md
+context_reload_required: true
 
-# === METADATA ===
+# Metadata
 metadata:
   version: "1.0"
   last_updated: YYYY-MM-DD
@@ -40,22 +38,27 @@ metadata:
   tools:
     - [Tool names]
 
-# === DEPENDENCIES ===
-builds_on: []  # Other specs this depends on (e.g., ["../01-spec-name"])
-related_specs: []  # Related but not dependent specs
-has_features: true # DEFAULT: true unless spec is very simple (1-3 trivial tasks)
-has_fundamentals: true # DEFAULT: true unless user explicitly says no - create user documentation
-# Choose ONE based on has_features:
-features: # If has_features: true
+# Dependencies
+builds_on: []
+related_specs: []
+
+# Structure
+has_features: true  # DEFAULT: true unless spec is very simple (1-3 trivial tasks)
+has_fundamentals: true  # DEFAULT: true unless user explicitly says no
+
+# Progress Tracking (choose ONE based on has_features)
+features:  # If has_features: true
   completed: 0
   uncompleted: [N]
   total: [N]
   completion_percentage: 0
-tasks: # If has_features: false
+tasks:  # If has_features: false
   completed: 0
   uncompleted: [N]
   total: [N]
   completion_percentage: 0
+
+# Files Required by Agents
 files_required:
   main_agent:
     rules:

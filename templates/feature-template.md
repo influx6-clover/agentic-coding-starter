@@ -1,22 +1,20 @@
 ---
-# === IDENTIFICATION ===
+# Identification
 spec_name: "[NN-spec-name]"  # Parent spec (e.g., "02-build-http-client")
-spec_number: NN  # Parent spec number (e.g., 02)
+spec_number: NN
 feature_name: "feature-name"  # This feature's name (e.g., "compression")
-feature_number: N  # Feature number within spec (e.g., 3 for compression)
+feature_number: N  # Feature number within spec (e.g., 3)
 description: Brief one-sentence description of what this feature implements
 
-# === LOCATION CONTEXT ===
-# To find this file's location:
-# 1. Run: bash pwd  (gets current working directory = CWD)
-# 2. This file is at: CWD/specifications/[NN-spec-name]/features/[feature-name]/feature.md
-# 3. Workspace root: CWD (contains .agents/, specifications/, documentation/, backends/)
-workspace_name: "ewe_platform"  # Project workspace name
-spec_directory: "specifications/[NN-spec-name]"  # Parent spec directory (relative to CWD)
-feature_directory: "specifications/[NN-spec-name]/features/[feature-name]"  # This feature's directory
-this_file: "specifications/[NN-spec-name]/features/[feature-name]/feature.md"  # This file's path
+# Location Context
+# How to find: Run `bash pwd` to get CWD, this file is at CWD/specifications/[NN-spec-name]/features/[feature-name]/feature.md
+# Workspace root is CWD and contains: .agents/, specifications/, documentation/, backends/
+workspace_name: "ewe_platform"
+spec_directory: "specifications/[NN-spec-name]"
+feature_directory: "specifications/[NN-spec-name]/features/[feature-name]"
+this_file: "specifications/[NN-spec-name]/features/[feature-name]/feature.md"
 
-# === STATUS ===
+# Status
 status: pending
 priority: medium
 depends_on: []  # Other features this depends on (e.g., ["foundation", "connection"])
@@ -25,19 +23,21 @@ created: YYYY-MM-DD
 last_updated: YYYY-MM-DD
 author: Main Agent
 
-# === CONTEXT OPTIMIZATION ===
-machine_optimized: true  # Main Agent MUST generate machine_prompt.md before spawning sub-agents
-machine_prompt_file: ./machine_prompt.md  # Sub-agents read this (NOT feature.md) for 58% token savings
-context_optimization: true  # Sub-agents MUST generate COMPACT_CONTEXT.md before work, reload after updates
-compact_context_file: ./COMPACT_CONTEXT.md  # Ultra-compact current task context (97% reduction)
-context_reload_required: true  # Clear and reload from compact context regularly to prevent context limit errors
+# Context Optimization
+machine_optimized: true
+machine_prompt_file: ./machine_prompt.md
+context_optimization: true
+compact_context_file: ./COMPACT_CONTEXT.md
+context_reload_required: true
 
-# === TASKS ===
+# Tasks
 tasks:
   completed: 0
   uncompleted: 0
   total: 0
   completion_percentage: 0
+
+# Files Required by Agents
 files_required:
   implementation_agent:
     rules:
