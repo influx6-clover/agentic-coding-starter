@@ -6,7 +6,7 @@ created: 2026-02-02
 license: "MIT"
 metadata:
   author: "Main Agent"
-  version: "1.2"
+  version: "1.3"
   last_updated: "2026-02-02"
 tags:
   - python
@@ -16,6 +16,8 @@ tags:
   - pytest-plugins
   - docker
   - testcontainers
+  - factory-boy
+  - freezegun
 files:
   - examples/intro-to-property-based-testing.md: "Complete beginner to advanced guide on property-based testing with Hypothesis"
 ---
@@ -1515,6 +1517,444 @@ def test_future_feature():
 
 ---
 
+## Given/When/Then Pattern
+
+For complex tests, use the Given/When/Then pattern for clarity and structure.
+
+### Pattern Structure
+
+```python
+def test_complex_operation__success_scenario():
+    # given: (Setup - arrange test data and mocks)
+    user = UserFactory(email="test@example.com")
+    request_data = {"action": "update", "value": 42}
+    expected_result = "success"
+
+    # when: (Action - execute the code under test)
+    result = process_user_request(user, request_data)
+
+    # then: (Assert - verify outcomes)
+    assert result.status == expected_result
+    assert result.user_id == user.id
+```
+
+### When to Use Given/When/Then
+
+**✅ Use for**:
+- Tests with complex setup
+- Tests with multiple assertions
+- Integration tests
+- Tests that need clear documentation of flow
+
+**❌ Not needed for**:
+- Simple one-line tests
+- Tests with obvious setup
+
+### Real Example with Docker
+
+```python
+def test_user_creation__with_database__persists(postgresql):
+    # given: Real PostgreSQL database from Docker
+    db_conn = postgresql
+    user_data = {
+        "name": "Alice",
+        "email": "alice@example.com",
+        "status": "active"
+    }
+
+    # when: Insert user into real database
+    cursor = db_conn.cursor()
+    cursor.execute(
+        "INSERT INTO users (name, email, status) VALUES (%s, %s, %s) RETURNING id",
+        (user_data["name"], user_data["email"], user_data["status"])
+    )
+    user_id = cursor.fetchone()[0]
+    db_conn.commit()
+
+    # then: Verify user was persisted
+    cursor.execute("SELECT * FROM users WHERE id = %s", (user_id,))
+    result = cursor.fetchone()
+    assert result[1] == user_data["name"]  # name column
+    assert result[2] == user_data["email"]  # email column
+```
+
+---
+
+## Factory-Boy for Django Models
+
+**Factory-Boy** provides a powerful pattern for creating Django model instances in tests.
+
+**Install**:
+```bash
+pip install factory-boy
+```
+
+### Basic Factory Pattern
+
+```python
+# myapp/factories.py
+from factory import Faker, SubFactory, Sequence
+from factory.django import DjangoModelFactory
+from myapp import models
+
+class OrganizationFactory(DjangoModelFactory):
+    """Factory for generating Organization instances."""
+
+    class Meta:
+        model = models.Organization
+
+    name = Faker("company")
+    slug = Sequence(lambda n: f"org-{n}")
+
+class UserFactory(DjangoModelFactory):
+    """Factory for generating User instances."""
+
+    class Meta:
+        model = models.User
+
+    email = Faker("email")
+    username = Sequence(lambda n: f"user{n}")
+    organization = SubFactory(OrganizationFactory)
+    is_active = True
+    created_at = Faker("date_time")
+```
+
+### Using Factories in Tests
+
+```python
+def test_user_creation__with_organization__succeeds():
+    # given: Create test data with factories
+    org = OrganizationFactory(name="Test Corp")
+
+    # when: Create user with factory
+    user = UserFactory(
+        organization=org,
+        email="specific@example.com",
+        username="specificuser"
+    )
+
+    # then: Verify relationships
+    assert user.organization == org
+    assert user.organization.name == "Test Corp"
+    assert user.email == "specific@example.com"
+```
+
+### Deterministic Factories
+
+**CRITICAL**: Factories should use deterministic data, not random data that changes per test run.
+
+```python
+# BAD ❌ - Random data makes tests flaky
+class UserFactory(DjangoModelFactory):
+    class Meta:
+        model = models.User
+
+    created_at = Faker("date_time")  # Changes every run!
+
+# GOOD ✅ - Deterministic data
+class UserFactory(DjangoModelFactory):
+    class Meta:
+        model = models.User
+
+    created_at = datetime(2022, 1, 1, 12, 0, 0, tzinfo=timezone.utc)  # Fixed
+```
+
+### Custom Faker Providers
+
+Create custom providers for domain-specific data:
+
+```python
+from faker.providers import BaseProvider
+from factory import Faker
+
+class MedicalProvider(BaseProvider):
+    """Custom provider for medical test data."""
+
+    def npi(self):
+        """Generate valid NPI number."""
+        npi_base = self.bothify(text="1########")
+        checksum = calculate_npi_checksum(npi_base)
+        return f"{npi_base}{checksum}"
+
+    def icd10_code(self):
+        """Generate ICD-10 code."""
+        return self.random_element(["E11.9", "I10", "Z79.4"])
+
+# Register provider
+Faker.add_provider(MedicalProvider)
+
+class PatientFactory(DjangoModelFactory):
+    class Meta:
+        model = models.Patient
+
+    npi = Faker("npi")  # Uses custom provider
+    diagnosis = Faker("icd10_code")
+```
+
+### Factory Traits
+
+Use traits for common variations:
+
+```python
+class UserFactory(DjangoModelFactory):
+    class Meta:
+        model = models.User
+
+    email = Faker("email")
+    is_active = True
+    is_staff = False
+    is_superuser = False
+
+    class Params:
+        # Trait for admin users
+        admin = factory.Trait(
+            is_staff=True,
+            is_superuser=True,
+        )
+
+        # Trait for inactive users
+        inactive = factory.Trait(
+            is_active=False,
+        )
+
+# Usage
+admin_user = UserFactory(admin=True)
+inactive_user = UserFactory(inactive=True)
+```
+
+---
+
+## Fixture Organization: Prefer In-File Over Conftest
+
+**CRITICAL PRINCIPLE**: Move away from bloated conftest.py files. Define fixtures where they're used.
+
+### ✅ Preferred: Fixtures in Test Files
+
+```python
+# tests/test_user_service.py
+import pytest
+
+@pytest.fixture
+def authenticated_user():
+    """Create authenticated user for this test module."""
+    return UserFactory(
+        email="test@example.com",
+        is_active=True
+    )
+
+@pytest.fixture
+def user_request_data():
+    """Standard request data for user operations."""
+    return {
+        "action": "update",
+        "fields": {"name": "New Name"}
+    }
+
+def test_update_user__authenticated__succeeds(authenticated_user, user_request_data):
+    # given:
+    user = authenticated_user
+    request = user_request_data
+
+    # when:
+    result = update_user(user, request)
+
+    # then:
+    assert result.success is True
+```
+
+### ⚠️ Use conftest.py ONLY For
+
+1. **pytest_configure** and pytest hooks
+2. **Truly shared fixtures** used across ALL test files
+3. **Global protections** (network call blockers, database setup)
+
+```python
+# tests/conftest.py - ONLY for truly shared fixtures
+import pytest
+
+@pytest.fixture(scope="session")
+def django_db_setup(django_db_setup, django_db_blocker):
+    """Configure test database for entire session."""
+    with django_db_blocker.unblock():
+        # Run migrations
+        call_command("migrate", "--noinput")
+
+@pytest.fixture(autouse=True)
+def block_network_calls(mocker):
+    """Global protection: block all network calls in tests."""
+    mocker.patch("requests.get", side_effect=RuntimeError("Network call blocked"))
+    mocker.patch("requests.post", side_effect=RuntimeError("Network call blocked"))
+
+# DO NOT put service-specific fixtures here!
+```
+
+### Using Fixtures That Aren't Referenced
+
+Use `@pytest.mark.usefixtures` for fixtures with side effects:
+
+```python
+@pytest.fixture
+def mock_external_api(mocker):
+    """Mock external API calls."""
+    return mocker.patch("myapp.external_api.call")
+
+@pytest.fixture
+def mock_cache(mocker):
+    """Mock cache operations."""
+    return mocker.patch("myapp.cache.get")
+
+# BAD ❌ - Unused fixtures in signature
+def test_user_fetch(user, mock_external_api, mock_cache):
+    assert user.name == "Test"
+
+# GOOD ✅ - Use decorator for unused fixtures
+@pytest.mark.usefixtures("mock_external_api", "mock_cache")
+def test_user_fetch(user):
+    assert user.name == "Test"
+```
+
+### ❌ Avoid autouse=True
+
+**Do NOT** set `autouse=True` on fixtures unless they're global protections.
+
+```python
+# BAD ❌ - Makes dependencies unclear
+@pytest.fixture(autouse=True)
+def authenticated():
+    """Auto-applied to all tests."""
+    ...
+
+def test_foo():
+    # Is this authenticated? Not obvious!
+    ...
+
+# GOOD ✅ - Explicit dependencies
+@pytest.fixture
+def authenticated():
+    """Explicit authentication fixture."""
+    ...
+
+@pytest.mark.usefixtures("authenticated")
+def test_foo():
+    # Clearly authenticated
+    ...
+```
+
+---
+
+## Deterministic Test Data
+
+**CRITICAL**: Tests MUST be deterministic. Never use `datetime.now()`, `random()`, or time-dependent defaults.
+
+### The Problem with Non-Deterministic Data
+
+```python
+# BAD ❌ - Test fails at different times of day
+RESOURCE = {
+    "date": datetime.now().date(),
+    "timestamp": time.time()
+}
+
+def test_process_resource():
+    # Might pass at 9am, fail at 11pm
+    result = process(RESOURCE)
+    assert result.is_today
+```
+
+### Solution: Use Deterministic Data
+
+```python
+# GOOD ✅ - Always uses fixed date
+RESOURCE = {
+    "date": datetime.date(2022, 1, 1),
+    "timestamp": 1640995200  # 2022-01-01 00:00:00 UTC
+}
+
+def test_process_resource():
+    # Always deterministic
+    result = process(RESOURCE)
+    assert result.date == datetime.date(2022, 1, 1)
+```
+
+### Using freezegun for Time-Dependent Tests
+
+**freezegun** lets you freeze time for deterministic testing:
+
+```bash
+pip install freezegun
+```
+
+```python
+from freezegun import freeze_time
+from datetime import datetime, timezone
+
+@freeze_time("2022-01-03 14:30:00+00:00")
+def test_user_created_today():
+    # given: Time is frozen
+    frozen_time = datetime(2022, 1, 3, 14, 30, 0, tzinfo=timezone.utc)
+
+    # when: Create user (uses frozen time)
+    user = UserFactory()
+
+    # then: Verify timestamp matches frozen time
+    assert user.created_at == frozen_time
+
+@freeze_time("2022-01-01 00:00:00")
+def test_date_calculations():
+    # given: Fixed date for calculations
+    from myapp.utils import days_until_expiration
+
+    # when: Calculate days (deterministic)
+    expiration = datetime(2022, 1, 15)
+    days = days_until_expiration(expiration)
+
+    # then: Always 14 days
+    assert days == 14
+```
+
+### Freezegun with Context Manager
+
+```python
+def test_time_sensitive_operation():
+    # given: Setup before freezing
+    user = UserFactory()
+
+    # when: Freeze time for operation
+    with freeze_time("2022-06-01 10:00:00"):
+        result = user.perform_action()
+
+    # then: Time is unfrozen after context
+    assert result.timestamp == datetime(2022, 6, 1, 10, 0, 0)
+```
+
+### Deterministic Random Data
+
+If you need "random" data that's actually deterministic:
+
+```python
+import random
+
+@pytest.fixture
+def deterministic_random():
+    """Reset random seed for deterministic random data."""
+    random.seed(42)
+    yield random
+    # Reset after test
+    random.seed()
+
+def test_random_selection(deterministic_random):
+    # given: Deterministic random
+    items = ["A", "B", "C", "D"]
+
+    # when: Random selection (always same with seed 42)
+    selected = deterministic_random.choice(items)
+
+    # then: Always selects same item
+    assert selected == "C"  # Deterministic with seed 42
+```
+
+---
+
 ## Property-Based Testing with Hypothesis
 
 **Use `hypothesis` to test invariants across hundreds of generated inputs automatically.**
@@ -1590,6 +2030,174 @@ def test_addition_commutative(a, b):
 # pyproject.toml
 [tool.poetry.group.dev.dependencies]
 hypothesis = "^6.0"
+```
+
+---
+
+## Test Naming Convention
+
+**CRITICAL**: Use descriptive test names that explain what is being tested.
+
+### Naming Pattern
+
+**Format**: `test_<function>__<scenario>__<expected_outcome>`
+
+```python
+# GOOD ✅ - Clear what's being tested
+def test_divide__zero_denominator__raises_zero_division_error():
+    with pytest.raises(ZeroDivisionError):
+        divide(10, 0)
+
+def test_create_user__valid_email__succeeds():
+    user = create_user("alice@example.com")
+    assert user.email == "alice@example.com"
+
+def test_update_task_status__task_not_found__raises_not_found_error():
+    with pytest.raises(TaskNotFoundError):
+        update_task_status("nonexistent-id", "completed")
+
+# BAD ❌ - Unclear what's being tested
+def test_divide():
+    ...
+
+def test_user():
+    ...
+```
+
+### Service/Class Naming
+
+Convert PascalCase to snake_case in test names:
+
+```python
+# Code: task_service.py
+class TaskConsumerService:
+    def UpdateTaskStatus(self, task_id: str, status: str):
+        ...
+
+# Tests: test_task_service.py
+def test_update_task_status__valid_id__updates_successfully():
+    service = TaskConsumerService()
+    result = service.UpdateTaskStatus("task-123", "completed")
+    assert result.success is True
+
+def test_update_task_status__invalid_id__raises_error():
+    service = TaskConsumerService()
+    with pytest.raises(ValueError):
+        service.UpdateTaskStatus("", "completed")
+```
+
+### Scenario is Optional for Simple Tests
+
+```python
+# Simple test - scenario obvious from function name
+def test_add_numbers():
+    assert add(2, 3) == 5
+
+# Complex test - scenario clarifies context
+def test_add_numbers__with_negative__returns_correct_sum():
+    assert add(-5, 3) == -2
+```
+
+---
+
+## Test Coverage Requirements
+
+**MANDATORY**: All new code must have 100% test coverage.
+
+### Running Tests with Coverage
+
+```bash
+# Run with coverage report
+pytest --cov=src --cov-report=term-missing
+
+# Fail if coverage drops below 100%
+pytest --cov=src --cov-fail-under=100
+
+# Generate HTML coverage report
+pytest --cov=src --cov-report=html
+open htmlcov/index.html
+```
+
+### Coverage Configuration
+
+```toml
+# pyproject.toml
+[tool.pytest.ini_options]
+addopts = [
+    "--cov=src",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+    "--cov-fail-under=100",
+]
+
+[tool.coverage.run]
+source = ["src"]
+omit = [
+    "*/tests/*",
+    "*/__pycache__/*",
+    "*/venv/*",
+]
+
+[tool.coverage.report]
+precision = 2
+show_missing = true
+skip_covered = false
+```
+
+### What 100% Coverage Means
+
+**✅ Every line must be executed by tests**:
+- All code paths (if/else branches)
+- All exception handlers
+- All return statements
+- All function calls
+
+**❌ Coverage doesn't mean**:
+- Tests are high quality
+- Tests validate correct behavior
+- Edge cases are tested
+
+### Coverage with Docker Tests
+
+```python
+def test_database_operations__with_postgres__covers_all_paths(postgresql):
+    # given: Real PostgreSQL from Docker
+    db = postgresql
+
+    # when: Test all code paths
+    # Path 1: Successful insert
+    result1 = insert_user(db, "alice", "alice@example.com")
+    assert result1.success
+
+    # Path 2: Duplicate email (error path)
+    with pytest.raises(IntegrityError):
+        insert_user(db, "bob", "alice@example.com")  # Duplicate!
+
+    # Path 3: Invalid email (validation path)
+    with pytest.raises(ValidationError):
+        insert_user(db, "charlie", "invalid-email")
+
+    # All paths covered with real database!
+```
+
+### Excluding Code from Coverage
+
+**Use sparingly** - only for truly unreachable code:
+
+```python
+def main():
+    app.run()
+
+if __name__ == "__main__":  # pragma: no cover
+    # This is never executed in tests
+    main()
+
+# Defensive code that can't be tested
+def process_data(data):
+    if data is None:  # pragma: no cover
+        # Should never happen due to type hints
+        raise ValueError("Data cannot be None")
+    return data.upper()
 ```
 
 ---
@@ -1749,6 +2357,53 @@ Tests are considered valid when they:
 - Real code over mocks (same philosophy)
 
 **New Standard:** All Python tests must follow these patterns.
+
+### 2026-02-02: Counterpart Patterns Integration
+
+**Issue:** Need to integrate proven testing patterns from CA monorepo while maintaining our Docker-first principles.
+
+**Learning:** Added comprehensive testing patterns from counterpart codebase:
+
+**Given/When/Then Pattern:**
+- Structure for complex tests
+- Clear separation: Setup → Action → Assert
+- Improves test readability
+
+**Factory-Boy for Django Models:**
+- Powerful pattern for Django model test data
+- Deterministic factories (not random data!)
+- Custom Faker providers for domain-specific data
+- Traits for common variations
+
+**Fixture Organization:**
+- **Move away from bloated conftest.py**
+- Prefer fixtures in test files where they're used
+- Use conftest.py ONLY for global fixtures and hooks
+- `@pytest.mark.usefixtures` for side-effect fixtures
+
+**Deterministic Test Data:**
+- NEVER use `datetime.now()` or `random()` in tests
+- Use freezegun to freeze time for time-dependent tests
+- Fixed dates and deterministic random seeds
+- Tests must be reproducible
+
+**Test Naming:**
+- Format: `test_<function>__<scenario>__<outcome>`
+- Convert PascalCase to snake_case
+- Clear, descriptive names
+
+**100% Coverage Requirement:**
+- All new code must have 100% test coverage
+- Coverage doesn't replace quality tests
+- Use `pytest --cov-fail-under=100`
+
+**Integration Priority:**
+- ✅ Docker/docker-compose FIRST (our principle - kept!)
+- ✅ Real code over mocks (our principle - kept!)
+- ✅ Factory-Boy + freezegun (counterpart - added!)
+- ✅ Given/When/Then (counterpart - added!)
+
+**New Standard:** Tests must be deterministic, well-named, have 100% coverage, and use fixtures wisely.
 
 ### 2026-02-02: Docker/Docker-Compose for Real Infrastructure
 
