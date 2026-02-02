@@ -6,7 +6,7 @@ created: 2026-02-02
 license: "MIT"
 metadata:
   author: "Main Agent"
-  version: "1.1"
+  version: "1.2"
   last_updated: "2026-02-02"
 tags:
   - python
@@ -14,6 +14,8 @@ tags:
   - validation
   - pytest
   - pytest-plugins
+  - docker
+  - testcontainers
 files:
   - examples/intro-to-property-based-testing.md: "Complete beginner to advanced guide on property-based testing with Hypothesis"
 ---
@@ -34,6 +36,427 @@ Read this when **writing or reviewing tests** (not implementation or async code)
 **Do NOT read this for:**
 - Implementation → See [python-clean-implementation](../python-clean-implementation/skill.md)
 - Async code → See [python-with-async-code](../python-with-async-code/skill.md)
+
+---
+
+## Docker/Docker-Compose for Real Infrastructure Testing 🐳
+
+**CRITICAL PRINCIPLE**: Always prefer Docker/docker-compose/podman to spawn real infrastructure for tests.
+
+### The Infrastructure Testing Hierarchy
+
+```
+1. Docker/docker-compose (FIRST - spawn real infrastructure locally)
+   ↓ Not possible locally?
+2. Test instance credentials (SECOND - use provided test environment)
+   ↓ No test environment available?
+3. Mock (LAST RESORT - only when infrastructure cannot run locally)
+```
+
+### When to Use Docker for Tests
+
+**✅ USE Docker/docker-compose for**:
+- PostgreSQL, MySQL, MongoDB, Redis (databases)
+- RabbitMQ, Kafka (message queues)
+- Elasticsearch, S3-compatible storage (MinIO)
+- Any service with official Docker image
+
+**❌ DON'T USE Docker when**:
+- Service is proprietary SaaS without local version (Snowflake, Salesforce)
+- Service requires special hardware/licenses
+- **ACTION**: Ask dev team for test instance credentials first!
+
+### Docker-Compose for Test Infrastructure
+
+#### Example: PostgreSQL + Redis
+
+```yaml
+# docker-compose.test.yml
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: testdb
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U test"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  mongodb:
+    image: mongo:7
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: test
+      MONGO_INITDB_ROOT_PASSWORD: test
+    ports:
+      - "27017:27017"
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+```
+
+#### Running Tests with Docker-Compose
+
+```bash
+# Start infrastructure
+docker-compose -f docker-compose.test.yml up -d
+
+# Wait for health checks
+docker-compose -f docker-compose.test.yml ps
+
+# Run tests
+pytest
+
+# Cleanup
+docker-compose -f docker-compose.test.yml down -v
+```
+
+#### Automated Test Script
+
+```bash
+#!/bin/bash
+# scripts/run-tests.sh
+
+set -e
+
+echo "Starting test infrastructure..."
+docker-compose -f docker-compose.test.yml up -d
+
+echo "Waiting for services to be healthy..."
+timeout 30 bash -c 'until docker-compose -f docker-compose.test.yml ps | grep -q "(healthy)"; do sleep 1; done'
+
+echo "Running tests..."
+pytest "$@"
+
+echo "Cleaning up..."
+docker-compose -f docker-compose.test.yml down -v
+```
+
+### Testcontainers (Alternative to docker-compose)
+
+**testcontainers-python**: Programmatic Docker container management for tests
+
+```bash
+pip install testcontainers
+```
+
+#### PostgreSQL with Testcontainers
+
+```python
+from testcontainers.postgres import PostgresContainer
+import psycopg2
+import pytest
+
+@pytest.fixture(scope="session")
+def postgres():
+    """Start PostgreSQL container for test session."""
+    with PostgresContainer("postgres:15-alpine") as postgres:
+        yield postgres
+
+@pytest.fixture
+def db_connection(postgres):
+    """Create database connection."""
+    conn = psycopg2.connect(postgres.get_connection_url())
+    yield conn
+    conn.close()
+
+def test_user_repository(db_connection):
+    """Test with real PostgreSQL container."""
+    cursor = db_connection.cursor()
+    cursor.execute("CREATE TABLE users (id serial, name varchar);")
+    cursor.execute("INSERT INTO users (name) VALUES ('Alice');")
+
+    cursor.execute("SELECT name FROM users;")
+    result = cursor.fetchone()
+    assert result[0] == "Alice"
+```
+
+#### MongoDB with Testcontainers
+
+```python
+from testcontainers.mongodb import MongoDbContainer
+from pymongo import MongoClient
+import pytest
+
+@pytest.fixture(scope="session")
+def mongodb():
+    """Start MongoDB container for test session."""
+    with MongoDbContainer("mongo:7") as mongodb:
+        yield mongodb
+
+@pytest.fixture
+def mongo_client(mongodb):
+    """Create MongoDB client."""
+    client = MongoClient(mongodb.get_connection_url())
+    yield client
+    client.close()
+
+def test_user_collection(mongo_client):
+    """Test with real MongoDB container."""
+    db = mongo_client.test_db
+    users = db.users
+
+    users.insert_one({"name": "Alice", "age": 30})
+
+    user = users.find_one({"name": "Alice"})
+    assert user["age"] == 30
+```
+
+#### Redis with Testcontainers
+
+```python
+from testcontainers.redis import RedisContainer
+import redis
+import pytest
+
+@pytest.fixture(scope="session")
+def redis_container():
+    """Start Redis container for test session."""
+    with RedisContainer("redis:7-alpine") as redis_container:
+        yield redis_container
+
+@pytest.fixture
+def redis_client(redis_container):
+    """Create Redis client."""
+    client = redis.from_url(redis_container.get_connection_url())
+    yield client
+    client.close()
+
+def test_cache_operations(redis_client):
+    """Test with real Redis container."""
+    redis_client.set("key", "value")
+    result = redis_client.get("key")
+    assert result == b"value"
+```
+
+### Conftest.py for Shared Docker Fixtures
+
+```python
+# tests/conftest.py
+import pytest
+from testcontainers.postgres import PostgresContainer
+from testcontainers.redis import RedisContainer
+import psycopg2
+import redis
+
+@pytest.fixture(scope="session")
+def postgres_container():
+    """Shared PostgreSQL container for all tests."""
+    with PostgresContainer("postgres:15-alpine") as container:
+        yield container
+
+@pytest.fixture(scope="session")
+def redis_container():
+    """Shared Redis container for all tests."""
+    with RedisContainer("redis:7-alpine") as container:
+        yield container
+
+@pytest.fixture
+def db_connection(postgres_container):
+    """Fresh database connection per test."""
+    conn = psycopg2.connect(postgres_container.get_connection_url())
+    # Run migrations
+    cursor = conn.cursor()
+    cursor.execute("CREATE TABLE IF NOT EXISTS users (id serial, name varchar);")
+    conn.commit()
+
+    yield conn
+
+    # Cleanup
+    cursor.execute("DROP TABLE IF EXISTS users;")
+    conn.commit()
+    conn.close()
+
+@pytest.fixture
+def cache_client(redis_container):
+    """Fresh Redis client per test."""
+    client = redis.from_url(redis_container.get_connection_url())
+    yield client
+    client.flushdb()  # Clear data between tests
+    client.close()
+```
+
+### Decision Tree for Database Testing
+
+```
+Need to test database code?
+├─ Can database run in Docker? (PostgreSQL, MySQL, MongoDB, etc.)
+│  ├─ YES → Use docker-compose.test.yml or testcontainers ✅ BEST
+│  └─ NO → Continue to next step
+├─ Is there a test instance available? (Snowflake test account, etc.)
+│  ├─ YES → Ask dev team for credentials, use test instance ✅ GOOD
+│  └─ NO → Continue to next step
+├─ Can we use SQLite as substitute? (For SQL databases only)
+│  ├─ YES → Use in-memory SQLite for fast tests ✅ ACCEPTABLE
+│  └─ NO → Continue to next step
+└─ Must mock (proprietary SaaS, no local/test options)
+   └─ Use pytest-mock for external database client only ⚠️ LAST RESORT
+```
+
+### Example: Complete Test Setup with Docker
+
+```python
+# pyproject.toml
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4"
+testcontainers = "^3.7"
+psycopg2-binary = "^2.9"
+redis = "^5.0"
+
+# tests/conftest.py
+import pytest
+from testcontainers.postgres import PostgresContainer
+from testcontainers.redis import RedisContainer
+from myapp.database import Database
+from myapp.cache import Cache
+
+@pytest.fixture(scope="session")
+def postgres():
+    with PostgresContainer("postgres:15-alpine") as pg:
+        yield pg
+
+@pytest.fixture(scope="session")
+def redis():
+    with RedisContainer("redis:7-alpine") as r:
+        yield r
+
+@pytest.fixture
+def database(postgres):
+    """Database with fresh schema per test."""
+    db = Database(postgres.get_connection_url())
+    db.migrate()
+    yield db
+    db.cleanup()
+
+@pytest.fixture
+def cache(redis):
+    """Cache with fresh instance per test."""
+    cache = Cache(redis.get_connection_url())
+    yield cache
+    cache.flush()
+
+# tests/test_user_service.py
+import pytest
+
+def test_create_user(database, cache):
+    """Test user creation with real database and cache."""
+    from myapp.services import UserService
+
+    service = UserService(database, cache)
+    user = service.create_user("Alice", "alice@example.com")
+
+    # Verify in database
+    assert database.get_user(user.id) is not None
+
+    # Verify in cache
+    cached_user = cache.get(f"user:{user.id}")
+    assert cached_user["name"] == "Alice"
+
+def test_user_not_found(database):
+    """Test error handling with real database."""
+    from myapp.services import UserService
+    from myapp.exceptions import UserNotFoundError
+
+    service = UserService(database, None)
+
+    with pytest.raises(UserNotFoundError):
+        service.get_user(99999)
+```
+
+### GitHub Actions CI Integration
+
+```yaml
+# .github/workflows/test.yml
+name: Tests
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: testdb
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install poetry
+          poetry install
+
+      - name: Run tests
+        run: poetry run pytest
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/testdb
+          REDIS_URL: redis://localhost:6379
+```
+
+### Benefits of Docker-Based Testing
+
+**Why this matters**:
+1. **Real behavior** - Tests validate actual database/service behavior
+2. **Production parity** - Same services as production
+3. **Isolation** - Each test run gets fresh infrastructure
+4. **CI/CD friendly** - Easy to replicate in GitHub Actions/GitLab CI
+5. **No mocks** - Test actual integration, not mock configuration
+
+### When Mocking is Acceptable
+
+**ONLY mock when**:
+- ✅ Service is proprietary SaaS without Docker image (Snowflake, Salesforce API)
+- ✅ Service requires hardware/licensing unavailable in test (special GPU, enterprise license)
+- ✅ Service costs money per request (payment gateways in CI - but use test mode if available)
+
+**Before mocking, ask**:
+1. "Can I run this in Docker?"
+2. "Does the dev team have test instance credentials?"
+3. "Is there a free tier or test mode?"
+4. "Can I use a compatible open-source alternative?" (MinIO for S3, LocalStack for AWS)
 
 ---
 
@@ -1327,6 +1750,39 @@ Tests are considered valid when they:
 
 **New Standard:** All Python tests must follow these patterns.
 
+### 2026-02-02: Docker/Docker-Compose for Real Infrastructure
+
+**Issue:** Need to emphasize Docker/docker-compose for spawning real infrastructure over mocking.
+
+**Learning:** Added comprehensive "Docker/Docker-Compose for Real Infrastructure Testing" section:
+
+**The Infrastructure Testing Hierarchy:**
+1. **Docker/docker-compose** (FIRST) - Spawn real infrastructure locally
+2. **Test instance credentials** (SECOND) - Use provided test environments
+3. **Mock** (LAST RESORT) - Only when infrastructure cannot run locally
+
+**Complete coverage of:**
+- docker-compose.test.yml examples (PostgreSQL, Redis, MongoDB)
+- testcontainers-python for programmatic container management
+- Automated test scripts with Docker cleanup
+- conftest.py patterns for shared Docker fixtures
+- GitHub Actions CI integration with service containers
+- Decision tree for database testing
+
+**Examples added:**
+- PostgreSQL with testcontainers
+- MongoDB with testcontainers
+- Redis with testcontainers
+- Multi-service test setups
+- Complete test infrastructure patterns
+
+**When mocking is acceptable:**
+- Proprietary SaaS without Docker (Snowflake, Salesforce)
+- Services requiring special hardware/licenses
+- **Always ask**: "Can I run this in Docker? Do we have test instance credentials?"
+
+**New Standard:** Prefer Docker/docker-compose for all infrastructure testing. Only mock when truly impossible to run locally.
+
 ### 2026-02-02: Pytest Plugins Emphasis
 
 **Issue:** Need to emphasize pytest plugins over manual mocking and unittest.mock.
@@ -1352,20 +1808,20 @@ Updated all mock examples to use pytest-mock's `mocker` fixture instead of unitt
 
 **New Standard:** Always check pytest plugin ecosystem before writing manual mocks or test infrastructure.
 
+### 2026-02-02: Python Testing Excellence Skill Created
+
+**Issue:** Creating Python equivalent of Rust testing excellence skill.
+
+**Learning:** Adapted Rust testing patterns to Python:
+- pytest fixtures instead of setup functions
+- Hypothesis instead of proptest
+- pytest.raises for exception testing
+- @pytest.mark for test organization
+- Real code over mocks (same philosophy)
+
+**New Standard:** All Python tests must follow these patterns.
+
 ---
 
-## Examples
-
-See `examples/` directory for comprehensive guides:
-
-- `intro-to-property-based-testing.md` - **Complete beginner to advanced guide** on property-based testing with Hypothesis
-
-## Related Skills
-
-- [Python Clean Implementation](../python-clean-implementation/skill.md) - For implementation patterns
-- [Python with Async Code](../python-with-async-code/skill.md) - For async testing patterns
-
----
-
-*Last Updated: 2026-02-02 - Added pytest plugins emphasis*
-*Version: 1.1*
+*Last Updated: 2026-02-02 - Added Docker/docker-compose emphasis*
+*Version: 1.2*

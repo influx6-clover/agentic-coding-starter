@@ -6,12 +6,14 @@ created: 2026-01-27
 license: "MIT"
 metadata:
   author: "Main Agent"
-  version: "3.1-approved"
-  last_updated: "2026-01-28"
+  version: "3.2-approved"
+  last_updated: "2026-02-02"
 tags:
   - rust
   - testing
   - validation
+  - docker
+  - testcontainers
 files:
   - examples/intro-to-property-based-testing.md: "Complete beginner to advanced guide on property-based testing with proptest"
 ---
@@ -550,6 +552,350 @@ fn test_user_creation() {
 
 ---
 
+## Docker/Docker-Compose for Real Infrastructure Testing 🐳
+
+**CRITICAL PRINCIPLE**: Always prefer Docker/docker-compose/podman to spawn real infrastructure for tests.
+
+### The Infrastructure Testing Hierarchy
+
+```
+1. Docker/docker-compose (FIRST - spawn real infrastructure locally)
+   ↓ Not possible locally?
+2. Test instance credentials (SECOND - use provided test environment)
+   ↓ No test environment available?
+3. Mock (LAST RESORT - only when infrastructure cannot run locally)
+```
+
+### When to Use Docker for Tests
+
+**✅ USE Docker/docker-compose for**:
+- PostgreSQL, MySQL, MongoDB, Redis (databases)
+- RabbitMQ, Kafka (message queues)
+- Elasticsearch, S3-compatible storage (MinIO)
+- Any service with official Docker image
+
+**❌ DON'T USE Docker when**:
+- Service is proprietary SaaS without local version (Snowflake, Salesforce)
+- Service requires special hardware/licenses
+- **ACTION**: Ask dev team for test instance credentials first!
+
+### Docker-Compose for Test Infrastructure
+
+#### Example: PostgreSQL + Redis
+
+```yaml
+# docker-compose.test.yml
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: test
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: testdb
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U test"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+```
+
+#### Running Tests with Docker-Compose
+
+```bash
+# Start infrastructure
+docker-compose -f docker-compose.test.yml up -d
+
+# Wait for health checks
+docker-compose -f docker-compose.test.yml ps
+
+# Run tests
+cargo test
+
+# Cleanup
+docker-compose -f docker-compose.test.yml down -v
+```
+
+#### Automated Test Script
+
+```bash
+#!/bin/bash
+# scripts/run-tests.sh
+
+set -e
+
+echo "Starting test infrastructure..."
+docker-compose -f docker-compose.test.yml up -d
+
+echo "Waiting for services to be healthy..."
+timeout 30 bash -c 'until docker-compose -f docker-compose.test.yml ps | grep -q "(healthy)"; do sleep 1; done'
+
+echo "Running tests..."
+cargo test "$@"
+
+echo "Cleaning up..."
+docker-compose -f docker-compose.test.yml down -v
+```
+
+### Testcontainers-rs (Programmatic Docker Management)
+
+**testcontainers**: Rust library for managing Docker containers in tests
+
+```toml
+# Cargo.toml
+[dev-dependencies]
+testcontainers = "0.15"
+postgres = "0.19"  # Or your database client
+```
+
+#### PostgreSQL with Testcontainers
+
+```rust
+#[cfg(test)]
+mod tests {
+    use testcontainers::{clients, images};
+    use postgres::{Client, NoTls};
+
+    #[test]
+    fn test_user_repository() {
+        // Start PostgreSQL container
+        let docker = clients::Cli::default();
+        let postgres = docker.run(images::postgres::Postgres::default());
+
+        // Get connection details
+        let host_port = postgres.get_host_port_ipv4(5432);
+        let connection_string = format!(
+            "postgresql://postgres:postgres@127.0.0.1:{}/postgres",
+            host_port
+        );
+
+        // Connect to real PostgreSQL
+        let mut client = Client::connect(&connection_string, NoTls).unwrap();
+
+        // Run actual database operations
+        client.execute(
+            "CREATE TABLE users (id SERIAL PRIMARY KEY, name VARCHAR NOT NULL)",
+            &[],
+        ).unwrap();
+
+        client.execute(
+            "INSERT INTO users (name) VALUES ($1)",
+            &[&"Alice"],
+        ).unwrap();
+
+        let rows = client.query("SELECT name FROM users", &[]).unwrap();
+        assert_eq!(rows[0].get::<_, String>(0), "Alice");
+
+        // Container automatically cleaned up when dropped
+    }
+}
+```
+
+#### Redis with Testcontainers
+
+```rust
+#[cfg(test)]
+mod tests {
+    use testcontainers::{clients, images};
+    use redis::Commands;
+
+    #[test]
+    fn test_cache_operations() {
+        let docker = clients::Cli::default();
+        let redis = docker.run(images::redis::Redis::default());
+
+        let host_port = redis.get_host_port_ipv4(6379);
+        let connection_string = format!("redis://127.0.0.1:{}", host_port);
+
+        let client = redis::Client::open(connection_string).unwrap();
+        let mut con = client.get_connection().unwrap();
+
+        // Test actual Redis operations
+        con.set::<_, _, ()>("key", "value").unwrap();
+        let result: String = con.get("key").unwrap();
+
+        assert_eq!(result, "value");
+    }
+}
+```
+
+#### MongoDB with Testcontainers
+
+```rust
+#[cfg(test)]
+mod tests {
+    use testcontainers::{clients, images};
+    use mongodb::{Client, options::ClientOptions};
+
+    #[tokio::test]
+    async fn test_user_collection() {
+        let docker = clients::Cli::default();
+        let mongo = docker.run(images::mongo::Mongo::default());
+
+        let host_port = mongo.get_host_port_ipv4(27017);
+        let connection_string = format!("mongodb://127.0.0.1:{}", host_port);
+
+        // Connect to real MongoDB
+        let client_options = ClientOptions::parse(&connection_string).await.unwrap();
+        let client = Client::with_options(client_options).unwrap();
+
+        let db = client.database("test_db");
+        let collection = db.collection("users");
+
+        // Test actual MongoDB operations
+        collection.insert_one(
+            doc! { "name": "Alice", "age": 30 },
+            None,
+        ).await.unwrap();
+
+        let user = collection.find_one(
+            doc! { "name": "Alice" },
+            None,
+        ).await.unwrap().unwrap();
+
+        assert_eq!(user.get_str("name").unwrap(), "Alice");
+    }
+}
+```
+
+### Shared Test Fixtures with once_cell
+
+```rust
+use once_cell::sync::Lazy;
+use testcontainers::{clients, images, Container};
+use std::sync::Mutex;
+
+// Shared PostgreSQL container for all tests
+static POSTGRES: Lazy<Mutex<Container<'static, images::postgres::Postgres>>> = Lazy::new(|| {
+    let docker = Box::leak(Box::new(clients::Cli::default()));
+    let container = docker.run(images::postgres::Postgres::default());
+    Mutex::new(container)
+});
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_user_creation() {
+        let postgres = POSTGRES.lock().unwrap();
+        let host_port = postgres.get_host_port_ipv4(5432);
+        // Use shared container
+    }
+
+    #[test]
+    fn test_user_deletion() {
+        let postgres = POSTGRES.lock().unwrap();
+        let host_port = postgres.get_host_port_ipv4(5432);
+        // Use same shared container
+    }
+}
+```
+
+### Decision Tree for Database Testing
+
+```
+Need to test database code?
+├─ Can database run in Docker? (PostgreSQL, MySQL, MongoDB, etc.)
+│  ├─ YES → Use docker-compose or testcontainers-rs ✅ BEST
+│  └─ NO → Continue to next step
+├─ Is there a test instance available? (Snowflake test account, etc.)
+│  ├─ YES → Ask dev team for credentials, use test instance ✅ GOOD
+│  └─ NO → Continue to next step
+├─ Can we use SQLite as substitute? (For SQL databases only)
+│  ├─ YES → Use SQLite :memory: for fast tests ✅ ACCEPTABLE
+│  └─ NO → Continue to next step
+└─ Must mock (proprietary SaaS, no local/test options)
+   └─ Use trait mock for external database client only ⚠️ LAST RESORT
+```
+
+### GitHub Actions CI Integration
+
+```yaml
+# .github/workflows/test.yml
+name: Tests
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: testdb
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+
+      - name: Run tests
+        run: cargo test
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/testdb
+          REDIS_URL: redis://localhost:6379
+```
+
+### Benefits of Docker-Based Testing
+
+**Why this matters**:
+1. **Real behavior** - Tests validate actual database/service behavior
+2. **Production parity** - Same services as production
+3. **Isolation** - Each test run gets fresh infrastructure
+4. **CI/CD friendly** - Easy to replicate in GitHub Actions/GitLab CI
+5. **No mocks** - Test actual integration, not mock configuration
+
+### When Mocking is Acceptable
+
+**ONLY mock when**:
+- ✅ Service is proprietary SaaS without Docker image (Snowflake, Salesforce API)
+- ✅ Service requires hardware/licensing unavailable in test (special GPU, enterprise license)
+- ✅ Service costs money per request (payment gateways in CI - but use test mode if available)
+
+**Before mocking, ask**:
+1. "Can I run this in Docker?"
+2. "Does the dev team have test instance credentials?"
+3. "Is there a free tier or test mode?"
+4. "Can I use a compatible open-source alternative?" (MinIO for S3, LocalStack for AWS)
+
+---
+
 ## Test Organization
 
 ### Test Location Conventions
@@ -953,6 +1299,39 @@ Tests are considered valid when they:
 ---
 
 ## Learning Log
+
+### 2026-02-02: Docker/Docker-Compose for Real Infrastructure
+
+**Issue:** Need to emphasize Docker/docker-compose for spawning real infrastructure over mocking.
+
+**Learning:** Added comprehensive "Docker/Docker-Compose for Real Infrastructure Testing" section:
+
+**The Infrastructure Testing Hierarchy:**
+1. **Docker/docker-compose** (FIRST) - Spawn real infrastructure locally
+2. **Test instance credentials** (SECOND) - Use provided test environments
+3. **Mock** (LAST RESORT) - Only when infrastructure cannot run locally
+
+**Complete coverage of:**
+- docker-compose.test.yml examples (PostgreSQL, Redis)
+- testcontainers-rs for programmatic container management
+- Automated test scripts with Docker cleanup
+- Shared test fixtures with once_cell
+- GitHub Actions CI integration with service containers
+- Decision tree for database testing
+
+**Examples added:**
+- PostgreSQL with testcontainers-rs
+- Redis with testcontainers-rs
+- MongoDB with testcontainers-rs (async)
+- Shared container fixtures
+- Complete test infrastructure patterns
+
+**When mocking is acceptable:**
+- Proprietary SaaS without Docker (Snowflake, Salesforce)
+- Services requiring special hardware/licenses
+- **Always ask**: "Can I run this in Docker? Do we have test instance credentials?"
+
+**New Standard:** Prefer Docker/docker-compose for all infrastructure testing. Only mock when truly impossible to run locally.
 
 ### 2026-01-28: Skill Restructuring
 
