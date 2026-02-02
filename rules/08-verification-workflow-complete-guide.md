@@ -167,6 +167,70 @@ Task/Feature Complete → Report → Verify → Pass? → Commit → Push
 - Failed: [N]
 - Coverage: [N]%
 
+## Test Quality Check (MANDATORY)
+**CRITICAL**: Tests must validate real code behavior, not mock behavior.
+
+### Mock Usage Validation
+For each mock found in tests, verification agent MUST confirm:
+1. ✅ **Is this really external?** Mock is for third-party service/system resource outside our control
+2. ✅ **Are we testing real logic?** Test validates actual implementation code, not just mock setup
+3. ✅ **Are integration points tested?** Separate tests exist that validate real component integration
+
+### Invalid Mock Usage (FAIL Verification)
+❌ **Mocking our own code** - HTTP clients, databases, file I/O that we wrote
+❌ **Integration tests without integration** - Tests that mock all external calls without testing real flows
+❌ **Mock-only testing** - No tests exist that validate real component behavior
+❌ **Untested integration points** - Using mocks without separate real integration tests
+
+### Required Real Testing
+All features MUST include:
+1. **Unit tests** - Test individual functions with real components (use localhost, temp files, etc.)
+2. **Integration tests** - Test complete flows with real local services (test HTTP servers, test databases)
+3. **End-to-end tests** - Full user workflows with real components
+4. **Limited mocks** - Only for external services (payment gateways, third-party APIs, OS resources)
+
+### Examples of Valid vs Invalid Testing
+
+**❌ INVALID - Integration Theater:**
+```rust
+#[test]
+fn test_http_client() {
+    let mock_dns = MockDnsResolver::new();
+    let mock_tcp = MockTcpConnection::new();
+    let client = HttpClient::new(mock_dns, mock_tcp);
+    // Only tests that mocks work, not that HTTP works!
+}
+```
+
+**✅ VALID - Real Integration:**
+```rust
+#[test]
+fn test_http_client_real() {
+    let server = TestServer::start(); // Real HTTP server
+    let client = HttpClient::new(); // Real DNS, TCP, HTTP
+    let response = client.get(&server.url("/")).unwrap();
+    assert_eq!(response.status(), 200);
+}
+```
+
+**✅ VALID - External Service Mock:**
+```rust
+#[test]
+fn test_payment_timeout() {
+    let mock_gateway = MockPaymentGateway::timeout(); // Valid: external service
+    let result = processor.charge(100);
+    assert!(matches!(result, Err(PaymentError::Timeout)));
+}
+```
+
+### Red Flags
+Verification agent MUST flag these issues:
+- Tests pass but production code fails
+- "Integration tests" that never use real I/O
+- More mock setup code than actual test code
+- 100% mock coverage, 0% real integration tests
+- Comments like "// TODO: test with real database"
+
 ## Details
 [Specific errors if any]
 ```

@@ -44,6 +44,125 @@ Read this skill when **implementing new Rust code** (not tests or async). This c
 
 ## Core Principles
 
+### 0. Dependency Hierarchy: Project First, Stdlib Second, External Last
+
+**CRITICAL PROJECT PRINCIPLE:** Before adding external dependencies, check what the project already provides.
+
+#### The Dependency Hierarchy
+
+```
+1. Project modules/crates (FIRST)
+   ↓ Can't fulfill need?
+2. Rust stdlib (SECOND)
+   ↓ Can't fulfill need?
+3. External crates (LAST RESORT)
+```
+
+#### Process: Building Blocks Before Dependencies
+
+**MANDATORY steps before adding external dependency:**
+
+1. **Search project codebase** - Does a module already provide this?
+2. **Check building blocks** - Can we compose existing project types?
+3. **Try stdlib** - Does standard library provide primitives?
+4. **Create project module** - Build on existing foundation if possible
+5. **External dependency** - Only when truly necessary
+
+#### Example: HTTP Test Server
+
+**❌ BAD - Immediate external dependency:**
+```toml
+[dev-dependencies]
+axum = "0.7"  # External framework
+hyper = "1.0"  # External HTTP
+```
+
+**✅ GOOD - Use project building blocks:**
+```rust
+// Project already has:
+// - wire::simple_http::HttpRequestReader
+// - wire::simple_http::SimpleOutgoingResponse
+// - wire::simple_http::RenderHttp trait + Http11 impl
+// - std::net::TcpListener (stdlib)
+
+// So we create: foundation_core/src/testing/http_server.rs
+use crate::wire::simple_http::{HttpRequestReader, SimpleOutgoingResponse, Http11};
+use std::net::TcpListener;
+use std::thread;
+
+pub struct TestHttpServer {
+    listener: TcpListener,
+    // ... implementation using existing building blocks
+}
+
+impl TestHttpServer {
+    pub fn start() -> Self {
+        // Compose existing project types
+        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+        // Use HttpRequestReader to parse incoming
+        // Use SimpleOutgoingResponse to send responses
+        // Use Http11::render() to format
+        // ...
+    }
+}
+```
+
+#### When Project Building Blocks Exist
+
+**If project has HTTP parsing/rendering:**
+- ❌ Don't add `tiny_http`, `axum`, `hyper` for tests
+- ✅ Create `testing/http_server.rs` module using project's HTTP types
+
+**If project has JSON types:**
+- ❌ Don't add `serde_json` for simple cases
+- ✅ Use project's JSON implementation first
+
+**If project has async primitives:**
+- ❌ Don't add `tokio` just for channels
+- ✅ Use project's sync/async abstractions
+
+#### When to Create Project Modules
+
+**Create new project module when:**
+1. **Composing building blocks** - Project has pieces, you combine them
+2. **Extending existing types** - Adding functionality to project types
+3. **Testing helpers** - Test utilities built on project foundation
+
+**Example structure:**
+```
+foundation_core/
+├── src/
+│   ├── wire/simple_http/    # Existing HTTP building blocks
+│   └── testing/              # NEW: Test utilities
+│       ├── mod.rs
+│       └── http_server.rs    # Built on simple_http types
+└── tests/
+    └── http_integration.rs   # Uses testing::http_server
+```
+
+#### Benefits of Project-First Approach
+
+**Why this matters:**
+1. **Consistency** - Test code uses same types as production
+2. **No duplication** - Don't reimplement what exists
+3. **Smaller binaries** - Fewer dependencies
+4. **Better integration** - Tests exercise real code paths
+5. **Maintainability** - Changes update both prod and test code
+
+#### Red Flags
+
+**Warning signs you're adding unnecessary dependencies:**
+- Project already has similar functionality
+- Dependency only used in tests
+- "Convenience" dependency for something project can do
+- Adding framework when project has primitives
+
+**Ask yourself:**
+1. "Does the project already provide these building blocks?"
+2. "Can I compose existing project types to achieve this?"
+3. "Would creating a project module be better long-term?"
+4. "Is this dependency truly necessary or just convenient?"
+
 ### 1. Documentation: WHY/WHAT/HOW Pattern
 
 **MANDATORY:** Every public function must document:

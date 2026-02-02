@@ -36,6 +36,320 @@ Read this when **writing or reviewing tests** (not implementation or async code)
 
 ## Core Testing Principles
 
+### CRITICAL: Real Code Over Mocks 🚨
+
+**The Fundamental Rule**: Tests must validate actual code behavior, not mock behavior.
+
+#### When to Use Mocks (VERY SPARINGLY)
+
+**✅ VALID Mock Usage - External Dependencies Only:**
+1. **Third-party services** - Payment gateways, external APIs, cloud services
+2. **System resources** - Hardware devices, OS calls you don't control
+3. **Error injection** - Rare failure scenarios (disk full, network partition)
+
+**❌ INVALID Mock Usage - Our Own Code:**
+1. **HTTP clients** → Use real test HTTP servers (axum, hyper, wiremock)
+2. **Databases** → Use testcontainers, in-memory SQLite, or test databases
+3. **File I/O** → Use `tempfile` crate with real filesystem
+4. **DNS** → Use localhost or real DNS (with retry logic)
+5. **Internal services** → If you wrote it, test the real thing
+
+#### The Three Questions (Ask Before Every Mock)
+
+```rust
+// Before writing: let mock = Mock...::new()
+// Ask yourself:
+
+1. "Is this really external (third-party/OS)?"
+   ❌ My HTTP client? → NO MOCK
+   ✅ Stripe payment API? → Mock OK
+
+2. "Am I testing real logic or mock setup?"
+   ❌ Testing mock returns what I configured? → INVALID
+   ✅ Testing my error handling of mock failure? → VALID
+
+3. "Are integration points tested separately?"
+   ❌ Only mock tests exist? → INVALID
+   ✅ Have separate real integration tests? → VALID
+```
+
+#### Real Testing Tools for Rust
+
+**Principle: Project Building Blocks → Stdlib → External Dependencies (in that order)**
+
+**STEP 1: Check Project Building Blocks**
+
+Before adding test dependencies, search what the project already provides:
+
+```rust
+// Example: HTTP Client Testing (02-build-http-client spec)
+// Project ALREADY has:
+// - wire::simple_http::HttpRequestReader
+// - wire::simple_http::SimpleOutgoingResponse
+// - wire::simple_http::RenderHttp trait + Http11
+// - wire::simple_http::SimpleIncomingRequest
+
+// ✅ BEST - Build test server from project types
+// File: foundation_core/src/testing/http_server.rs
+use crate::wire::simple_http::{
+    HttpRequestReader, SimpleOutgoingResponse, Http11,
+    SimpleIncomingRequest, RenderHttp
+};
+use std::net::{TcpListener, TcpStream};
+use std::io::{Read, Write};
+use std::thread;
+
+pub struct TestHttpServer {
+    listener: TcpListener,
+    addr: String,
+}
+
+impl TestHttpServer {
+    pub fn start() -> Self {
+        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+        let addr = format!("http://{}", listener.local_addr().unwrap());
+
+        let listener_clone = listener.try_clone().unwrap();
+        thread::spawn(move || {
+            for stream in listener_clone.incoming() {
+                if let Ok(mut stream) = stream {
+                    // Use project's HttpRequestReader
+                    let reader = HttpRequestReader::new(stream.try_clone().unwrap());
+                    let _request = reader.read().unwrap();
+
+                    // Use project's SimpleOutgoingResponse + Http11
+                    let response = SimpleOutgoingResponse::new()
+                        .status(200)
+                        .body(b"OK");
+                    let rendered = Http11.render(&response).unwrap();
+                    stream.write_all(&rendered).unwrap();
+                }
+            }
+        });
+
+        Self { listener, addr }
+    }
+
+    pub fn url(&self, path: &str) -> String {
+        format!("{}{}", self.addr, path)
+    }
+}
+
+// Now tests use project's own building blocks!
+#[test]
+fn test_http_client() {
+    let server = TestHttpServer::start();
+    let client = HttpClient::new();
+    let response = client.get(&server.url("/")).unwrap();
+    assert_eq!(response.status(), 200);
+}
+```
+
+**STEP 2: Try Stdlib (if project doesn't have it)**
+
+**TCP Testing (Pure Stdlib - NO dependencies):**
+```rust
+// ✅ BEST - Pure stdlib TCP testing
+use std::net::{TcpListener, TcpStream};
+use std::io::{Read, Write};
+use std::thread;
+
+#[test]
+fn test_tcp_connection() {
+    // Real TCP server (no dependencies)
+    let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+    let addr = listener.local_addr().unwrap();
+
+    // Spawn server thread
+    thread::spawn(move || {
+        let (mut stream, _) = listener.accept().unwrap();
+        let mut buf = [0u8; 1024];
+        let n = stream.read(&mut buf).unwrap();
+        // Echo back
+        stream.write_all(&buf[..n]).unwrap();
+    });
+
+    // Test actual TCP connection
+    let mut client = TcpStream::connect(addr).unwrap();
+    client.write_all(b"test data").unwrap();
+
+    let mut buf = [0u8; 1024];
+    let n = client.read(&mut buf).unwrap();
+    assert_eq!(&buf[..n], b"test data");
+}
+```
+
+**STEP 3: External Dependencies (ONLY when necessary)**
+
+**HTTP Testing (If project lacks HTTP types):**
+```rust
+// ✅ ACCEPTABLE - Use minimal test dependency if project has NO HTTP
+// Cargo.toml: [dev-dependencies] tiny_http = "0.12"
+
+#[test]
+fn test_http_client() {
+    use tiny_http::{Server, Response};
+    use std::thread;
+
+    // Real HTTP server (test-only dependency)
+    let server = Server::http("127.0.0.1:0").unwrap();
+    let addr = format!("http://{}", server.server_addr());
+
+    thread::spawn(move || {
+        let request = server.recv().unwrap();
+        request.respond(Response::from_string("OK")).unwrap();
+    });
+
+    // Test our real HTTP client
+    let client = HttpClient::new();
+    let response = client.get(&addr).unwrap();
+    assert_eq!(response.status(), 200);
+}
+```
+
+**Decision Tree:**
+
+```
+Need to test HTTP?
+├─ Does project have HTTP types? (wire::simple_http)
+│  ├─ YES → Build TestHttpServer from project types ✅ BEST
+│  └─ NO → Continue to stdlib
+├─ Can stdlib do it? (std::net::TcpListener + raw bytes)
+│  ├─ YES → Use stdlib with raw HTTP bytes ✅ GOOD
+│  └─ NO → Use minimal external dep (tiny_http) ✅ ACCEPTABLE
+
+Need to test JSON?
+├─ Does project have JSON types?
+│  ├─ YES → Use project's JSON ✅ BEST
+│  └─ NO → Use serde_json ✅ ACCEPTABLE
+```
+
+**When to Use Test-Only External Dependencies:**
+- ✅ Protocol stdlib doesn't provide (HTTP, WebSocket) AND project doesn't have
+- ✅ Complex test fixtures that would be extremely verbose to write manually
+- ✅ Specialized testing tools (proptest, criterion)
+
+**When NOT to Use External Test Dependencies:**
+- ❌ Project already has the building blocks (compose them instead)
+- ❌ TCP/UDP → Use `std::net` (stdlib)
+- ❌ File I/O → Use `std::fs` + `tempfile` (stdlib)
+- ❌ Threads/channels → Use `std::thread`, `std::sync::mpsc` (stdlib)
+
+**Database Testing:**
+```rust
+// ✅ GOOD - Real database testing
+use sqlx::SqlitePool;
+
+#[tokio::test]
+async fn test_user_repository() {
+    // Real in-memory SQLite database
+    let pool = SqlitePool::connect(":memory:").await.unwrap();
+    sqlx::migrate!().run(&pool).await.unwrap();
+
+    let repo = UserRepository::new(pool);
+    let user = repo.create("alice").await.unwrap();
+
+    assert_eq!(user.name, "alice");
+}
+```
+
+**File I/O Testing:**
+```rust
+// ✅ GOOD - Real file testing
+use tempfile::TempDir;
+use std::fs;
+
+#[test]
+fn test_config_loader() {
+    // Real temporary directory
+    let dir = TempDir::new().unwrap();
+    let config_path = dir.path().join("config.json");
+
+    // Real file write
+    fs::write(&config_path, r#"{"key": "value"}"#).unwrap();
+
+    // Real file read
+    let config = ConfigLoader::load(&config_path).unwrap();
+    assert_eq!(config.key, "value");
+}
+```
+
+**DNS Testing:**
+```rust
+// ✅ GOOD - Real DNS with localhost
+#[test]
+fn test_dns_resolver() {
+    let resolver = SystemDnsResolver::new();
+
+    // localhost always resolves - valid real test
+    let addrs = resolver.resolve("localhost", 80).unwrap();
+    assert!(!addrs.is_empty());
+}
+```
+
+#### Red Flags: Integration Theater
+
+⚠️ **These are WARNING SIGNS of invalid mock usage:**
+
+```rust
+// ❌ BAD - Mocking our own code
+#[test]
+fn test_http_client() {
+    let mock_dns = MockDnsResolver::new();
+    let mock_tcp = MockTcpConnection::new();
+    let client = HttpClient::new(mock_dns, mock_tcp);
+
+    // This only tests that mocks work!
+    assert!(client.get("http://example.com").is_ok());
+}
+
+// ❌ BAD - Mock-only testing
+#[test]
+fn test_database_save() {
+    let mock_db = MockDatabase::new();
+    mock_db.expect_save().return_ok();
+
+    // Never tests real database!
+    repo.save(mock_db).unwrap();
+}
+```
+
+#### Required Test Coverage
+
+**MANDATORY for all features:**
+1. **Unit tests** - Individual components with real dependencies
+2. **Integration tests** - Complete flows with real local services
+3. **End-to-end tests** - Full workflows (may use mocks for external services only)
+
+**Example Test Structure:**
+```rust
+// tests/my_feature_test.rs
+mod unit {
+    // Test individual functions with real components
+    #[test]
+    fn test_parser() { /* real parsing logic */ }
+}
+
+mod integration {
+    // Test complete flows with real services
+    #[tokio::test]
+    async fn test_api_endpoint() {
+        let server = start_test_server(); // Real HTTP
+        let response = real_client.get(server.url()).await.unwrap();
+        // ...
+    }
+}
+
+mod external_mocks {
+    // ONLY for external services
+    #[test]
+    fn test_payment_gateway_timeout() {
+        let mock = MockStripeAPI::timeout(); // Valid: external
+        // ...
+    }
+}
+```
+
 ### The Three Test Validations ✅
 
 Every meaningful test MUST validate:

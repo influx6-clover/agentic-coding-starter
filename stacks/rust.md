@@ -137,7 +137,175 @@ See [`verification-workflow-complete-guide`](./rules/08-verification-workflow-co
 3. Compilation (debug + release)
 4. Test execution
 
+## Testing Philosophy: Real Code Over Mocks
+
+**CRITICAL PRINCIPLE**: Tests must validate actual code behavior, not mock behavior.
+
+### When to Use Mocks (VERY SPARINGLY)
+
+**✅ VALID Mock Usage - External Dependencies Only:**
+1. **Third-party network services** - External APIs, cloud services, payment gateways
+2. **Operating system resources** - Hardware devices, system calls you can't control
+3. **Specific error injection** - Testing rare failure scenarios (disk full, network timeout)
+
+**❌ INVALID Mock Usage - Our Own Code:**
+1. **Internal services** - If you wrote it, test the real thing
+2. **Database interactions** - Use test databases or in-memory implementations
+3. **HTTP clients** - Spin up local test servers
+4. **File I/O** - Use temp directories with real files
+5. **DNS resolution** - Use localhost or controlled test domains
+
+### The Three Questions (Ask Before Every Mock)
+
+Before using a mock, answer these questions:
+
+1. **Is this really external?**
+   - External service I don't control? → Mock OK
+   - My own code? → NO MOCK, test real code
+
+2. **Am I testing real logic?**
+   - Testing error handling of DNS failure? → Mock OK (specific error injection)
+   - Testing that my HTTP client works? → NO MOCK, use real HTTP
+
+3. **Are integration points tested?**
+   - Using MockDatabase but never testing real DB? → INVALID
+   - Using MockAPI but have separate real API tests? → VALID
+
+### Real Testing Examples
+
+**❌ BAD - Integration Theater:**
+```rust
+#[test]
+fn test_http_client() {
+    let mock_dns = MockDnsResolver::new();
+    let mock_tcp = MockTcpConnection::new();
+    let client = HttpClient::new(mock_dns, mock_tcp);
+
+    // This only tests that mocks work, not that HTTP works!
+    assert!(client.get("http://example.com").is_ok());
+}
+```
+
+**✅ GOOD - Real Integration Testing:**
+```rust
+#[test]
+fn test_http_client_real() {
+    // Start real HTTP server on localhost
+    let server = TestServer::start();
+    server.expect_get("/test").respond_with(200, "OK");
+
+    // Use real client with real DNS, real TCP, real HTTP
+    let client = HttpClient::new();
+    let response = client.get(&server.url("/test")).unwrap();
+
+    assert_eq!(response.status(), 200);
+    assert_eq!(response.body(), "OK");
+}
+```
+
+**✅ GOOD - Mock for External Service:**
+```rust
+#[test]
+fn test_payment_gateway_timeout() {
+    // Valid: External service, testing specific error scenario
+    let mock_gateway = MockPaymentGateway::timeout_after(1);
+    let processor = PaymentProcessor::new(mock_gateway);
+
+    let result = processor.charge(100);
+    assert!(matches!(result, Err(PaymentError::Timeout)));
+}
+```
+
+### Rust-Specific Real Testing Tools
+
+**For HTTP Clients:**
+- `axum` + `tokio` test server for real HTTP
+- `hyper::server` for low-level HTTP testing
+- `wiremock` for HTTP mock server (still uses real HTTP stack!)
+
+**For Databases:**
+- `sqlx::testing` for real database tests
+- `testcontainers` for Docker-based real databases
+- In-memory SQLite for fast real SQL tests
+
+**For DNS:**
+- `localhost` always resolves (valid for testing)
+- `trust-dns` for spinning up test DNS servers
+- Real DNS calls in CI (with retry logic)
+
+**For Files:**
+- `tempfile` crate for real temporary files/directories
+- Test with actual filesystem, not mocks
+
+### Integration Test Requirements
+
+**MANDATORY for all features:**
+
+1. **End-to-end tests** - Full user workflow with real components
+2. **Real external integration** - If it talks to network/disk, test it for real
+3. **Mock only externals** - Third-party services only
+4. **Document mock reasoning** - Why this specific mock is valid
+
+**Example: HTTP Client Testing Strategy:**
+```rust
+// Unit tests - test individual components
+mod unit_tests {
+    // Real DNS resolver with localhost
+    #[test]
+    fn test_dns_resolver_localhost() {
+        let resolver = SystemDnsResolver::new();
+        assert!(resolver.resolve("localhost", 80).is_ok());
+    }
+}
+
+// Integration tests - test complete flows
+mod integration_tests {
+    // Real HTTP server + real client
+    #[test]
+    fn test_http_get_request() {
+        let server = start_test_http_server();
+        let client = HttpClient::new();
+        let response = client.get(&server.url("/")).unwrap();
+        assert_eq!(response.status(), 200);
+    }
+
+    // Mock external service
+    #[test]
+    fn test_external_api_failure() {
+        // Valid: External service, testing error handling
+        let mock = MockExternalAPI::with_error(500);
+        let client = ApiClient::new(mock);
+        assert!(client.fetch_data().is_err());
+    }
+}
+```
+
+### Red Flags: Signs You're Mocking Too Much
+
+⚠️ **Warning signs:**
+- Tests pass but production code fails
+- High test coverage but low confidence
+- "Integration tests" that never touch real I/O
+- More mock code than real code
+- Tests only verify mock setup, not behavior
+- Can't run tests without network mocks
+
+✅ **Healthy signs:**
+- Tests catch real bugs before production
+- Integration tests use real local services
+- Mocks only for external dependencies
+- Tests run against real databases/servers
+- Can reproduce production issues in tests
+
 ## Learning Log References (from consolidated skills)
+
+### 2026-02-02: Testing Philosophy - Real Code Over Mocks 🧪
+**CRITICAL**: Mocks are for external dependencies only. Test actual implementations, not mock behavior.
+- Use real HTTP servers (axum, hyper) in integration tests
+- Use real databases (testcontainers, in-memory SQLite)
+- Use real file I/O with tempfile
+- Only mock third-party services you don't control
+- Ask three questions before every mock: Is this external? Am I testing real logic? Are integration points tested?
 
 ### 2026-01-27: Testing Failures Anti-Patterns ⚠️
 Tests that create variables but never validate their actual content are critical anti-patterns:
