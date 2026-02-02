@@ -89,9 +89,13 @@ Before adding test dependencies, search what the project already provides:
 // - wire::simple_http::RenderHttp trait + Http11
 // - wire::simple_http::SimpleIncomingRequest
 
-// ✅ BEST - Build test server from project types
-// File: foundation_core/src/testing/http_server.rs
-use crate::wire::simple_http::{
+// ✅ BEST - Create dedicated testing crate
+// File: backends/foundation_testing/Cargo.toml
+// [dependencies]
+// foundation_core = { path = "../foundation_core" }
+
+// File: backends/foundation_testing/src/http_server.rs
+use foundation_core::wire::simple_http::{
     HttpRequestReader, SimpleOutgoingResponse, Http11,
     SimpleIncomingRequest, RenderHttp
 };
@@ -99,18 +103,24 @@ use std::net::{TcpListener, TcpStream};
 use std::io::{Read, Write};
 use std::thread;
 
+/// Test HTTP server built on project's simple_http types.
+///
+/// WHY: Provides real HTTP server for testing without external dependencies.
+/// Uses foundation_core's existing HTTP implementation.
 pub struct TestHttpServer {
     listener: TcpListener,
     addr: String,
+    handle: Option<thread::JoinHandle<()>>,
 }
 
 impl TestHttpServer {
+    /// Start a new test HTTP server on random port.
     pub fn start() -> Self {
         let listener = TcpListener::bind("127.0.0.1:0").unwrap();
         let addr = format!("http://{}", listener.local_addr().unwrap());
 
         let listener_clone = listener.try_clone().unwrap();
-        thread::spawn(move || {
+        let handle = thread::spawn(move || {
             for stream in listener_clone.incoming() {
                 if let Ok(mut stream) = stream {
                     // Use project's HttpRequestReader
@@ -127,15 +137,27 @@ impl TestHttpServer {
             }
         });
 
-        Self { listener, addr }
+        Self {
+            listener,
+            addr,
+            handle: Some(handle)
+        }
     }
 
+    /// Get URL for path on this test server.
     pub fn url(&self, path: &str) -> String {
         format!("{}{}", self.addr, path)
     }
 }
 
-// Now tests use project's own building blocks!
+// File: backends/foundation_testing/src/lib.rs
+pub mod http_server;
+pub use http_server::TestHttpServer;
+
+// Now tests use it:
+// File: backends/foundation_core/tests/http_integration.rs
+use foundation_testing::TestHttpServer;
+
 #[test]
 fn test_http_client() {
     let server = TestHttpServer::start();
@@ -144,6 +166,13 @@ fn test_http_client() {
     assert_eq!(response.status(), 200);
 }
 ```
+
+**Why separate testing crate is better:**
+- ✅ Clean separation: production vs test infrastructure
+- ✅ Parallel compilation: builds alongside main crates
+- ✅ Reusable: Multiple crates can depend on `foundation_testing`
+- ✅ No test code in production binaries
+- ✅ Clear dependency: `foundation_testing` → `foundation_core`
 
 **STEP 2: Try Stdlib (if project doesn't have it)**
 
@@ -212,7 +241,7 @@ fn test_http_client() {
 ```
 Need to test HTTP?
 ├─ Does project have HTTP types? (wire::simple_http)
-│  ├─ YES → Build TestHttpServer from project types ✅ BEST
+│  ├─ YES → Create foundation_testing crate with TestHttpServer ✅ BEST
 │  └─ NO → Continue to stdlib
 ├─ Can stdlib do it? (std::net::TcpListener + raw bytes)
 │  ├─ YES → Use stdlib with raw HTTP bytes ✅ GOOD
@@ -220,8 +249,13 @@ Need to test HTTP?
 
 Need to test JSON?
 ├─ Does project have JSON types?
-│  ├─ YES → Use project's JSON ✅ BEST
+│  ├─ YES → Create foundation_testing with helpers ✅ BEST
 │  └─ NO → Use serde_json ✅ ACCEPTABLE
+
+Need test utilities?
+├─ Multiple crates need it?
+│  ├─ YES → Create dedicated testing crate (e.g., foundation_testing) ✅ BEST
+│  └─ NO → Small helper module in single crate ✅ ACCEPTABLE
 ```
 
 **When to Use Test-Only External Dependencies:**

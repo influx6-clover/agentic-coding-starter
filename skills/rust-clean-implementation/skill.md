@@ -121,24 +121,38 @@ impl TestHttpServer {
 - ❌ Don't add `tokio` just for channels
 - ✅ Use project's sync/async abstractions
 
-#### When to Create Project Modules
+#### When to Create Project Modules/Crates
 
-**Create new project module when:**
-1. **Composing building blocks** - Project has pieces, you combine them
-2. **Extending existing types** - Adding functionality to project types
-3. **Testing helpers** - Test utilities built on project foundation
+**Create dedicated testing crate when:**
+1. **Testing utilities** - Test helpers, mock servers, test fixtures
+2. **Cross-crate test support** - Multiple crates need same test infrastructure
+3. **Significant test code** - More than just a few helper functions
 
-**Example structure:**
+**Create module in existing crate when:**
+1. **Small utilities** - Few helper functions specific to one crate
+2. **Internal abstractions** - Not used by other crates
+
+**Example structure (BEST - Separate testing crate):**
 ```
-foundation_core/
-├── src/
-│   ├── wire/simple_http/    # Existing HTTP building blocks
-│   └── testing/              # NEW: Test utilities
-│       ├── mod.rs
-│       └── http_server.rs    # Built on simple_http types
+backends/
+├── foundation_core/         # Production code
+│   └── src/
+│       └── wire/simple_http/    # HTTP building blocks
+├── foundation_testing/      # NEW: Dedicated testing crate
+│   ├── Cargo.toml          # [dependencies] foundation_core
+│   └── src/
+│       ├── lib.rs
+│       └── http_server.rs   # Built on simple_http types
 └── tests/
-    └── http_integration.rs   # Uses testing::http_server
+    └── http_integration.rs  # Uses foundation_testing::http_server
 ```
+
+**Benefits of separate testing crate:**
+- ✅ Clean separation: production vs test code
+- ✅ Parallel compilation: testing crate builds alongside main
+- ✅ Reusable: Other crates can depend on it
+- ✅ Clear dependency tree: `foundation_testing` depends on `foundation_core`
+- ✅ No test code in production binary
 
 #### Benefits of Project-First Approach
 
