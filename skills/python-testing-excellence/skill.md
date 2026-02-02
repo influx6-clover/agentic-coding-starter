@@ -6,13 +6,14 @@ created: 2026-02-02
 license: "MIT"
 metadata:
   author: "Main Agent"
-  version: "1.0"
+  version: "1.1"
   last_updated: "2026-02-02"
 tags:
   - python
   - testing
   - validation
   - pytest
+  - pytest-plugins
 files:
   - examples/intro-to-property-based-testing.md: "Complete beginner to advanced guide on property-based testing with Hypothesis"
 ---
@@ -36,6 +37,453 @@ Read this when **writing or reviewing tests** (not implementation or async code)
 
 ---
 
+## Essential Pytest Plugins
+
+**MANDATORY**: Use pytest plugins instead of manual mocking. Pytest has a rich ecosystem of plugins for common testing scenarios.
+
+### Core Pytest Plugins
+
+#### pytest-mock (Wrapper for unittest.mock)
+**Use when**: You absolutely must mock (external dependencies only)
+
+```bash
+pip install pytest-mock
+```
+
+```python
+def test_external_api_with_mock(mocker):
+    """Use pytest-mock instead of unittest.mock directly."""
+    # pytest-mock provides 'mocker' fixture
+    mock_api = mocker.Mock()
+    mock_api.get_data.return_value = {"status": "ok"}
+
+    service = ExternalService(api_client=mock_api)
+    result = service.fetch_data()
+
+    assert result["status"] == "ok"
+    mock_api.get_data.assert_called_once()
+```
+
+#### pytest-asyncio (Async Testing)
+**Use when**: Testing async code
+
+```bash
+pip install pytest-asyncio
+```
+
+```python
+# pyproject.toml
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+
+# Test file
+@pytest.mark.asyncio
+async def test_async_function():
+    """Test async code naturally."""
+    result = await fetch_data()
+    assert result is not None
+```
+
+#### pytest-cov (Coverage Reporting)
+**Use when**: Measuring test coverage
+
+```bash
+pip install pytest-cov
+```
+
+```bash
+# Run with coverage
+pytest --cov=src --cov-report=html --cov-report=term-missing
+```
+
+```toml
+# pyproject.toml
+[tool.pytest.ini_options]
+addopts = [
+    "--cov=src",
+    "--cov-report=html",
+    "--cov-report=term-missing",
+    "--cov-fail-under=80",
+]
+```
+
+### HTTP Testing Plugins
+
+#### pytest-httpserver (Lightweight HTTP Server)
+**Use when**: Testing HTTP clients with simple request/response patterns
+
+```bash
+pip install pytest-httpserver
+```
+
+```python
+from pytest_httpserver import HTTPServer
+
+def test_http_client(httpserver: HTTPServer):
+    """Test HTTP client with real local server."""
+    httpserver.expect_request("/api/users").respond_with_json(
+        {"users": [{"id": 1, "name": "Alice"}]}
+    )
+
+    client = HTTPClient()
+    response = client.get(httpserver.url_for("/api/users"))
+
+    assert response.json()["users"][0]["name"] == "Alice"
+```
+
+#### pytest-flask (Flask Test Client)
+**Use when**: Testing Flask applications
+
+```bash
+pip install pytest-flask
+```
+
+```python
+import pytest
+from myapp import create_app
+
+@pytest.fixture
+def app():
+    """Create Flask app for testing."""
+    app = create_app({"TESTING": True})
+    yield app
+
+@pytest.fixture
+def client(app):
+    """Create test client."""
+    return app.test_client()
+
+def test_api_endpoint(client):
+    """Test Flask API endpoint."""
+    response = client.get("/api/users")
+    assert response.status_code == 200
+```
+
+#### pytest-aiohttp (aiohttp Test Client)
+**Use when**: Testing aiohttp applications
+
+```bash
+pip install pytest-aiohttp
+```
+
+```python
+from aiohttp import web
+import pytest
+
+async def hello(request):
+    return web.Response(text="Hello")
+
+@pytest.fixture
+def app():
+    app = web.Application()
+    app.router.add_get('/', hello)
+    return app
+
+async def test_hello(aiohttp_client, app):
+    """Test aiohttp endpoint."""
+    client = await aiohttp_client(app)
+    resp = await client.get('/')
+    assert resp.status == 200
+    text = await resp.text()
+    assert 'Hello' in text
+```
+
+### Database Testing Plugins
+
+#### pytest-postgresql (Real PostgreSQL)
+**Use when**: Testing with real PostgreSQL database
+
+```bash
+pip install pytest-postgresql
+```
+
+```python
+from pytest_postgresql import factories
+
+# Create database fixture
+postgresql_proc = factories.postgresql_proc(port=None)
+postgresql = factories.postgresql('postgresql_proc')
+
+def test_user_repository(postgresql):
+    """Test with real PostgreSQL database."""
+    cursor = postgresql.cursor()
+    cursor.execute("CREATE TABLE users (id serial PRIMARY KEY, name varchar);")
+    cursor.execute("INSERT INTO users (name) VALUES ('Alice');")
+
+    cursor.execute("SELECT name FROM users;")
+    result = cursor.fetchone()
+    assert result[0] == "Alice"
+```
+
+#### pytest-mysql (Real MySQL)
+**Use when**: Testing with real MySQL database
+
+```bash
+pip install pytest-mysql
+```
+
+```python
+from pytest_mysql import factories
+
+mysql_proc = factories.mysql_proc(port=None)
+mysql = factories.mysql('mysql_proc')
+
+def test_with_mysql(mysql):
+    """Test with real MySQL database."""
+    cursor = mysql.cursor()
+    cursor.execute("CREATE TABLE users (id INT, name VARCHAR(50));")
+    cursor.execute("INSERT INTO users VALUES (1, 'Alice');")
+
+    cursor.execute("SELECT name FROM users WHERE id = 1;")
+    result = cursor.fetchone()
+    assert result[0] == "Alice"
+```
+
+#### pytest-mongodb (Real MongoDB)
+**Use when**: Testing with real MongoDB
+
+```bash
+pip install pytest-mongodb
+```
+
+```python
+from pytest_mongodb import factories
+
+mongodb_proc = factories.mongodb_proc(port=None)
+mongodb = factories.mongodb('mongodb_proc')
+
+def test_with_mongodb(mongodb):
+    """Test with real MongoDB."""
+    db = mongodb.test_db
+    collection = db.users
+
+    collection.insert_one({"name": "Alice", "age": 30})
+
+    user = collection.find_one({"name": "Alice"})
+    assert user["age"] == 30
+```
+
+### File and System Testing Plugins
+
+#### pytest-tmpdir (Temporary Directories)
+**Built-in**: No installation needed
+
+```python
+def test_file_operations(tmp_path):
+    """Test with real temporary directory."""
+    # tmp_path is a pathlib.Path object
+    test_file = tmp_path / "test.txt"
+    test_file.write_text("Hello, World!")
+
+    content = test_file.read_text()
+    assert content == "Hello, World!"
+
+def test_with_tmpdir(tmpdir):
+    """Alternative temporary directory fixture."""
+    # tmpdir is py.path.local object (legacy)
+    file_path = tmpdir.join("test.txt")
+    file_path.write("Hello, World!")
+
+    assert file_path.read() == "Hello, World!"
+```
+
+### Parametrization and Data Plugins
+
+#### pytest-parametrize-cases (Organized Test Cases)
+**Use when**: Managing many parametrized test cases
+
+```bash
+pip install pytest-parametrize-cases
+```
+
+```python
+import pytest
+from pytest_parametrize_cases import parametrize_cases
+
+@parametrize_cases(
+    "email, expected_valid",
+    [
+        ("alice@example.com", True),
+        ("bob@test.co.uk", True),
+        ("invalid-email", False),
+        ("@example.com", False),
+    ],
+    ids=["valid_simple", "valid_uk", "no_at_sign", "no_local_part"]
+)
+def test_email_validation(email, expected_valid):
+    """Test email validation with clear case names."""
+    assert validate_email(email) == expected_valid
+```
+
+#### pytest-datadir (Test Data Files)
+**Use when**: Tests need data files
+
+```bash
+pip install pytest-datadir
+```
+
+```python
+def test_load_config(datadir):
+    """Test loading config from data directory.
+
+    Looks for test_module/test_load_config/ directory with test data.
+    """
+    config_file = datadir / "config.json"
+    config = load_config(config_file)
+    assert config["setting"] == "value"
+```
+
+### Mocking and Fixtures Plugins
+
+#### pytest-freezegun (Time Mocking)
+**Use when**: Testing time-dependent code
+
+```bash
+pip install pytest-freezegun
+```
+
+```python
+from freezegun import freeze_time
+import datetime
+
+@freeze_time("2024-01-01 12:00:00")
+def test_time_dependent_function():
+    """Test with frozen time."""
+    now = datetime.datetime.now()
+    assert now.year == 2024
+    assert now.month == 1
+    assert now.day == 1
+```
+
+#### pytest-env (Environment Variables)
+**Use when**: Testing with environment variables
+
+```bash
+pip install pytest-env
+```
+
+```toml
+# pyproject.toml
+[tool.pytest_env]
+DATABASE_URL = "postgresql://test:test@localhost/testdb"
+API_KEY = "test-key"
+```
+
+```python
+import os
+
+def test_with_env_vars():
+    """Environment variables set automatically."""
+    assert os.environ["DATABASE_URL"].startswith("postgresql://")
+```
+
+### Performance and Benchmarking Plugins
+
+#### pytest-benchmark (Performance Testing)
+**Use when**: Benchmarking code performance
+
+```bash
+pip install pytest-benchmark
+```
+
+```python
+def test_performance(benchmark):
+    """Benchmark function performance."""
+    result = benchmark(expensive_function, input_data)
+    assert result is not None
+
+def test_compare_implementations(benchmark):
+    """Compare two implementations."""
+    benchmark.group = "sorting"
+    benchmark(quicksort, large_list)
+```
+
+### Test Organization Plugins
+
+#### pytest-xdist (Parallel Testing)
+**Use when**: Running tests in parallel
+
+```bash
+pip install pytest-xdist
+```
+
+```bash
+# Run tests on 4 CPUs
+pytest -n 4
+
+# Run tests with auto-detection
+pytest -n auto
+```
+
+#### pytest-repeat (Repeat Tests)
+**Use when**: Testing for flaky behavior
+
+```bash
+pip install pytest-repeat
+```
+
+```python
+@pytest.mark.repeat(100)
+def test_potentially_flaky():
+    """Run test 100 times to catch race conditions."""
+    result = concurrent_operation()
+    assert result.is_valid()
+```
+
+### Recommended Plugin Stack
+
+**Minimal Essential Stack**:
+```bash
+pip install pytest pytest-asyncio pytest-cov pytest-mock
+```
+
+**Web Application Stack**:
+```bash
+pip install pytest pytest-asyncio pytest-cov pytest-httpserver pytest-flask
+```
+
+**Database Application Stack**:
+```bash
+pip install pytest pytest-asyncio pytest-cov pytest-postgresql pytest-mongodb
+```
+
+**Complete Testing Stack**:
+```bash
+pip install \
+    pytest pytest-asyncio pytest-cov pytest-mock \
+    pytest-httpserver pytest-flask pytest-aiohttp \
+    pytest-postgresql pytest-mysql pytest-mongodb \
+    pytest-xdist pytest-benchmark pytest-freezegun \
+    pytest-env pytest-datadir
+```
+
+**pyproject.toml Configuration**:
+```toml
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4"
+pytest-asyncio = "^0.23"
+pytest-cov = "^4.1"
+pytest-mock = "^3.12"
+pytest-httpserver = "^1.0"
+pytest-xdist = "^3.5"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+addopts = [
+    "-v",
+    "--tb=short",
+    "--strict-markers",
+    "--cov=src",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+]
+asyncio_mode = "auto"
+```
+
+---
+
 ## Core Testing Principles
 
 ### CRITICAL: Real Code Over Mocks 🚨
@@ -50,11 +498,16 @@ Read this when **writing or reviewing tests** (not implementation or async code)
 3. **Error injection** - Rare failure scenarios (disk full, network partition)
 
 **❌ INVALID Mock Usage - Our Own Code:**
-1. **HTTP clients** → Use real test HTTP servers (Flask, FastAPI test client)
-2. **Databases** → Use test databases, SQLite in-memory, or testcontainers
-3. **File I/O** → Use `tempfile` module with real filesystem
+1. **HTTP clients** → Use pytest plugins: `pytest-httpserver`, `pytest-flask`, `pytest-aiohttp`
+2. **Databases** → Use pytest plugins: `pytest-postgresql`, `pytest-mysql`, `pytest-mongodb`
+3. **File I/O** → Use pytest fixture with `tempfile` module
 4. **DNS** → Use localhost or real DNS (with retry logic)
 5. **Internal services** → If you wrote it, test the real thing
+
+**Prefer pytest plugins over unittest.mock**:
+- Use `pytest-mock` (pytest wrapper) instead of `unittest.mock` directly
+- Use specialized pytest plugins for common scenarios
+- Mocks should be last resort, not first choice
 
 #### The Three Questions (Ask Before Every Mock)
 
@@ -358,25 +811,47 @@ def test_config_loader():
 
 ```python
 # ❌ BAD - Mocking our own code
-from unittest.mock import Mock
-
-def test_http_client():
-    mock_dns = Mock()
-    mock_tcp = Mock()
+def test_http_client(mocker):
+    """DON'T DO THIS - mocking our own internal components!"""
+    mock_dns = mocker.Mock()
+    mock_tcp = mocker.Mock()
     client = HTTPClient(dns_resolver=mock_dns, tcp_conn=mock_tcp)
 
     # This only tests that mocks work!
     assert client.get("http://example.com") is not None
 
 # ❌ BAD - Mock-only testing
-def test_database_save():
-    mock_db = Mock()
+def test_database_save(mocker):
+    """DON'T DO THIS - never tests real database!"""
+    mock_db = mocker.Mock()
     mock_db.save.return_value = True
 
     # Never tests real database!
     repo = UserRepository(mock_db)
     result = repo.save(user)
     assert result is True
+
+# ✅ GOOD - Use pytest plugins for real testing
+def test_http_client_real(httpserver):
+    """Test with real HTTP server using pytest-httpserver."""
+    httpserver.expect_request("/test").respond_with_data("OK")
+
+    client = HTTPClient()
+    response = client.get(httpserver.url_for("/test"))
+
+    assert response.status_code == 200
+    assert response.text == "OK"
+
+def test_database_save_real(postgresql):
+    """Test with real PostgreSQL using pytest-postgresql."""
+    cursor = postgresql.cursor()
+    cursor.execute("CREATE TABLE users (id serial, name varchar);")
+
+    repo = UserRepository(postgresql)
+    user = repo.save(User(name="Alice"))
+
+    cursor.execute("SELECT name FROM users WHERE id = %s;", (user.id,))
+    assert cursor.fetchone()[0] == "Alice"
 ```
 
 #### Required Test Coverage
@@ -409,12 +884,16 @@ class TestIntegration:
 class TestExternalMocks:
     """ONLY for external services."""
 
-    def test_payment_gateway_timeout(self):
-        """Valid: External service, testing specific error scenario."""
-        mock = Mock(spec=PaymentGateway)
-        mock.charge.side_effect = TimeoutError()
+    def test_payment_gateway_timeout(self, mocker):
+        """Valid: External service, testing specific error scenario.
 
-        processor = PaymentProcessor(gateway=mock)
+        Use pytest-mock (mocker fixture) instead of unittest.mock directly.
+        """
+        # Mock external payment gateway (not our code!)
+        mock_gateway = mocker.Mock(spec=PaymentGateway)
+        mock_gateway.charge.side_effect = TimeoutError()
+
+        processor = PaymentProcessor(gateway=mock_gateway)
         result = processor.charge(100)
 
         assert isinstance(result, PaymentError)
@@ -848,6 +1327,31 @@ Tests are considered valid when they:
 
 **New Standard:** All Python tests must follow these patterns.
 
+### 2026-02-02: Pytest Plugins Emphasis
+
+**Issue:** Need to emphasize pytest plugins over manual mocking and unittest.mock.
+
+**Learning:** Updated skill to strongly prefer pytest plugins:
+- Added comprehensive "Essential Pytest Plugins" section
+- **pytest-mock**: Use instead of unittest.mock directly
+- **pytest-httpserver**: For HTTP client testing (no mocks!)
+- **pytest-postgresql/mysql/mongodb**: Real database testing
+- **pytest-flask/aiohttp**: Framework-specific test clients
+- **pytest-xdist**: Parallel test execution
+- **pytest-benchmark**: Performance testing
+- **pytest-freezegun**: Time-dependent testing
+
+Organized plugins by category:
+1. Core plugins (pytest-mock, pytest-asyncio, pytest-cov)
+2. HTTP testing (pytest-httpserver, pytest-flask, pytest-aiohttp)
+3. Database testing (pytest-postgresql, pytest-mysql, pytest-mongodb)
+4. File/system testing (tmp_path, tmpdir built-in fixtures)
+5. Performance (pytest-benchmark, pytest-xdist)
+
+Updated all mock examples to use pytest-mock's `mocker` fixture instead of unittest.mock.
+
+**New Standard:** Always check pytest plugin ecosystem before writing manual mocks or test infrastructure.
+
 ---
 
 ## Examples
@@ -863,5 +1367,5 @@ See `examples/` directory for comprehensive guides:
 
 ---
 
-*Last Updated: 2026-02-02*
-*Version: 1.0*
+*Last Updated: 2026-02-02 - Added pytest plugins emphasis*
+*Version: 1.1*
