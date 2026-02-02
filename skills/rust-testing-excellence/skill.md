@@ -174,6 +174,116 @@ fn test_http_client() {
 - ✅ No test code in production binaries
 - ✅ Clear dependency: `foundation_testing` → `foundation_core`
 
+**Integration tests go in `./tests` directory:**
+```
+backends/foundation_core/
+├── src/                        # Production code
+├── tests/                      # Integration tests (separate crate)
+│   ├── http_internal.rs        # Tests using foundation_testing
+│   └── http_external.rs        # Tests against real servers
+└── Cargo.toml
+
+# Integration tests are a separate crate that depends on foundation_core
+# This prevents cyclical dependencies and keeps organization clean
+```
+
+**Test Organization Strategy:**
+
+```rust
+// File: backends/foundation_core/tests/http_internal.rs
+// Fast tests using our own TestHttpServer
+use foundation_testing::TestHttpServer;
+use foundation_core::wire::simple_http::client::HttpClient;
+
+#[test]
+fn test_http_get() {
+    let server = TestHttpServer::start();
+    let client = HttpClient::new();
+    let response = client.get(&server.url("/")).unwrap();
+    assert_eq!(response.status(), 200);
+}
+
+#[test]
+fn test_http_redirects() {
+    let server = TestHttpServer::with_redirect();
+    let client = HttpClient::new();
+    let response = client.get(&server.url("/redirect")).unwrap();
+    assert_eq!(response.status(), 200);
+}
+
+// File: backends/foundation_core/tests/http_external.rs
+// Slower validation tests against real HTTP servers
+use foundation_core::wire::simple_http::client::HttpClient;
+
+#[test]
+#[ignore] // Ignored by default (requires network)
+fn test_external_httpbin_get() {
+    let client = HttpClient::new();
+    let response = client.get("http://httpbin.org/get").unwrap();
+    assert_eq!(response.status(), 200);
+}
+
+#[test]
+#[ignore] // Requires network
+fn test_external_httpbin_redirects() {
+    let client = HttpClient::new();
+    let response = client.get("http://httpbin.org/redirect/1").unwrap();
+    assert_eq!(response.status(), 200); // After following redirect
+}
+
+#[test]
+#[ignore]
+fn test_external_https() {
+    let client = HttpClient::new();
+    let response = client.get("https://httpbin.org/get").unwrap();
+    assert_eq!(response.status(), 200);
+}
+
+#[test]
+#[ignore]
+fn test_external_error_codes() {
+    let client = HttpClient::new();
+    let response = client.get("http://httpbin.org/status/404").unwrap();
+    assert_eq!(response.status(), 404);
+}
+
+#[test]
+#[ignore]
+fn test_external_headers() {
+    let client = HttpClient::new();
+    let response = client.get("http://httpbin.org/headers").unwrap();
+    assert_eq!(response.status(), 200);
+    // Verify headers were sent/received correctly
+}
+```
+
+**Test Pyramid:**
+1. **Many tests (90%)**: Unit tests in `src/` using foundation_testing - Fast, controlled
+2. **Some tests (9%)**: Integration tests in `./tests` using foundation_testing - Medium speed
+3. **Few tests (1%)**: External validation in `./tests` with `#[ignore]` - Slow, real-world
+
+**Run Strategy:**
+```bash
+# Fast tests only (no external network calls)
+cargo test
+
+# Include external validation tests
+cargo test -- --ignored
+
+# Run specific external test
+cargo test test_external_httpbin_get -- --ignored
+
+# Run all tests (internal + external)
+cargo test -- --include-ignored
+```
+
+**Benefits of `./tests` directory for integration tests:**
+- ✅ **No cyclical dependencies** - Integration tests are separate crate
+- ✅ **Clean organization** - Clear separation of unit vs integration tests
+- ✅ **Realistic testing** - Tests use public API like real consumers
+- ✅ **Multiple sources** - Can test against foundation_testing AND external servers
+- ✅ **Conditional compilation** - Easy to exclude expensive tests from CI
+
 **STEP 2: Try Stdlib (if project doesn't have it)**
 
 **TCP Testing (Pure Stdlib - NO dependencies):**
