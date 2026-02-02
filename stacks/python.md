@@ -61,6 +61,65 @@
   - Timeout and cancellation patterns
   - Async testing with pytest-asyncio
 
+### Django Work 🌐
+
+**Read BEFORE working with Django:**
+
+- [`python-django-models`](../skills/python-django-models/skill.md)
+  - Base model classes (UUID, timestamps, soft delete, temporal)
+  - Query optimization (select_related, prefetch_related)
+  - N+1 query prevention
+  - Transaction patterns with performance optimization
+  - Real database testing with Docker/testcontainers
+  - Factory-Boy for test data generation
+
+- [`python-django-configuration`](../skills/python-django-configuration/skill.md)
+  - django-configurations framework (MANDATORY)
+  - Environment variable management (Required, Optional, Default-allowed)
+  - Multi-tenancy with BRAND pattern
+  - Feature flags
+  - Caching configuration (Redis, Database, Memcached)
+
+- [`python-django-testing`](../skills/python-django-testing/skill.md)
+  - **CRITICAL**: 100% coverage requirement (MANDATORY)
+  - **CRITICAL**: Function-based tests only (never classes)
+  - Test naming: test_<function>__<scenario>__<assertion>
+  - Fixtures in file (away from bloated conftest.py)
+  - Factory-Boy patterns
+  - Given/When/Then structure
+  - Django-specific patterns (@override_settings, N+1 testing)
+
+### gRPC Work 📡
+
+**Read BEFORE implementing gRPC services:**
+
+- [`python-grpc-services`](../skills/python-grpc-services/skill.md)
+  - Service registration pattern (SERVICES_TO_REGISTER)
+  - **CRITICAL**: Authentication decorators (MANDATORY for all endpoints)
+  - Method signature requirements
+  - Error handling with specific exceptions
+  - Model to proto conversion
+  - Django ORM integration
+
+- [`python-grpc-protobuf`](../skills/python-grpc-protobuf/skill.md)
+  - **CRITICAL**: _pb2 suffix import pattern (MANDATORY)
+  - Import both _pb2 and _pb2_grpc for services
+  - Code generation workflow with protoc
+  - Generated files committed to version control
+  - Proto file organization
+
+### Monorepo Work 🏗️
+
+**Read BEFORE working in monorepo:**
+
+- [`python-monorepo-structure`](../skills/python-monorepo-structure/skill.md)
+  - **CRITICAL**: Services import from ca-lib ONLY (never from each other)
+  - **CRITICAL**: Cross-service communication via gRPC ONLY
+  - Virtual workspace root configuration
+  - ca-lib utilities reference (foundation library)
+  - Protobuf cross-references
+  - Development workflows
+
 ---
 
 ## Quick Reference
@@ -285,6 +344,36 @@ def test_user_repo(postgresql):  # testcontainers fixture
 
 ## Learning Log
 
+### 2026-02-02: Added Django, gRPC, and Monorepo Skills
+
+**Issue:** Need comprehensive skills for Django, gRPC, and monorepo development.
+
+**Action:** Created 6 additional Python skills (11,771 lines total):
+
+**Django Skills (3 skills - 9,410 lines):**
+- **python-django-models**: Base model classes, query optimization, N+1 prevention, real database testing
+- **python-django-configuration**: django-configurations, environment management, multi-tenancy, caching
+- **python-django-testing**: 100% coverage (MANDATORY), function-based tests, Factory-Boy, Given/When/Then
+
+**gRPC Skills (2 skills - 1,480 lines):**
+- **python-grpc-services**: Service registration, authentication decorators (MANDATORY), error handling
+- **python-grpc-protobuf**: _pb2 suffix pattern (MANDATORY), code generation, proto organization
+
+**Monorepo Skill (1 skill - 881 lines):**
+- **python-monorepo-structure**: Workspace configuration, ca-lib utilities, cross-service dependencies (gRPC only)
+
+**Key Principles Established:**
+- Services import from ca-lib ONLY (never from each other)
+- Cross-service communication via gRPC ONLY (no direct imports)
+- Authentication MANDATORY for all gRPC endpoints
+- 100% test coverage MANDATORY for Django
+- _pb2 suffix MANDATORY for protobuf imports
+- Real databases over mocks (Docker/testcontainers FIRST)
+
+**Adapted from:** DJANGO.md, TESTING.md, GRPC.md, MONOREPO.md counterpart prompts
+
+**New Standard:** All Django, gRPC, and monorepo work must reference appropriate skills.
+
 ### 2026-02-02: Streamlined Stack File - Skills References
 
 **Issue:** Python stack file had 1200+ lines with content now covered by dedicated skills.
@@ -332,4 +421,4 @@ Key adaptations from Rust:
 ---
 
 *Created: 2026-01-11*
-*Last Updated: 2026-02-02 - Streamlined with skill references, added Docker testing emphasis*
+*Last Updated: 2026-02-02 - Added Django, gRPC, and Monorepo skills; updated skill references*
