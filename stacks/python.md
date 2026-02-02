@@ -5,6 +5,63 @@
 - **Use Cases**: Data processing, scripting, automation, backend services, machine learning
 - **Official Docs**: https://docs.python.org/3/
 
+## Skill References (MANDATORY)
+
+**ALL Python skills MUST be consulted based on task type. Load skills selectively to optimize context.**
+
+### Project Setup & Configuration ⚙️
+
+**Read BEFORE setting up new Python projects or configuring environment:**
+
+- [`python-directory-and-configuration`](../skills/python-directory-and-configuration/skill.md)
+  - Python installation with pyenv
+  - Virtual environment setup (venv, Poetry, uv)
+  - Project structure and module organization
+  - pyproject.toml configuration (black, ruff, mypy, pytest)
+  - Development workflow and pre-commit hooks
+  - Environment variables with python-dotenv
+
+### Implementation Work 🔨
+
+**Read BEFORE implementing any new features:**
+
+- [`python-clean-implementation`](../skills/python-clean-implementation/skill.md)
+  - Dependency hierarchy (project → stdlib → pip packages)
+  - Google/NumPy docstring patterns
+  - Custom exception handling patterns
+  - Type hints and mypy compliance
+  - Pythonic idioms (context managers, comprehensions, dataclasses)
+  - Security best practices (input validation, secrets management, SQL/command injection)
+  - Performance patterns (generators, lru_cache, __slots__)
+  - Common pitfalls (mutable defaults, broad exceptions)
+
+### Testing Work 🧪
+
+**Read BEFORE writing or reviewing tests:**
+
+- [`python-testing-excellence`](../skills/python-testing-excellence/skill.md)
+  - **CRITICAL**: Real code over mocks philosophy
+  - pytest patterns and fixtures
+  - Test organization (unit vs integration)
+  - Property-based testing with Hypothesis
+  - Parametrized tests and markers
+  - Test coverage with pytest-cov
+  - Mock usage guidelines (external dependencies ONLY)
+
+### Async/Await Work ⚡
+
+**Read BEFORE implementing async code:**
+
+- [`python-with-async-code`](../skills/python-with-async-code/skill.md)
+  - Core principle: Never block the event loop
+  - Non-blocking I/O with asyncio
+  - asyncio.to_thread for CPU-intensive work
+  - Task management with asyncio.gather
+  - Queue patterns for producer-consumer
+  - Timeout and cancellation patterns
+  - Common pitfalls (blocking, forgetting await, mixing sync/async)
+  - Async testing with pytest-asyncio
+
 ## Setup and Tools
 
 ### Required Tools
@@ -1118,6 +1175,24 @@ class UserService:
 
 ## Learning Log
 
+### 2026-02-02: Python Skills Created - Rust Patterns Adapted
+**Issue**: Need comprehensive Python skills equivalent to Rust skills.
+**Learning**: Created four Python skills adapted from Rust patterns:
+- **python-clean-implementation**: Dependency hierarchy (project → stdlib → pip), type hints, docstrings, custom exceptions
+- **python-testing-excellence**: Real code over mocks, pytest patterns, Hypothesis for property-based testing
+- **python-with-async-code**: asyncio patterns, event loop protection, async testing
+- **python-directory-and-configuration**: Virtual environments, pyproject.toml, development workflow
+
+Key adaptations from Rust:
+- `derive_more` → custom exception classes with inheritance
+- rustfmt/clippy → black/ruff
+- Cargo.toml → pyproject.toml
+- tokio → asyncio
+- proptest → Hypothesis
+- cargo test → pytest
+
+**New Standard**: All Python development must reference appropriate skill before starting work.
+
 ### 2026-01-11: Initial Python Standards
 **Issue**: Creating initial standards document.
 **Learning**: Established baseline standards for Python development in this project.
@@ -1126,4 +1201,4 @@ class UserService:
 
 ---
 *Created: 2026-01-11*
-*Last Updated: 2026-01-11*
+*Last Updated: 2026-02-02 - Added Python skills and skill references*
