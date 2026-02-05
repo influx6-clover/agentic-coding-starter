@@ -38,6 +38,7 @@ Read this skill when **implementing new Python code** (not tests or async). This
 - Pythonic idioms and patterns
 
 **Do NOT read this for:**
+
 - Testing → See [python-testing-excellence](../python-testing-excellence/skill.md)
 - Async code → See [python-with-async-code](../python-with-async-code/skill.md)
 
@@ -72,6 +73,7 @@ Read this skill when **implementing new Python code** (not tests or async). This
 #### Example: HTTP Test Server
 
 **❌ BAD - Immediate external dependency:**
+
 ```toml
 [dev-dependencies]
 httpx = "*"  # External HTTP library
@@ -79,6 +81,7 @@ aiohttp = "*"  # External async HTTP
 ```
 
 **✅ GOOD - Use project building blocks:**
+
 ```python
 # Project already has:
 # - http_client module with request/response handling
@@ -127,29 +130,35 @@ class TestHTTPServer:
 #### When Project Building Blocks Exist
 
 **If project has HTTP types:**
+
 - ❌ Don't add `httpx`, `aiohttp`, `requests` for tests
 - ✅ Create `testing/http_server.py` module using project's HTTP types
 
 **If project has JSON utilities:**
+
 - ❌ Don't add `ujson` for performance (unless proven bottleneck)
 - ✅ Use stdlib `json` or project's JSON implementation
 
 **If project has async primitives:**
+
 - ❌ Don't add `trio` or `curio` just for different async style
 - ✅ Use project's asyncio patterns
 
 #### When to Create Project Modules/Packages
 
 **Create dedicated testing package when:**
+
 1. **Testing utilities** - Test helpers, mock servers, test fixtures
 2. **Cross-module test support** - Multiple modules need same test infrastructure
 3. **Significant test code** - More than just a few helper functions
 
 **Create module in existing package when:**
+
 1. **Small utilities** - Few helper functions specific to one package
 2. **Internal abstractions** - Not used by other packages
 
 **Example structure (BEST - Separate testing package):**
+
 ```
 src/
 ├── myapp/               # Production code
@@ -166,6 +175,7 @@ tests/
 ```
 
 **Benefits of separate testing package:**
+
 - ✅ Clean separation: production vs test code
 - ✅ Reusable: Other packages can import it
 - ✅ Clear dependency tree: `myapp_testing` depends on `myapp`
@@ -175,6 +185,7 @@ tests/
 #### Benefits of Project-First Approach
 
 **Why this matters:**
+
 1. **Consistency** - Test code uses same types as production
 2. **No duplication** - Don't reimplement what exists
 3. **Smaller dependencies** - Fewer pip packages to manage
@@ -184,12 +195,14 @@ tests/
 #### Red Flags
 
 **Warning signs you're adding unnecessary dependencies:**
+
 - Project already has similar functionality
 - Dependency only used in tests
 - "Convenience" dependency for something project can do
 - Adding framework when project has primitives
 
 **Ask yourself:**
+
 1. "Does the project already provide these building blocks?"
 2. "Can I compose existing project types to achieve this?"
 3. "Would creating a project module be better long-term?"
@@ -198,6 +211,7 @@ tests/
 ### 1. Documentation: Google/NumPy Docstring Style
 
 **MANDATORY:** Every public function must document:
+
 - **Summary** - One-line description
 - **Args** - Parameter descriptions with types
 - **Returns** - What the function returns
@@ -239,6 +253,7 @@ def register_user(username: str, email: str) -> int:
 - [ ] Examples section - Code examples showing usage (optional)
 
 **NumPy Style Alternative:**
+
 ```python
 def register_user(username: str, email: str) -> int:
     """
@@ -418,6 +433,7 @@ def fetch_user_data(user_id: int) -> dict:
 ```
 
 **When wrapper IS needed:**
+
 - ✅ Multiple HTTP calls with shared configuration
 - ✅ Complex error handling, retries, authentication
 - ✅ Reusable patterns used across multiple modules
@@ -439,6 +455,7 @@ consumer = Consumer(q.get())
 ```
 
 **Use queues ONLY for:**
+
 - ✅ Cross-thread communication
 - ✅ Producer-consumer patterns with timing mismatch
 - ✅ Multiple producers/consumers
@@ -488,7 +505,7 @@ Before adding abstraction, ask:
 
 ---
 
-## Type Hints and Mypy Compliance
+## Typrt-e Hints and Mypy Compliance
 
 ### Mandatory Type Hints
 
@@ -885,6 +902,7 @@ module.specific_function()
 **Issue:** Creating Python equivalent of Rust clean implementation skill.
 
 **Learning:** Adapted Rust patterns to Python idioms:
+
 - Dependency hierarchy (project → stdlib → pip)
 - Docstrings instead of doc comments
 - Custom exceptions instead of derive_more
@@ -917,5 +935,5 @@ See `templates/` directory for starter code:
 
 ---
 
-*Last Updated: 2026-02-02*
-*Version: 1.0*
+_Last Updated: 2026-02-02_
+_Version: 1.0_
