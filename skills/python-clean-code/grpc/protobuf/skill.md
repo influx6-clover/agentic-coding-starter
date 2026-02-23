@@ -475,7 +475,7 @@ See `examples/` directory for detailed guides:
 ## Related Skills
 
 - [Python gRPC Services](../services/skill.md) - For service implementation
-- [Python Django Models](../python-django-models/skill.md) - For ProtobufEnumField
+- [Python Django Models](../../django/models/skill.md) - For ProtobufEnumField
 
 ---
 
