@@ -1,50 +1,55 @@
-# [Specification Name] - Learnings
+# Learnings - [Skill Name]
 
-## Overview
-[Brief summary of what was learned during this specification]
+## Quick Tips
+- Tip 1: Concise actionable tip (1 line)
+- Tip 2: Another quick insight
+- Tip 3: Performance optimization discovered
 
-## Key Insights
-1. **[Insight Category]**
-   - [Specific learning or discovery]
-   - [Why this matters]
+## Common Issues Encountered
+- Issue: Brief description
+  - Solution: What worked
+  - When: Context where this occurred
 
-2. **[Another Insight]**
-   - [Details]
+- Issue: Another problem hit
+  - Solution: How it was solved
+  - Why: Root cause explanation (1 line)
 
-## Challenges and Solutions
+## Adaptations That Worked
+- Adaptation: Description of modification
+  - Context: When/why needed
+  - Result: Outcome achieved
 
-### Challenge: [Challenge Description]
-**Problem**: [What the problem was]
-**Solution**: [How it was solved]
-**Outcome**: [Result]
+## Anti-Patterns Discovered
+- Anti-pattern: What NOT to do
+  - Why: Why it fails
+  - Instead: What to do instead
 
-## Best Practices Discovered
-- [Best practice 1]
-- [Best practice 2]
+## Production Gotchas
+- Gotcha: Unexpected behavior in production
+  - Impact: What broke
+  - Fix: How to avoid/handle
 
-## Anti-Patterns to Avoid
-- [What not to do and why]
+## Performance Insights
+- Insight: What was learned about performance
+  - Measurement: Actual metrics/impact
+  - Recommendation: Action to take
 
-## Recommendations for Future Work
-1. [Recommendation for next time]
-2. [Another recommendation]
+## Edge Cases
+- Edge case: Unusual scenario encountered
+  - Handling: How to deal with it
+  - Test: How to test for it
 
-## Knowledge Gained
-
-### Technical Knowledge
-- [New technical knowledge acquired]
-
-### Process Knowledge
-- [Process improvements identified]
-
-## Documentation Improvements Needed
-- [Documentation gaps found]
-
-## Technical Debt Identified
-- [Technical debt discovered]
-
-## Success Factors
-[What made this specification successful]
+## Integration Notes
+- Integration with [system/tool]
+  - Issue: What to watch for
+  - Solution: How to integrate correctly
 
 ---
-*Learnings Documented: [Date]*
+**Format Guidelines**:
+- ✅ Keep entries VERY concise (1-3 lines each)
+- ✅ Focus on actionable insights
+- ✅ Include context (when/where it matters)
+- ✅ Date entries if tracking over time
+- ❌ No lengthy explanations (belongs in skill.md)
+- ❌ No obvious information
+- ❌ No duplicating what's in skill.md
