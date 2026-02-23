@@ -380,8 +380,8 @@ See `docs/` directory for comprehensive guides:
 
 ## Related Skills
 
-- [Rust with Async Code](../rust-with-async-code/skill.md) - For async patterns in production code
-- [Rust Testing Excellence](../rust-testing-excellence/skill.md) - For general testing patterns
+- [Rust with Async Code](../rust-clean-code/async/skill.md) - For async patterns in production code
+- [Rust Testing Excellence](../rust-clean-code/testing/skill.md) - For general testing patterns
 
 ---
 

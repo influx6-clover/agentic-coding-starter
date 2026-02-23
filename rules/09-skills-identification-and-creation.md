@@ -95,6 +95,56 @@ Skills are created ONLY when:
 - **NO numeric prefixes** - skills are referenced by name
 - Name clearly describes purpose
 
+### Modular Skills with Sub-Files
+
+For complex or related skills, use a modular structure:
+
+**When to Use Modular Structure:**
+- Multiple related skills under a common theme (e.g., rust-clean-code)
+- Skill has distinct sub-topics that warrant separate documentation
+- Sub-topics have their own examples/, templates/, or scripts/
+
+**Structure:**
+```
+skills/[parent-skill-name]/
+├── skill.md                    # Main entry point - references all sub-skills
+├── [topic-1]/
+│   ├── skill.md               # Sub-skill documentation
+│   └── examples/              # Topic-specific examples
+├── [topic-2]/
+│   ├── skill.md
+│   ├── examples/
+│   └── templates/
+└── [topic-3]/
+    └── skill.md
+```
+
+**Main skill.md Requirements:**
+- Brief overview of parent skill scope
+- Clear navigation to sub-skills in frontmatter `files:` field
+- "When to Use" section directing to appropriate sub-skills
+- Table or list of sub-skills with descriptions
+
+**Sub-skill.md Requirements:**
+- Complete standalone documentation
+- Can be read and used independently
+- Cross-references to related sub-skills
+- All standard skill.md sections
+
+**Example Frontmatter for Parent Skill:**
+```yaml
+---
+name: "Rust Clean Code"
+description: "Comprehensive Rust development practices covering implementation, testing, configuration, and async patterns"
+approved: Yes
+files:
+  - implementation/skill.md: "Clean implementation patterns and documentation"
+  - testing/skill.md: "Testing excellence with real code over mocks"
+  - async/skill.md: "Async/await and Tokio patterns"
+  - directory-and-configuration/skill.md: "Project setup and tooling"
+---
+```
+
 ---
 
 ## Three Usage Types

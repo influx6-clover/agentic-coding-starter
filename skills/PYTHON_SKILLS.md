@@ -5,7 +5,7 @@ This directory contains Python skills that have been adapted from the Rust skill
 ## Available Skills
 
 ### 1. Python Clean Implementation
-**Path**: `python-clean-implementation/skill.md`
+**Path**: `python-clean-code/implementation/skill.md`
 
 Covers:
 - Dependency hierarchy (project → stdlib → pip packages)
@@ -16,10 +16,10 @@ Covers:
 - Security patterns
 - Performance optimization
 
-**Adapted from**: `rust-clean-implementation/skill.md`
+**Adapted from**: `rust-clean-code/implementation/skill.md`
 
 ### 2. Python Testing Excellence
-**Path**: `python-testing-excellence/skill.md`
+**Path**: `python-clean-code/testing/skill.md`
 
 Covers:
 - **CRITICAL**: Real code over mocks philosophy
@@ -29,10 +29,10 @@ Covers:
 - Mock usage guidelines (external dependencies ONLY)
 - Test markers and parametrization
 
-**Adapted from**: `rust-testing-excellence/skill.md`
+**Adapted from**: `rust-clean-code/testing/skill.md`
 
 ### 3. Python with Async Code
-**Path**: `python-with-async-code/skill.md`
+**Path**: `python-clean-code/async/skill.md`
 
 Covers:
 - asyncio patterns and best practices
@@ -43,10 +43,10 @@ Covers:
 - Async testing with pytest-asyncio
 - Common pitfalls and solutions
 
-**Adapted from**: `rust-with-async-code/skill.md`
+**Adapted from**: `rust-clean-code/async/skill.md`
 
 ### 4. Python Directory and Configuration
-**Path**: `python-directory-and-configuration/skill.md`
+**Path**: `python-clean-code/directory-and-configuration/skill.md`
 
 Covers:
 - Python installation with pyenv
@@ -56,7 +56,7 @@ Covers:
 - Development workflow
 - Pre-commit hooks
 
-**Adapted from**: `rust-directory-and-configuration/skill.md`
+**Adapted from**: `rust-clean-code/directory-and-configuration/skill.md`
 
 ## Key Adaptations from Rust
 
@@ -112,16 +112,16 @@ Reference the appropriate skill before starting work:
 
 ```bash
 # Before implementing new features
-Read: python-clean-implementation/skill.md
+Read: python-clean-code/implementation/skill.md
 
 # Before writing tests
-Read: python-testing-excellence/skill.md
+Read: python-clean-code/testing/skill.md
 
 # Before async work
-Read: python-with-async-code/skill.md
+Read: python-clean-code/async/skill.md
 
 # Before project setup
-Read: python-directory-and-configuration/skill.md
+Read: python-clean-code/directory-and-configuration/skill.md
 ```
 
 ## Examples Directory Structure
@@ -129,7 +129,7 @@ Read: python-directory-and-configuration/skill.md
 Each skill includes an `examples/` directory with detailed guides:
 
 ```
-python-clean-implementation/
+python-clean-code/implementation/
 ├── skill.md
 ├── examples/
 │   ├── documentation-patterns.md
@@ -140,17 +140,17 @@ python-clean-implementation/
 └── templates/
     └── basic-example.py
 
-python-testing-excellence/
+python-clean-code/testing/
 ├── skill.md
 └── examples/
     └── intro-to-property-based-testing.md
 
-python-with-async-code/
+python-clean-code/async/
 ├── skill.md
 └── examples/
     └── async-best-practices.py
 
-python-directory-and-configuration/
+python-clean-code/directory-and-configuration/
 ├── skill.md
 └── examples/
     ├── python-installation.md
