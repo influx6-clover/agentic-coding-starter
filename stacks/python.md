@@ -13,7 +13,7 @@
 
 **Read BEFORE setting up new Python projects or configuring environment:**
 
-- [`python-directory-and-configuration`](../skills/python-directory-and-configuration/skill.md)
+- [`python-clean-code/directory-and-configuration`](../skills/python-clean-code/directory-and-configuration/skill.md)
   - Python installation with pyenv
   - Virtual environment setup (venv, Poetry, uv)
   - Project structure and module organization
@@ -25,7 +25,7 @@
 
 **Read BEFORE implementing any new features:**
 
-- [`python-clean-implementation`](../skills/python-clean-implementation/skill.md)
+- [`python-clean-code/implementation`](../skills/python-clean-code/implementation/skill.md)
   - Dependency hierarchy (project → stdlib → pip packages)
   - Google/NumPy docstring patterns
   - Custom exception handling patterns
@@ -39,7 +39,7 @@
 
 **Read BEFORE writing or reviewing tests:**
 
-- [`python-testing-excellence`](../skills/python-testing-excellence/skill.md)
+- [`python-clean-code/testing`](../skills/python-clean-code/testing/skill.md)
   - **CRITICAL**: Docker/docker-compose for real infrastructure (FIRST)
   - **CRITICAL**: Real code over mocks philosophy
   - pytest patterns and fixtures
@@ -52,7 +52,7 @@
 
 **Read BEFORE implementing async code:**
 
-- [`python-with-async-code`](../skills/python-with-async-code/skill.md)
+- [`python-clean-code/async`](../skills/python-clean-code/async/skill.md)
   - Core principle: Never block the event loop
   - Non-blocking I/O with asyncio
   - asyncio.to_thread for CPU-intensive work
@@ -65,7 +65,7 @@
 
 **Read BEFORE working with Django:**
 
-- [`python-django-models`](../skills/python-django-models/skill.md)
+- [`python-clean-code/django/models`](../skills/python-clean-code/django/models/skill.md)
   - Base model classes (UUID, timestamps, soft delete, temporal)
   - Query optimization (select_related, prefetch_related)
   - N+1 query prevention
@@ -73,14 +73,14 @@
   - Real database testing with Docker/testcontainers
   - Factory-Boy for test data generation
 
-- [`python-django-configuration`](../skills/python-django-configuration/skill.md)
+- [`python-clean-code/django/configuration`](../skills/python-clean-code/django/configuration/skill.md)
   - django-configurations framework (MANDATORY)
   - Environment variable management (Required, Optional, Default-allowed)
   - Multi-tenancy with BRAND pattern
   - Feature flags
   - Caching configuration (Redis, Database, Memcached)
 
-- [`python-django-testing`](../skills/python-django-testing/skill.md)
+- [`python-clean-code/django/testing`](../skills/python-clean-code/django/testing/skill.md)
   - **CRITICAL**: 100% coverage requirement (MANDATORY)
   - **CRITICAL**: Function-based tests only (never classes)
   - Test naming: test_<function>__<scenario>__<assertion>
@@ -93,7 +93,7 @@
 
 **Read BEFORE implementing gRPC services:**
 
-- [`python-grpc-services`](../skills/python-grpc-services/skill.md)
+- [`python-clean-code/grpc/services`](../skills/python-clean-code/grpc/services/skill.md)
   - Service registration pattern (SERVICES_TO_REGISTER)
   - **CRITICAL**: Authentication decorators (MANDATORY for all endpoints)
   - Method signature requirements
@@ -101,7 +101,7 @@
   - Model to proto conversion
   - Django ORM integration
 
-- [`python-grpc-protobuf`](../skills/python-grpc-protobuf/skill.md)
+- [`python-clean-code/grpc/protobuf`](../skills/python-clean-code/grpc/protobuf/skill.md)
   - **CRITICAL**: _pb2 suffix import pattern (MANDATORY)
   - Import both _pb2 and _pb2_grpc for services
   - Code generation workflow with protoc
@@ -112,7 +112,7 @@
 
 **Read BEFORE working in monorepo:**
 
-- [`python-monorepo-structure`](../skills/python-monorepo-structure/skill.md)
+- [`python-clean-code/monorepo`](../skills/python-clean-code/monorepo/skill.md)
   - **CRITICAL**: Services import from ca-lib ONLY (never from each other)
   - **CRITICAL**: Cross-service communication via gRPC ONLY
   - Virtual workspace root configuration
@@ -351,16 +351,16 @@ def test_user_repo(postgresql):  # testcontainers fixture
 **Action:** Created 6 additional Python skills (11,771 lines total):
 
 **Django Skills (3 skills - 9,410 lines):**
-- **python-django-models**: Base model classes, query optimization, N+1 prevention, real database testing
-- **python-django-configuration**: django-configurations, environment management, multi-tenancy, caching
-- **python-django-testing**: 100% coverage (MANDATORY), function-based tests, Factory-Boy, Given/When/Then
+- **python-clean-code/django/models**: Base model classes, query optimization, N+1 prevention, real database testing
+- **python-clean-code/django/configuration**: django-configurations, environment management, multi-tenancy, caching
+- **python-clean-code/django/testing**: 100% coverage (MANDATORY), function-based tests, Factory-Boy, Given/When/Then
 
 **gRPC Skills (2 skills - 1,480 lines):**
-- **python-grpc-services**: Service registration, authentication decorators (MANDATORY), error handling
-- **python-grpc-protobuf**: _pb2 suffix pattern (MANDATORY), code generation, proto organization
+- **python-clean-code/grpc/services**: Service registration, authentication decorators (MANDATORY), error handling
+- **python-clean-code/grpc/protobuf**: _pb2 suffix pattern (MANDATORY), code generation, proto organization
 
 **Monorepo Skill (1 skill - 881 lines):**
-- **python-monorepo-structure**: Workspace configuration, ca-lib utilities, cross-service dependencies (gRPC only)
+- **python-clean-code/monorepo**: Workspace configuration, ca-lib utilities, cross-service dependencies (gRPC only)
 
 **Key Principles Established:**
 - Services import from ca-lib ONLY (never from each other)
@@ -397,10 +397,10 @@ def test_user_repo(postgresql):  # testcontainers fixture
 **Issue**: Need comprehensive Python skills equivalent to Rust skills.
 
 **Learning**: Created four Python skills adapted from Rust patterns:
-- **python-clean-implementation**: Dependency hierarchy (project → stdlib → pip), type hints, docstrings, custom exceptions
-- **python-testing-excellence**: Docker/docker-compose FIRST, real code over mocks, pytest plugins, Hypothesis
-- **python-with-async-code**: asyncio patterns, event loop protection, async testing
-- **python-directory-and-configuration**: Virtual environments, pyproject.toml, development workflow
+- **python-clean-code/implementation**: Dependency hierarchy (project → stdlib → pip), type hints, docstrings, custom exceptions
+- **python-clean-code/testing**: Docker/docker-compose FIRST, real code over mocks, pytest plugins, Hypothesis
+- **python-clean-code/async**: asyncio patterns, event loop protection, async testing
+- **python-clean-code/directory-and-configuration**: Virtual environments, pyproject.toml, development workflow
 
 Key adaptations from Rust:
 - `derive_more` → custom exception classes with inheritance

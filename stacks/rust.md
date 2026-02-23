@@ -58,7 +58,7 @@ pub(super) fn internal_fn() {}  // NO! Use pub instead
 
 **Read BEFORE setting up new Rust projects or configuring toolchain:**
 
-- [`rust-directory-and-configuration`](../skills/rust-directory-and-configuration/skill.md)
+- [`rust-clean-code/directory-and-configuration`](../skills/rust-clean-code/directory-and-configuration/skill.md)
   - Rust toolchain installation and configuration
   - Project structure and module organization
   - Cargo.toml profile optimizations (release, dev, test, bench)
@@ -71,7 +71,7 @@ pub(super) fn internal_fn() {}  // NO! Use pub instead
 
 **Read BEFORE implementing any new features:**
 
-- [`rust-clean-implementation`](../skills/rust-clean-implementation/skill.md)
+- [`rust-clean-code/implementation`](../skills/rust-clean-code/implementation/skill.md)
   - WHY/WHAT/HOW documentation patterns with panic documentation
   - derive_more error handling patterns
   - no_std/std hybrid library strategies
@@ -81,13 +81,13 @@ pub(super) fn internal_fn() {}  // NO! Use pub instead
   - Security best practices (input validation, secrets management)
   - Iterator patterns and trait implementations
   - Type system mastery (newtypes, builders, type states)
-  - **Examples**: [`.agents/skills/rust-clean-implementation/examples/`](../skills/rust-clean-implementation/examples/)
+  - **Examples**: [`.agents/skills/rust-clean-code/implementation/examples/`](../skills/rust-clean-code/implementation/examples/)
 
 ### Testing Work 🧪
 
 **Read BEFORE writing or reviewing tests:**
 
-- [`rust-testing-excellence`](../skills/rust-testing-excellence/skill.md)
+- [`rust-clean-code/testing`](../skills/rust-clean-code/testing/skill.md)
   - Test location conventions (unit, integration, benchmarks)
   - Three test validations: input, output, error paths
   - Feature-gated test modules (NOT individual attributes)
@@ -95,13 +95,13 @@ pub(super) fn internal_fn() {}  // NO! Use pub instead
   - Anti-pattern: muted variables without assertions
   - Async test isolation with current_thread flavor
   - Test helper functions and organization
-  - **Examples**: [`.agents/skills/rust-testing-excellence/examples/`](../skills/rust-testing-excellence/examples/)
+  - **Examples**: [`.agents/skills/rust-clean-code/testing/examples/`](../skills/rust-clean-code/testing/examples/)
 
 ### Async/Tokio Work ⚡
 
 **Read BEFORE implementing async code:**
 
-- [`rust-with-async-code`](../skills/rust-with-async-code/skill.md)
+- [`rust-clean-code/async`](../skills/rust-clean-code/async/skill.md)
   - Core principle: Never block the event loop
   - Non-blocking I/O with timeouts
   - spawn_blocking for CPU-intensive work
@@ -110,7 +110,7 @@ pub(super) fn internal_fn() {}  // NO! Use pub instead
   - Task management and select! patterns
   - Common pitfalls (blocking, holding locks across await)
   - Stream processing patterns
-  - **Examples**: [`.agents/skills/rust-with-async-code/examples/`](../skills/rust-with-async-code/examples/)
+  - **Examples**: [`.agents/skills/rust-clean-code/async/examples/`](../skills/rust-clean-code/async/examples/)
 
 ## Tooling Standards (Reference Only)
 
@@ -123,7 +123,7 @@ pub(super) fn internal_fn() {}  // NO! Use pub instead
 
 ### Configuration Files (Reference Only)
 
-See Rule 05 (`./rules/04-work-commit-and-push-rules.md`) and [`agent-guide`](./skills/rust-clean-implementation/skill.md) examples:
+See Rule 05 (`./rules/04-work-commit-and-push-rules.md`) and [`agent-guide`](./skills/rust-clean-code/implementation/skill.md) examples:
 - `Cargo.toml` - Package manifest with profile configurations
 - `.clippy.toml` - Clippy lint configuration
 
@@ -314,7 +314,7 @@ Tests that create variables but never validate their actual content are critical
 
 ### 2026-01-23: no_std/std Implementation Strategy 📚
 For libraries supporting both environments:
-1. **no_std mode**: Always implement from scratch using `core` and atomics (see [`rust-clean-implementation`](../skills/rust-clean-implementation/skill.md))
+1. **no_std mode**: Always implement from scratch using `core` and atomics (see [`rust-clean-code/implementation`](../skills/rust-clean-code/implementation/skill.md))
 2. **std mode**: Re-export std types when sufficient; wrap to add methods if needed
 
 ### 2026-01-24: Feature-Gated Type Architecture Pattern 📚
