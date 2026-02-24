@@ -1376,47 +1376,167 @@ def test_user_creation():
 
 ### Test Location Conventions
 
-**CRITICAL:** Python has specific conventions for where to place tests:
+**CRITICAL:** ALL tests must be in the `tests/` directory with clear separation between units and integration.
 
 #### 1. Test Directory Structure
 
+**Standard Project Structure:**
 ```
 myproject/
 ├── src/
 │   └── myapp/
 │       ├── __init__.py
 │       ├── models.py
-│       └── services.py
+│       ├── services.py
+│       └── validation.py
 ├── tests/
 │   ├── __init__.py
-│   ├── test_models.py
-│   ├── test_services.py
-│   └── integration/
-│       ├── __init__.py
-│       └── test_api.py
+│   ├── units/                      # Unit tests (individual functions/classes)
+│   │   ├── __init__.py
+│   │   ├── test_models.py
+│   │   ├── test_services.py
+│   │   └── test_validation.py
+│   ├── integration/                # Integration tests (workflows/APIs)
+│   │   ├── __init__.py
+│   │   ├── test_api_workflow.py
+│   │   └── test_auth_flow.py
+│   └── conftest.py                 # Shared fixtures
 └── pyproject.toml
+```
+
+**Monorepo/Multi-Package Structure:**
+```
+workspace/
+├── packages/
+│   ├── package_a/
+│   │   ├── src/
+│   │   │   └── package_a/
+│   │   │       ├── __init__.py
+│   │   │       └── core.py
+│   │   └── tests/
+│   │       ├── units/
+│   │       │   └── test_core.py
+│   │       ├── integration/
+│   │       │   └── test_package_a_workflow.py
+│   │       └── conftest.py
+│   └── package_b/
+│       ├── src/
+│       │   └── package_b/
+│       │       ├── __init__.py
+│       │       └── api.py
+│       └── tests/
+│           ├── units/
+│           │   └── test_api.py
+│           ├── integration/
+│           │   └── test_package_b_workflow.py
+│           └── conftest.py
+└── tests/                          # Cross-package integration tests
+    └── integration/
+        └── test_cross_package_workflow.py
 ```
 
 #### 2. Test File Naming
 
-```python
-# File: tests/test_user_service.py
-"""Tests for user service module."""
+**Unit Tests** (`tests/units/`):
+- `test_{module_name}.py` - Tests for specific module
+- `test_{class_name}_logic.py` - Tests for class logic
+- `test_{feature}_validation.py` - Tests for validation logic
 
-def test_create_user_success():
+**Integration Tests** (`tests/integration/`):
+- `test_{feature}_workflow.py` - Complete feature workflows
+- `test_{api}_endpoints.py` - API endpoint integration
+- `test_{service}_flow.py` - Service interaction flows
+
+**Examples:**
+
+```python
+# File: tests/units/test_user_service.py
+"""Unit tests for UserService class.
+
+Tests individual methods of UserService in isolation.
+"""
+import pytest
+from myapp.services import UserService
+from myapp.exceptions import ValidationError
+
+
+def test_create_user__valid_data__succeeds():
     """Test creating a user succeeds with valid data."""
     service = UserService()
     user = service.create_user("John", "john@example.com")
     assert user.name == "John"
+    assert user.email == "john@example.com"
 
-def test_create_user_invalid_email():
+
+def test_create_user__invalid_email__raises_error():
     """Test creating a user fails with invalid email."""
     service = UserService()
-    with pytest.raises(ValidationError):
+    with pytest.raises(ValidationError, match="Invalid email"):
         service.create_user("John", "invalid-email")
 ```
 
-#### 3. Test Class Organization
+```python
+# File: tests/integration/test_auth_workflow.py
+"""Integration tests for authentication workflow.
+
+Tests complete authentication flow from login to logout.
+"""
+import pytest
+from myapp import create_app
+from myapp.models import User
+
+
+def test_login_logout_workflow__valid_user__succeeds(db_session):
+    """Test complete login/logout workflow."""
+    # given: User exists in database
+    user = User(username="alice", email="alice@example.com")
+    db_session.add(user)
+    db_session.commit()
+
+    app = create_app()
+    client = app.test_client()
+
+    # when: User logs in
+    response = client.post("/login", json={
+        "username": "alice",
+        "password": "password123"
+    })
+
+    # then: Login succeeds and token is returned
+    assert response.status_code == 200
+    token = response.json["token"]
+    assert token is not None
+
+    # when: User logs out
+    response = client.post("/logout", headers={"Authorization": f"Bearer {token}"})
+
+    # then: Logout succeeds
+    assert response.status_code == 200
+```
+
+#### 3. Test Naming Convention
+
+**Function-Based Tests (RECOMMENDED):**
+
+Use the pattern: `test_{function}__{scenario}__{expected_result}`
+
+```python
+def test_validate_email__valid_format__returns_true():
+    """Test email validation returns True for valid format."""
+    assert validate_email("test@example.com") is True
+
+
+def test_validate_email__missing_at_symbol__returns_false():
+    """Test email validation returns False when @ is missing."""
+    assert validate_email("invalid-email") is False
+
+
+def test_save_user__duplicate_email__raises_integrity_error():
+    """Test saving user with duplicate email raises IntegrityError."""
+    # ...
+```
+
+**Class-Based Tests (OPTIONAL, for grouping related tests):**
 
 ```python
 class TestUserService:
@@ -1425,19 +1545,21 @@ class TestUserService:
     @pytest.fixture
     def service(self):
         """Create UserService instance for testing."""
-        return UserService(db=MockDatabase())
+        return UserService()
 
-    def test_create_user(self, service):
-        """Test user creation."""
+    def test_create_user__valid_data__succeeds(self, service):
+        """Test user creation with valid data."""
         user = service.create_user("John", "john@example.com")
         assert user.name == "John"
 
-    def test_delete_user(self, service):
-        """Test user deletion."""
+    def test_delete_user__existing_user__succeeds(self, service):
+        """Test deleting existing user."""
         user = service.create_user("John", "john@example.com")
         result = service.delete_user(user.id)
         assert result is True
 ```
+
+**IMPORTANT:** Prefer function-based tests for simplicity. Use class-based only when grouping related tests with shared fixtures.
 
 ---
 
@@ -2344,6 +2466,44 @@ Tests are considered valid when they:
 ---
 
 ## Learning Log
+
+### 2026-02-24: Test Organization Standardization - units/ and integration/ Structure
+
+**Issue:** Need consistent test organization across all projects with clear separation of unit and integration tests.
+
+**Learning:** Updated test organization to match Rust standards:
+
+**New Standard - Structured Test Directories:**
+1. **tests/units/** - Unit tests for individual functions/classes/modules
+2. **tests/integration/** - Integration tests for workflows and APIs
+3. **tests/conftest.py** - ONLY for shared fixtures (not bloated with all fixtures)
+4. **File naming**: `test_{module_name}.py` for units, `test_{feature}_workflow.py` for integration
+
+**Directory Structure:**
+```
+tests/
+├── units/              # Individual component tests
+│   ├── test_models.py
+│   ├── test_services.py
+│   └── test_validation.py
+├── integration/        # Workflow/API tests
+│   ├── test_api_workflow.py
+│   └── test_auth_flow.py
+└── conftest.py         # Shared fixtures only
+```
+
+**Benefits:**
+- Clear distinction between unit and integration tests
+- Easy to run only unit tests for quick feedback
+- Integration tests clearly show workflows
+- Consistent with Rust testing organization
+- Scalable for monorepos and multi-package projects
+
+**Test Naming Convention:**
+- `test_{function}__{scenario}__{expected}` for clarity
+- Example: `test_validate_email__missing_at__returns_false`
+
+**New Standard:** ALL Python projects must organize tests in units/ and integration/ subdirectories.
 
 ### 2026-02-02: Python Testing Excellence Skill Created
 

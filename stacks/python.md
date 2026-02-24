@@ -40,13 +40,15 @@
 **Read BEFORE writing or reviewing tests:**
 
 - [`python-clean-code/testing`](../skills/python-clean-code/testing/skill.md)
+  - **CRITICAL**: ALL tests in tests/units/ and tests/integration/ directories
   - **CRITICAL**: Docker/docker-compose for real infrastructure (FIRST)
   - **CRITICAL**: Real code over mocks philosophy
+  - Test naming: test_{function}__{scenario}__{expected}
   - pytest patterns and fixtures
   - Essential pytest plugins (pytest-httpserver, pytest-postgresql, testcontainers)
-  - Test organization (unit vs integration)
   - Property-based testing with Hypothesis
   - Test coverage with pytest-cov
+  - Given/When/Then for complex tests
 
 ### Async/Await Work ⚡
 

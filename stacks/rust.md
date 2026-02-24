@@ -88,13 +88,16 @@ pub(super) fn internal_fn() {}  // NO! Use pub instead
 **Read BEFORE writing or reviewing tests:**
 
 - [`rust-clean-code/testing`](../skills/rust-clean-code/testing/skill.md)
-  - Test location conventions (unit, integration, benchmarks)
+  - **CRITICAL**: ALL tests in tests/ directory (NO tests in source files)
+  - Test organization: tests/units/ and tests/integration/
+  - File naming: {crate_name}_{what_is_tested}.rs
   - Three test validations: input, output, error paths
   - Feature-gated test modules (NOT individual attributes)
   - Property-based testing with proptest
+  - Docker/docker-compose for real infrastructure (FIRST)
+  - Real code over mocks philosophy
   - Anti-pattern: muted variables without assertions
   - Async test isolation with current_thread flavor
-  - Test helper functions and organization
   - **Examples**: [`.agents/skills/rust-clean-code/testing/examples/`](../skills/rust-clean-code/testing/examples/)
 
 ### Async/Tokio Work ⚡
