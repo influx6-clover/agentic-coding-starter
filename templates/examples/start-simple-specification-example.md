@@ -11,6 +11,7 @@ created: 2026-02-28
 
 1. Read `requirements.md` (complete requirements + tasks)
 2. Read `LEARNINGS.md` (past discoveries and mistakes)
+3. Read `./PROGRESS.md` (last progress of this feature if present)
 3. Read `VERIFICATION.md` (verification requirements)
 4. Read `.agents/AGENTS.md` to identify your agent type
 5. Read your agent file in `.agents/agents/[agent-name].md`

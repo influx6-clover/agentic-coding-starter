@@ -68,6 +68,7 @@ specifications/01-simple-spec/
 ├── requirements.md          # Complete requirements + tasks (permanent)
 ├── LEARNINGS.md            # Permanent learnings
 ├── REPORT.md               # Permanent reports
+├── PROGRESS.md             # Temporary progress report (deleted on completion or start)
 ├── VERIFICATION.md         # Verification signoff (permanent)
 └── compacted.md            # Temporary context file (ephemeral - delete after session)
 ```
@@ -92,6 +93,7 @@ specifications/02-feature-spec/
     │   ├── start.md         # Feature workflow entry point (permanent)
     │   ├── feature.md       # Detailed requirements + tasks (permanent)
     │   ├── VERIFICATION.md  # Feature verification (optional, permanent)
+    ├── ├── PROGRESS.md      # Temporary progress report (deleted on completion or start)
     │   └── compacted.md     # Temporary context (ephemeral - delete after session)
     ├── 01-core-api/
     │   ├── start.md
