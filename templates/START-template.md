@@ -57,7 +57,7 @@ created: YYYY-MM-DD
 
 1. Read `feature.md` (detailed requirements + tasks)
 2. Read `../../LEARNINGS.md` (past discoveries and mistakes)
-3. Read `../../VERIFICATION.md` (verification requirements)
+3. Read `./VERIFICATION.md` (verification requirements)
 4. Read `.agents/AGENTS.md` to identify your agent type
 5. Read your agent file in `.agents/agents/[agent-name].md`
 6. Read skills specified in your agent documentation
