@@ -77,6 +77,25 @@ Read this when **writing or reviewing tests** (not implementation or async code)
 
 #### Real Testing Tools for Rust
 
+**Principle: Write one test at a time**
+
+You must go step by step, writing your first test, and keep working on it till it passes before going to 
+the next one. Do not even dare start working on the next test till the current one passes, is verified and committed to git.
+
+**Principle: Always update the tests crate mod.rs**
+
+When you are writing tests as individual files, you still need to add them to the crate mod.rs file so rust 
+actually sees them and inclue them in your execution, do not write tests and not include them then say its 
+all passing when you really are not executing them.
+
+Secondly identifying the correct crate to run with `rust tests --package` so that you are actually executing the 
+right tests and crate.
+
+**Principle: Do not dare making false claims of passing test**
+
+Actually do the work, dont just fake tests with contents asserting true to claim you wrote them, do the actual 
+work and write the tests correctly.
+
 **Principle: Project Building Blocks → Stdlib → External Dependencies (in that order)**
 
 **STEP 1: Check Project Building Blocks**
