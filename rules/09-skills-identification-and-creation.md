@@ -2,175 +2,86 @@
 
 ## Purpose
 
-This rule is for **Main Agent only** when creating new skills or reviewing skill documents. Sub-agents should load **Rule 11 (Skills Usage)** instead.
-
-**Context Optimization**: Sub-agents only need Rule 11 (~150 lines) instead of this full rule.
-
----
+For Main Agent only when creating/reviewing skills. Sub-agents should load Rule 11 (Skills Usage) instead.
 
 ## Overview
 
-Skills are documented know-how for complex technical tasks. They capture:
-
-- Tool/library usage (Playwright, Docker, Kubernetes)
-- Pattern implementations (auth flows, caching strategies)
-- Operations (migrations, API integration)
-- Problem solutions (performance, security)
+Skills are documented know-how for complex technical tasks capturing tool/library usage, pattern implementations, operations, and problem solutions.
 
 ## Core Principles
 
-### 1. User Approval Required
+1. **User Approval Required**: No skill can be used until user approves
+2. **Last Resort Only**: Create ONLY when fundamental understanding is missing, no existing skill covers the need, and no alternative approach possible
 
-No skill can be used until user approves. This ensures user control over methodologies.
-
-### 2. Last Resort Only
-
-Skills are created ONLY when:
-
-- ✅ Fundamental understanding is missing
-- ✅ No existing skill covers the need
-- ✅ No alternative approach possible
-- ❌ NOT for trivial tasks
-- ❌ NOT for basic programming
-
----
-
-## Skills Directory Structure
-
-### Location and Layout
+## Directory Structure
 
 ```
-.agents/skills/
-├── [skill-name]/
-│   ├── skill.md           # REQUIRED - Main documentation
-│   ├── learnings.md       # OPTIONAL - Practical insights from usage
-│   ├── assets/            # OPTIONAL - Supporting assets
-│   │   ├── diagrams/      # Architecture diagrams, flowcharts
-│   │   ├── configs/       # Config file templates
-│   │   └── data/          # Sample data, fixtures
-│   ├── docs/              # OPTIONAL - Extended documentation
-│   │   ├── deep-dive.md   # Detailed explanations
-│   │   ├── troubleshooting.md
-│   │   └── faq.md
-│   ├── templates/         # OPTIONAL - Code templates for TEMPLATE skills
-│   │   ├── client.ts
-│   │   └── helpers.ts
-│   ├── scripts/           # OPTIONAL - Executable scripts for EXECUTABLE skills
-│   │   └── run.sh
-│   └── examples/          # OPTIONAL - Reference implementations
-│       ├── basic-usage.rs
-│       └── advanced-pattern.rs
+.agents/skills/[skill-name]/
+├── skill.md           # REQUIRED - Main documentation
+├── learnings.md       # OPTIONAL - Practical insights from usage
+├── assets/            # OPTIONAL - Diagrams, configs, sample data
+├── docs/              # OPTIONAL - Extended documentation
+├── templates/         # OPTIONAL - Code templates (TEMPLATE skills)
+├── scripts/           # OPTIONAL - Executable scripts (EXECUTABLE skills)
+└── examples/          # OPTIONAL - Reference implementations (EDUCATIONAL)
 ```
 
 ### Directory Contents
 
-| Directory      | Purpose                                      | When to Include                 |
-| -------------- | -------------------------------------------- | ------------------------------- |
-| `skill.md`     | Main documentation (REQUIRED)                | Always                          |
-| `learnings.md` | Practical insights from usage                | After skill is used             |
-| `assets/`      | Diagrams, configs, sample data               | When visual/config aids helpful |
-| `docs/`        | Extended documentation, FAQ, troubleshooting | For complex skills              |
-| `templates/`   | Code templates (TEMPLATE skills)             | When copying files to project   |
-| `scripts/`     | Executable tools (EXECUTABLE skills)         | When running as external tools  |
-| `examples/`    | Reference implementations (EDUCATIONAL)      | For learning patterns           |
+| Directory | Purpose | When to Include |
+|-----------|---------|----------------|
+| `skill.md` | Main documentation (REQUIRED) | Always |
+| `learnings.md` | Practical insights from usage | After skill is used |
+| `assets/` | Diagrams, configs, sample data | When visual/config aids helpful |
+| `docs/` | Extended documentation, FAQ | For complex skills |
+| `templates/` | Code templates (TEMPLATE) | When copying files to project |
+| `scripts/` | Executable tools (EXECUTABLE) | When running as external tools |
+| `examples/` | Reference implementations (EDUCATIONAL) | For learning patterns |
 
-### What Goes Where
-
-**User-facing documentation** → `docs/`
-
-- Deep dives the user might read for context
-- FAQ for common questions
-- Troubleshooting guides
-
-**Agent-facing assets** → `assets/`, `templates/`, `scripts/`, `examples/`
-
-- Items agents use during implementation
-- Referenced by `skill.md`
-
-**Critical Rule**: `skill.md` is the **single source of truth**. It references other files but contains all essential information for agents to use the skill.
-
-### Naming Convention
-
-- Skills use kebab-case: `playwright-web-interaction`, `kubernetes-deployment`
-- **NO numeric prefixes** - skills are referenced by name
+### Naming
+- Use kebab-case: `playwright-web-interaction`, `kubernetes-deployment`
+- NO numeric prefixes
 - Name clearly describes purpose
 
-### Modular Skills with Sub-Files
+### Modular Skills
 
-For complex or related skills, use a modular structure:
+For complex or related skills under a common theme:
 
-**When to Use Modular Structure:**
-- Multiple related skills under a common theme (e.g., rust-clean-code)
-- Skill has distinct sub-topics that warrant separate documentation
-- Sub-topics have their own examples/, templates/, or scripts/
-
-**Structure:**
 ```
 skills/[parent-skill-name]/
 ├── skill.md                    # Main entry point - references all sub-skills
-├── [topic-1]/
-│   ├── skill.md               # Sub-skill documentation
-│   └── examples/              # Topic-specific examples
-├── [topic-2]/
-│   ├── skill.md
-│   ├── examples/
-│   └── templates/
-└── [topic-3]/
-    └── skill.md
+├── [topic-1]/skill.md         # Sub-skill documentation
+├── [topic-2]/skill.md
+└── [topic-3]/skill.md
 ```
 
 **Main skill.md Requirements:**
-- Brief overview of parent skill scope
-- Clear navigation to sub-skills in frontmatter `files:` field
-- "When to Use" section directing to appropriate sub-skills
-- Table or list of sub-skills with descriptions
+- Brief overview of scope
+- Navigation to sub-skills in frontmatter `files:` field
+- Table/list of sub-skills with descriptions
 
-**Sub-skill.md Requirements:**
+**Sub-skill Requirements:**
 - Complete standalone documentation
-- Can be read and used independently
-- Cross-references to related sub-skills
-- All standard skill.md sections
-
-**Example Frontmatter for Parent Skill:**
-```yaml
----
-name: "Rust Clean Code"
-description: "Comprehensive Rust development practices covering implementation, testing, configuration, and async patterns"
-approved: Yes
-files:
-  - implementation/skill.md: "Clean implementation patterns and documentation"
-  - testing/skill.md: "Testing excellence with real code over mocks"
-  - async/skill.md: "Async/await and Tokio patterns"
-  - directory-and-configuration/skill.md: "Project setup and tooling"
----
-```
-
----
+- Can be used independently
+- All standard sections
 
 ## Three Usage Types
 
 ### 1. TEMPLATE (Copy and Customize)
-
-- Files in `templates/` are copied to project
+- Files in `templates/` copied to project
 - Agent customizes copied files
-- ❌ **NEVER import from `.agents/skills/` in project code**
+- ❌ NEVER import from `.agents/skills/` in project code
 
 ### 2. EXECUTABLE (Run as Tools)
-
 - Scripts in `scripts/` run as external commands
 - Consume output in project
 - Never modify scripts
 
 ### 3. EDUCATIONAL (Learn and Implement)
-
 - Examples in `examples/` teach patterns
 - Install external dependencies listed
 - Write fresh implementation
-- ❌ **NEVER import from `.agents/skills/` in project code**
-
-**See**: `.agents/templates/skill-usage-examples.md` for detailed code examples.
-
----
+- ❌ NEVER import from `.agents/skills/` in project code
 
 ## Skill File Format
 
@@ -193,20 +104,19 @@ files:
   - templates/client.ts: "API client template"
   - scripts/run.sh: "Execution script"
 assets:
-  - docs/deep-dive.md: "Extended explanation for users"
+  - docs/deep-dive.md: "Extended explanation"
   - assets/diagrams/flow.png: "Architecture diagram"
 ---
 ```
 
-**Required Fields**: `name`, `description`, `approved`, `created`, `license`, `metadata`, `tools`
-**Optional Fields**: `files` (agent-facing), `assets` (user/informational)
+**Required**: `name`, `description`, `approved`, `created`, `license`, `metadata`, `tools`
+**Optional**: `files` (agent-facing), `assets` (user/informational)
 
 ### Content Structure
 
 **Template Location**: `.agents/templates/skill-template.md`
 
 Key sections:
-
 - Overview (2-3 paragraphs)
 - When to Use (scope and limitations)
 - Prerequisites (knowledge, dependencies)
@@ -221,20 +131,16 @@ Key sections:
 
 ### skill.md vs learnings.md
 
-| File           | Purpose                          | When Read                      |
-| -------------- | -------------------------------- | ------------------------------ |
-| `skill.md`     | Canonical truth - BEFORE using   | During discovery + usage       |
-| `learnings.md` | Practical insights - AFTER using | Only when actively using skill |
+| File | Purpose | When Read |
+|------|---------|-----------|
+| `skill.md` | Canonical truth - BEFORE using | During discovery + usage |
+| `learnings.md` | Practical insights - AFTER using | Only when actively using |
 
 **Template**: `.agents/templates/learnings-template.md`
-
----
 
 ## Workflow: Skill Creation
 
 ### Phase 1: Identification (Sub-Agent)
-
-Decision tree:
 
 ```
 Do I understand how to accomplish this?
@@ -248,20 +154,11 @@ Do I understand how to accomplish this?
 
 ### Phase 2: Creation (Sub-Agent)
 
-1. **Research thoroughly**: Official docs, multiple sources
-2. **Create skill directory**: `mkdir -p .agents/skills/[skill-name]`
-3. **Create supporting files** (as needed):
-   - `templates/` for TEMPLATE skills
-   - `scripts/` for EXECUTABLE skills
-   - `examples/` for EDUCATIONAL skills
-   - `docs/` for extended user documentation
-   - `assets/` for diagrams, configs
-4. **Write skill.md**:
-   - Complete frontmatter (`approved: No`)
-   - Clear Usage Type
-   - Reference all files in `files` and `assets` fields
-   - Unambiguous instructions
-5. **Report to Main Agent** (see reporting template in `.agents/templates/skill-usage-examples.md`)
+1. Research thoroughly (official docs, multiple sources)
+2. Create skill directory: `mkdir -p .agents/skills/[skill-name]`
+3. Create supporting files as needed (templates/, scripts/, examples/, docs/, assets/)
+4. Write skill.md with complete frontmatter (`approved: No`), clear Usage Type, and unambiguous instructions
+5. Report to Main Agent
 
 ### Phase 3: Review (Main Agent)
 
@@ -277,198 +174,98 @@ Do I understand how to accomplish this?
 - **Rejected**: Use user's alternative
 - **Needs Revision**: Update skill, return to Phase 3
 
----
-
 ## Skill Clarity Verification (Two Checkpoints)
 
 ### Checkpoint 1: During Requirements (Main Agent)
 
 **When**: After requirements.md created with skills listed
 
-Main Agent MUST:
-
 1. Review each skill's `skill.md` completely
 2. Verify Usage Type is clear
 3. Confirm instructions are unambiguous
-4. **Document in requirements.md**:
-   ```markdown
-   ## Skills Clarity Verification
+4. Document in requirements.md
 
-   **Verified by Main Agent**: [Date]
+### Checkpoint 2: Before Starting Work (Sub-Agent)
 
-   - [skill-name]: TEMPLATE - Clear
-   - [skill-name]: EXECUTABLE - Clear
-   ```
-5. **If unclear**: Block requirements, report to user
+**When**: Before using skill for first time
 
-### Checkpoint 2: Before Usage (Sub-Agent)
+1. Read complete skill.md
+2. Read learnings.md if exists
+3. Read relevant files (templates/, scripts/, examples/)
+4. If unclear: STOP and report to Main Agent
 
-**When**: About to use skill for implementation
+## Learnings Documentation
 
-Sub-Agent MUST:
+### When Created
 
-1. Read complete `skill.md` and `learnings.md`
-2. Verify understanding of Usage Type
-3. **If unclear**: STOP, report to Main Agent (see template in `.agents/templates/skill-usage-examples.md`)
+After skill first used, create `learnings.md` with:
+- Critical implementation details
+- Common failures and fixes
+- Real code snippets (2-5 lines)
+- Testing insights
+- Integration gotchas
 
----
+### Format
 
-## Skill Updates
+**Template**: `.agents/templates/learnings-template.md`
 
-### What Requires User Approval
+- 1-2 lines per entry
+- Use `→` for cause-effect
+- Show code over prose
+- No verbose paragraphs
 
-- ✅ Any change to `skill.md`
-- ✅ Any change to scripts/code
-- ✅ Any change to `learnings.md`
-- ✅ Adding/removing files
+### Update Process
 
-### Update Workflow
+1. Implementation agent notes insight during work
+2. Reports to Main Agent with insight
+3. Main Agent creates task for specification-update agent
+4. Specification-update agent updates learnings.md
+5. User reviews and approves changes
 
-1. Agent makes changes
-2. Main Agent reviews (validates correctness)
-3. User reviews and approves
-4. Changes finalized
+## Quality Standards
 
----
+### skill.md Must Be
 
-## Specification Integration
+- **Self-contained**: Essential info without needing other files
+- **Unambiguous**: Clear instructions with no interpretation needed
+- **Complete**: All prerequisites, steps, examples documented
+- **Referenced**: Lists all files in frontmatter with descriptions
 
-Specifications reference skills in frontmatter:
+### Attached Files Must Be
 
-```yaml
----
-skills:
-  - playwright-web-interaction
-  - jwt-authentication
----
+- **Safe**: No security risks, no malicious code
+- **Tested**: Scripts run successfully
+- **Documented**: Comments explain non-obvious parts
+- **Referenced**: Listed in skill.md frontmatter
+
+## Reporting to User (Main Agent)
+
 ```
+New skill created: [skill-name]
 
-Direction: Specifications → Skills (one-way)
+Location: .agents/skills/[skill-name]/skill.md
+Type: [TEMPLATE/EXECUTABLE/EDUCATIONAL]
+Purpose: [1-2 sentence summary]
 
----
+Attached files:
+- [file]: [purpose]
 
-## Skill Scanning (Efficient Discovery)
+Necessity: [Why this skill is needed]
+Alternatives considered: [What was tried first]
 
-```bash
-# Scan frontmatter only
-for skill in .agents/skills/*/skill.md; do
-  head -n 20 "$skill"
-done
+Requesting approval to use this skill.
 ```
-
-- Match by name/description
-- Check `approved: Yes`
-- Read full content only when using
-
----
-
-## Requirements Summary
-
-### Sub-Agent MUST
-
-- ✅ Think deeply before creating skills
-- ✅ Check Usage Type before using
-- ✅ Perform clarity check (Checkpoint 2)
-- ✅ Follow Usage Type rules exactly
-- ✅ Report skill creation to Main Agent
-- ✅ Never use unapproved skills
-- ✅ Update specs with skill references
-
-### Sub-Agent MUST NOT
-
-- ❌ Create skills for trivial tasks
-- ❌ Use unapproved skills
-- ❌ Import from `.agents/skills/` in project code
-- ❌ Modify files in `.agents/skills/`
-- ❌ Proceed with unclear skills
-- ❌ Partially copy TEMPLATE skills (copy ALL)
-
-### Main Agent MUST
-
-- ✅ Review all skill documents
-- ✅ Verify skill clarity (Checkpoint 1)
-- ✅ Block requirements with unclear skills
-- ✅ Report to user for approval
-- ✅ Validate accuracy via search
-- ✅ Ensure correctness of all assets: scripts, templates, documentations
-
-### Main Agent MUST NOT
-
-- ❌ Approve without user consent
-- ❌ Skip clarity verification
-- ❌ Allow unapproved skill usage
-
----
-
-## Critical Violations
-
-- Using unapproved skills
-- Skipping clarity verification
-- Importing from `.agents/skills/` in project code
-- Modifying original skill files
-- Partial TEMPLATE copying
-- Creating skills for trivial tasks
-
----
-
-## Integration with Other Rules
-
-- **Rule 05**: Skills identified during work
-- **Rule 06**: Specs include `skills` field
-- **Rule 11**: Sub-agent usage guide
-
----
 
 ## Summary
 
-**Core Workflow**:
-
-```
-Need → Research → Check existing → Create if necessary →
-Main Agent review → User approval → Checkpoint 1 (requirements) →
-Checkpoint 2 (usage) → Implementation → Update learnings
-```
-
-**Directory Structure**:
-
-```
-.agents/skills/[skill-name]/
-├── skill.md        # Required - main doc
-├── learnings.md    # Optional - practical insights
-├── assets/         # Optional - diagrams, configs, data
-├── docs/           # Optional - extended user docs
-├── templates/      # Optional - for TEMPLATE skills
-├── scripts/        # Optional - for EXECUTABLE skills
-└── examples/       # Optional - for EDUCATIONAL skills
-```
-
-**Three Usage Types**:
-
-1. **TEMPLATE**: Copy `templates/` → project, customize
-2. **EXECUTABLE**: Run `scripts/` as external tools
-3. **EDUCATIONAL**: Study `examples/`, install libs, implement fresh
-
-**Critical Rules**:
-
-- ❌ **NEVER import from `.agents/skills/` in project code**
-- ✅ User approval required for creation AND updates
-- ✅ Two mandatory clarity checkpoints
-
-**Templates**:
-
-- Skill structure: `.agents/templates/skill-template.md`
-- Learnings format: `.agents/templates/learnings-template.md`
-- Usage examples: `.agents/templates/skill-usage-examples.md`
+**Golden Rules:**
+1. **Last resort only** - Create skills when fundamental understanding missing
+2. **User approval required** - No skill used until approved
+3. **Clear usage type** - TEMPLATE/EXECUTABLE/EDUCATIONAL must be explicit
+4. **Self-contained** - skill.md has all essential information
+5. **Never import from .agents/skills/** - Templates copied, executables run, educational patterns reimplemented
+6. **Two checkpoints** - Main Agent verifies during requirements, sub-agent verifies before use
 
 ---
 
-_Created: 2026-01-13_
-_Last Updated: 2026-01-20 (Added asset/documentation directories, moved examples to templates)_
-
----
-
-## Related Rules
-
-- **Rule 11 (Skills Usage)**: Concise guide for sub-agents
-- **Rule 06 (Specifications)**: How specifications reference skills
-- **Rule 05 (Agent Orchestration)**: Skills identification during work
+_Version: 1.0 - Last Updated: 2026-02-27_
