@@ -6,7 +6,7 @@ This directory contains the complete framework for guiding AI coding agents (lik
 
 ## 🎯 What is This?
 
-The Agentic Coding Framework is a set of guidelines, rules, and standards that:
+The Agentic Coding Framework is a set of guidelines, skills, and standards that:
 
 - **Standardizes** how AI agents interact with your codebase
 - **Enforces** coding standards and best practices automatically
@@ -15,7 +15,7 @@ The Agentic Coding Framework is a set of guidelines, rules, and standards that:
 - **Tracks** features, tasks, and requirements systematically
 - **Learns** from mistakes through documented learning logs
 
-Think of it as a "Constitution" for AI agents working on your project - a comprehensive rulebook that ensures every agent follows the same processes, standards, and workflows.
+Think of it as a "Constitution" for AI agents working on your project - a comprehensive framework that ensures every agent follows the same processes, standards, and workflows.
 
 ## 🏗️ Framework Structure
 
@@ -24,43 +24,36 @@ Think of it as a "Constitution" for AI agents working on your project - a compre
 ├── README.md              # This file - framework overview
 ├── AGENTS.md              # Entry point - agents MUST read this first
 │
-├── rules/                 # HOW agents must work
-│   ├── 01-rule-naming-and-structure.md
-│   ├── 02-rules-directory-policy.md
-│   ├── 03-dangerous-operations-safety.md
-│   ├── 04-work-commit-and-push-rules.md
-│   ├── 05-coding-practice-agent-orchestration.md
-│   ├── 06-specifications-and-requirements.md
-│   ├── 07-language-conventions-and-standards.md
-│   ├── 08-verification-workflow-complete-guide.md
-│   └── 09-skills-identification-and-creation.md
+├── agents/                # Agent documentation
+│   ├── main-agent.md
+│   ├── implementation.md
+│   ├── rust-verification.md
+│   └── ...                # Other agent types
 │
-├── stacks/                # HOW to write code (language-specific)
-│   ├── javascript.md      # JavaScript/TypeScript standards
-│   ├── python.md          # Python standards
-│   ├── rust.md            # Rust standards
-│   └── ...
+├── skills/                # Reusable workflows and expertise
+│   ├── main-agent-orchestration/
+│   ├── implementation-practices/
+│   ├── test-driven-development/
+│   ├── code-verification/
+│   ├── rust-clean-code/
+│   ├── python-clean-code/
+│   └── ...                # Language-specific and domain skills
 │
-├── skills/                # Documented expertise for specific tasks
-│   ├── README.md
-│   └── [skill-directories]/
-│
-└── specifications/        # WHAT to build (feature requirements)
-    ├── Spec.md            # Master index
-    └── NN-spec-name/      # Individual specifications
-        ├── requirements.md
-        ├── tasks.md
-        └── verification.md (transient)
+└── templates/             # File templates for specifications, features, etc.
+    ├── START-template.md
+    ├── REQUIREMENTS-template.md
+    ├── FEATURE-template.md
+    └── examples/          # Reference examples
 ```
 
 ### Directory Purposes
 
 | Directory | Purpose | Agent Usage |
 |-----------|---------|-------------|
-| **`rules/`** | Workflow, orchestration, verification processes | Read ALL files at session start |
-| **`stacks/`** | Language-specific coding standards | Read ONLY relevant language files |
-| **`skills/`** | Domain expertise for complex tasks | Read when needed, create when gaps found |
-| **`specifications/`** | Feature requirements and task tracking | Read when working on features |
+| **`AGENTS.md`** | Entry point with agent registry | Read FIRST at session start |
+| **`agents/`** | Agent documentation (roles, workflows, skills) | Read YOUR agent file |
+| **`skills/`** | Reusable workflows, practices, and language standards | Read as specified by agent docs |
+| **`templates/`** | File templates and examples | Use when creating specs/features |
 
 ## 🚀 Getting Started
 
@@ -86,7 +79,7 @@ You can bootstrap a new project with this framework in minutes:
 
    Initialized .agents directory with framework for AI-assisted development.
 
-   Co-Authored-By: Claude <noreply@anthropic.com>"
+   Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
    ```
 
 4. **Create a `CLAUDE.md` redirect file in your project root:**
@@ -108,9 +101,9 @@ You can bootstrap a new project with this framework in minutes:
    ```
 
 5. **Customize for your project:**
-   - Edit `.agents/stacks/*.md` to match your language preferences
-   - Add project-specific rules to `.agents/rules/` (following naming conventions)
-   - Create your first specification in `.agents/specifications/`
+   - Edit `.agents/skills/*-clean-code/skill.md` to match your language preferences
+   - Customize agent documentation in `.agents/agents/`
+   - Create your first specification using templates in `.agents/templates/`
 
 ### For Existing Projects
 
@@ -124,7 +117,7 @@ mv .agents .agents.backup
 git clone https://github.com/ewe-studios/agentic-coding-starter .agents
 rm -rf .agents/.git
 
-# Merge your custom rules, stacks, and specifications
+# Merge your specifications and customizations
 cp -r .agents.backup/specifications/* .agents/specifications/ 2>/dev/null
 # (Review and merge other customizations manually)
 
@@ -138,10 +131,10 @@ rm -rf .agents.backup
 
 When an AI agent starts working on your project, it MUST:
 
-1. **Read `AGENTS.md`** - The entry point
-2. **Load ALL files in `rules/`** - Workflow and orchestration rules
-3. **Load ONLY relevant `stacks/[language].md`** - Language standards
-4. **Read specification files** - When working on features
+1. **Read `AGENTS.md`** - Identifies which agent type it is
+2. **Read agent documentation** - Loads agent-specific file (e.g., `.agents/agents/implementation.md`)
+3. **Load required skills** - Reads skills specified in agent documentation
+4. **Read specification files** - When working on features (requirements.md, start.md, etc.)
 
 This ensures every agent has the same context and follows the same processes.
 
@@ -150,9 +143,9 @@ This ensures every agent has the same context and follows the same processes.
 The framework uses a **hierarchical agent model**:
 
 - **Main Agent**: Orchestrator only - delegates all work, never codes directly
-- **Implementation Agents**: Specialized workers (Rust Agent, Python Agent, etc.)
-- **Verification Agent**: Runs tests and checks before commits
-- **Specification Agent**: Updates requirements and task tracking
+- **Implementation Agents**: Specialized workers for writing code
+- **Verification Agents**: Run tests and checks before commits (language-specific)
+- **Specification Update Agent**: Updates requirements and task tracking
 
 **Example workflow:**
 ```
@@ -160,9 +153,9 @@ User: "Add user authentication"
   ↓
 Main Agent: Analyzes requirement, creates specification
   ↓
-Main Agent: Spawns Rust Implementation Agent
+Main Agent: Spawns Implementation Agent
   ↓
-Rust Agent: Writes authentication code, reports back
+Implementation Agent: Writes authentication code (TDD), reports back
   ↓
 Main Agent: Spawns Verification Agent
   ↓
@@ -170,7 +163,7 @@ Verification Agent: Runs tests, linting, builds
   ↓
 Main Agent: Spawns Specification Agent
   ↓
-Specification Agent: Updates tasks.md with completion
+Specification Agent: Updates progress.md with completion
   ↓
 Main Agent: Creates commit and pushes
 ```
@@ -184,9 +177,10 @@ The framework enforces:
 - All linters must pass
 - All builds must succeed
 - All checks must complete
+- No incomplete implementations (TODO, FIXME, stub methods)
 
 If verification fails:
-- A `verification.md` report is created
+- A `VERIFICATION.md` report is created
 - Issues are documented
 - Code is NOT committed until fixed
 
@@ -197,9 +191,11 @@ Every feature starts with a specification:
 ```markdown
 specifications/
 └── 01-user-authentication/
-    ├── requirements.md      # What to build and why
-    ├── tasks.md            # Task checklist with progress
-    └── verification.md     # Failure reports (if any)
+    ├── start.md            # Agent workflow entry point
+    ├── requirements.md     # What to build and why
+    ├── LEARNINGS.md        # Discoveries and gotchas
+    ├── progress.md         # Task checklist with progress
+    └── VERIFICATION.md     # Failure reports (if any, temporary)
 ```
 
 This ensures:
@@ -211,57 +207,63 @@ This ensures:
 
 1. **Orchestration Always** - Main Agent delegates, never implements
 2. **Verification Required** - No commits without passing checks
-3. **Zero Deviation** - All standards must be followed exactly
-4. **Context Efficiency** - Only load what you need (especially stack files)
-5. **Learning Logs** - Document mistakes and patterns for improvement
-6. **Specification-Driven** - Every feature has clear requirements
-7. **Safety First** - Dangerous operations require explicit approval
+3. **Test-Driven Development** - Write test first, one at a time
+4. **ONE Item at a Time** - One test, one function, one file at a time
+5. **Retrieval-Led Reasoning** - Read codebase first, follow discovered patterns
+6. **Skills-Based Architecture** - Reusable workflows in skills, not duplicated
+7. **Context Optimization** - Use compacted.md for 90% token reduction
+8. **Learning Logs** - Document mistakes and patterns for improvement
+9. **Specification-Driven** - Every feature has clear requirements
+10. **Safety First** - Dangerous operations require explicit approval
 
 ## 🔧 Customization
 
-### Adding Project-Specific Rules
+### Adding Language-Specific Skills
 
-Create new rule files following the naming convention:
-
-```bash
-.agents/rules/10-my-project-rule.md
-```
-
-Rules are loaded numerically, so numbering controls precedence.
-
-### Adding Language Stacks
-
-Create new stack files for your languages:
+Create new language skill directories:
 
 ```bash
-.agents/stacks/golang.md
-.agents/stacks/elixir.md
+.agents/skills/golang-clean-code/
+├── skill.md           # Language standards and patterns
+└── LEARNINGS.md       # Language-specific discoveries
 ```
 
-Follow the structure in existing stack files (frontmatter, standards, verification workflow, learning logs).
+Follow the structure in existing language skills (rust-clean-code, python-clean-code).
 
-### Creating Skills
+### Creating Custom Skills
 
 When agents encounter knowledge gaps, they can create skills:
 
 ```bash
-.agents/skills/01-kubernetes-deployment/
+.agents/skills/kubernetes-deployment/
 ├── skill.md           # Documented knowledge
-└── deploy-script.sh   # Optional helper scripts
+└── scripts/           # Optional helper scripts
+    └── deploy.sh
 ```
 
-Skills must be approved before use.
+Skills must be approved before use (see `.agents/skills/skills-management/skill.md`).
+
+### Adding Custom Agents
+
+Create new agent documentation:
+
+```bash
+.agents/agents/my-custom-agent.md
+```
+
+Follow the template in `.agents/templates/AGENT-DOCUMENTATION-template.md`.
 
 ## 📚 Key Documents
 
 | Document | Purpose | Read When |
 |----------|---------|-----------|
-| **AGENTS.md** | Entry point and loading instructions | Every session start |
-| **rules/04-work-commit-and-push-rules.md** | Commit requirements | Before any commit |
-| **rules/05-coding-practice-agent-orchestration.md** | Agent coordination | Every session start |
-| **rules/06-specifications-and-requirements.md** | Feature specification format | Creating features |
-| **rules/08-verification-workflow-complete-guide.md** | Complete verification guide | Before verification |
-| **stacks/[language].md** | Language-specific standards | Before writing code |
+| **AGENTS.md** | Entry point with agent registry | Every session start |
+| **agents/main-agent.md** | Main agent orchestration workflow | If you're Main Agent |
+| **agents/implementation.md** | Implementation agent workflow | If you're Implementation Agent |
+| **skills/git-workflow/skill.md** | Commit and push requirements | Before any commit |
+| **skills/test-driven-development/skill.md** | TDD workflow (one test at a time) | Before writing code |
+| **skills/code-verification/skill.md** | Complete verification guide | Before verification |
+| **skills/[language]-clean-code/skill.md** | Language-specific standards | Before writing code in that language |
 
 ## 🤝 Contributing to the Framework
 
@@ -276,43 +278,43 @@ Repository: https://github.com/ewe-studios/agentic-coding-starter
 
 ## 🆘 Troubleshooting
 
-### Agent Not Following Rules
+### Agent Not Following Guidelines
 
 **Problem**: Agent ignores standards or skips verification
 
 **Solution**:
 1. Check that `CLAUDE.md` or similar redirect exists in project root
 2. Verify agent loaded `AGENTS.md` at session start
-3. Ensure all rules are numbered correctly in `rules/` directory
-4. Explicitly remind agent: "Please load .agents/AGENTS.md and follow all rules"
+3. Ask agent to identify itself: "Read AGENTS.md and tell me which agent you are"
+4. Explicitly remind agent: "Please read your agent documentation and required skills"
 
 ### Verification Failures
 
 **Problem**: Tests fail, builds break, linting errors
 
 **Solution**:
-1. Check `verification.md` in specification directory for details
-2. Review stack file for correct verification commands
+1. Check `VERIFICATION.md` in specification directory for details
+2. Review language skill file for correct verification commands
 3. Ensure all dependencies are installed
 4. Check that verification workflow is defined correctly
 
-### Missing Language Stack
+### Missing Language Skill
 
-**Problem**: No stack file for your language
+**Problem**: No skill file for your language
 
 **Solution**:
-1. Copy an existing stack file as template
+1. Copy an existing language skill as template (e.g., rust-clean-code)
 2. Customize for your language's conventions
 3. Define verification workflow (test/lint/build commands)
-4. Add learning logs section for future improvement
+4. Add LEARNINGS.md section for future improvement
 
 ## 📖 Further Reading
 
 - **[AGENTS.md](./AGENTS.md)** - Start here! Entry point for all agents
-- **[Specification Format Guide](./rules/06-specifications-and-requirements.md)** - How to structure requirements
-- **[Verification Workflow](./rules/08-verification-workflow-complete-guide.md)** - Complete verification guide
-- **[Skills System](./rules/09-skills-identification-and-creation.md)** - How skills work
-- **[Skills Directory](./skills/README.md)** - Available skills and usage
+- **[skills/README.md](./skills/README.md)** - Available skills and usage patterns
+- **[templates/START-template.md](./templates/START-template.md)** - Specification workflow
+- **[skills/main-agent-orchestration/skill.md](./skills/main-agent-orchestration/skill.md)** - Complete orchestration guide
+- **[skills/implementation-practices/skill.md](./skills/implementation-practices/skill.md)** - Implementation best practices
 
 ## 📜 License
 
@@ -324,10 +326,10 @@ Developed by [Ewe Studios](https://github.com/ewe-studios) for consistent, high-
 
 ---
 
-**Version**: 3.0.0
-**Last Updated**: 2026-01-14
+**Version**: 6.0.0
+**Last Updated**: 2026-02-27
 **Repository**: https://github.com/ewe-studios/agentic-coding-starter
 
 ---
 
-> **Remember**: This framework is a living document. As you learn better practices, update your rules, stacks, and skills. The AI agents will benefit from every improvement you make.
+> **Remember**: This framework is a living document. As you learn better practices, update your agent docs, skills, and templates. The AI agents will benefit from every improvement you make.

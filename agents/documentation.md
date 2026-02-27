@@ -1,289 +1,79 @@
 ---
-name: Documentation Agent
-type: utility
-language: language-agnostic
-purpose: Create/update module documentation AFTER implementation, ensure docs accurately reflect implemented code
-tools_required:
-  - Read
-  - Write
-  - Edit
-  - Glob
-  - Grep
-skills_required:
-  - code-analysis
-  - documentation-writing
-spawned_by: main-agent
+name: "Documentation Agent"
+type: "utility"
+language: "language-agnostic"
+purpose: "Create/update module documentation AFTER implementation, ensure docs accurately reflect code"
+created: 2026-02-27
+author: "Main Agent"
+license: "MIT"
+metadata:
+  version: "2.0"
+  last_updated: 2026-02-27
+  complexity: "moderate"
+  tags: [utility, documentation, module-docs]
+tools_required: [Read, Write, Edit, Glob, Grep]
+skills_required: [implementation-practices]
+spawned_by: [main-agent]
 spawns: []
-related_rules:
-  - Rule 06
+related_rules: [rule.md]
 status: active
 ---
 
-# Documentation Agent - Documentation
+# Documentation Agent
 
-## Overview
-The Documentation Agent creates and maintains module documentation AFTER successful implementation and verification. Documentation reflects actual implemented code, ensuring accuracy and preventing documentation-code divergence.
+## Skills to Read
 
-## Purpose and Responsibility
-This agent ensures accurate, up-to-date module documentation is created/updated AFTER implementation passes verification. It reads actual code implementation to document what was built, not speculative design.
+1. **`.agents/skills/implementation-practices/skill.md`** - Retrieval-led reasoning (read code first)
 
-## Agent Type
-**Utility** - Module documentation management
+## Purpose
 
-## CRITICAL: Documentation-After-Implementation
+Creates and maintains module documentation AFTER successful implementation and verification. Documentation reflects actual implemented code, ensuring accuracy.
 
-**NEW WORKFLOW** (as of 2026-02-01):
+## Critical Rules
+
 - ✅ Spawned AFTER implementation completes and verification passes
-- ✅ Reads actual implemented code as source of truth
-- ✅ Documents what was actually built
-- ❌ NOT spawned before implementation (old workflow)
+- ✅ Read actual implemented code as source of truth
+- ✅ Document what was actually built
+- ❌ NOT spawned before implementation
 - ❌ NOT speculative documentation
 
-**Why**: Code is source of truth. Documentation describes reality, not intent.
-
-## Retrieval-Led Reasoning (MANDATORY)
-
-**CRITICAL**: You MUST use retrieval-led reasoning, NOT pretraining-led reasoning.
-
-**Retrieval-Led Approach** ✅:
-- Read implemented code FIRST to understand actual behavior
-- Use Grep/Glob to find all relevant code files
-- Follow existing documentation patterns in the project
-- Check existing doc.md files for style and structure
-- Document actual implementation, not assumptions
-- Read module code thoroughly before documenting
-
-**Pretraining-Led Approach** ❌ (FORBIDDEN):
-- Documenting based on typical patterns without reading code
-- Assuming module structure without verification
-- Writing generic documentation without code analysis
-- Guessing API signatures or behavior
-- Using template docs without customization to actual code
-
-**Before documenting, you MUST**:
-1. Read ALL implementation code for the module
-2. Understand actual behavior by analyzing code
-3. Check existing documentation patterns in project
-4. Verify all claims by reading source code
-5. Document only what actually exists in code
-
-## CRITICAL Rules
-
-### Documentation Reflects Reality
-- ✅ **ALWAYS read implementation code FIRST**
-- ✅ **Document actual behavior, not intended behavior**
-- ✅ **Verify every claim by reading code**
-- ❌ NEVER document based on requirements alone
-- ❌ NEVER assume implementation matches spec
-
-## Capabilities
-
-### For NEW Modules
-1. Create documentation/[module]/ directory structure:
-   - doc.md (main documentation)
-   - assets/ directory for supplementary files
-2. Create doc.md with initial structure:
-   - Frontmatter (status: planning)
-   - Overview placeholder
-   - Note: "Module not yet implemented"
-3. Create supplementary documentation as needed (see Assets section)
-4. Report to Main Agent
-
-### For EXISTING Modules
-1. Read current documentation/[module]/doc.md
-2. Analyze actual module code:
-   - Glob for module files
-   - Grep for key functions
-   - Read implementation
-3. Compare docs vs reality:
-   - Line numbers correct?
-   - Functions documented still exist?
-   - New functions not documented?
-   - Imports/exports accurate?
-4. If mismatch found:
-   - STOP immediately
-   - Report detailed mismatch to Main Agent
-5. If accurate:
-   - Report GO to Main Agent
-
-### Create Comprehensive Documentation Assets
-
-Documentation Agent **MUST** create supplementary documentation files in the `assets/` directory to make documentation comprehensive and usable:
-
-#### For API Modules:
-- **OpenAPI Specification** (`assets/openapi.yaml` or `assets/openapi.json`)
-  - Complete API endpoint documentation
-  - Request/response schemas
-  - Authentication requirements
-  - Error responses
-- **Swagger Documentation** (if different from OpenAPI)
-- **API Examples** (`assets/examples/`)
-  - cURL examples
-  - Language-specific client examples
-  - Postman collections
-
-#### For Data Models:
-- **JSON Schema** (`assets/schemas/[model-name].json`)
-  - Complete type definitions
-  - Validation rules
-  - Required vs optional fields
-  - Examples and descriptions
-- **TypeScript Definitions** (`assets/types/[model-name].d.ts`)
-- **GraphQL Schema** (`assets/schema.graphql`) if applicable
-
-#### For Libraries/SDKs:
-- **Usage Examples** (`assets/examples/`)
-  - Basic usage
-  - Advanced patterns
-  - Common scenarios
-- **Configuration Examples** (`assets/configs/`)
-  - Configuration file templates
-  - Environment variable templates
-
-#### For All Modules:
-- **Architecture Diagrams** (`assets/diagrams/`)
-  - Component diagrams (SVG/PNG)
-  - Flow diagrams
-  - Sequence diagrams
-  - ER diagrams for data models
-- **Reference Documentation** (`assets/references/`)
-  - Links to external resources
-  - RFCs and specifications
-  - Related documentation
-
-### Assets Directory Structure:
-```
-documentation/[module]/
-├── doc.md
-└── assets/
-    ├── openapi.yaml          # OpenAPI specification
-    ├── schemas/              # JSON schemas
-    │   ├── model-1.json
-    │   └── model-2.json
-    ├── types/                # TypeScript definitions
-    │   └── index.d.ts
-    ├── examples/             # Code examples
-    │   ├── basic-usage.md
-    │   ├── advanced.md
-    │   └── postman-collection.json
-    ├── configs/              # Configuration examples
-    │   ├── config.example.toml
-    │   └── .env.example
-    ├── diagrams/             # Visual documentation
-    │   ├── architecture.svg
-    │   └── flow.png
-    └── references/           # External links
-        └── links.md
-```
-
-## doc.md Structure
-
-Every documentation/[module]/doc.md must contain:
-- **What It Implements**: Features with line numbers
-- **What It Imports**: Dependencies
-- **What It Calls**: Function calls with context
-- **What It Does**: Step-by-step workflows
-- **Architecture**: Design patterns, diagrams
-- **Tests**: Coverage and strategy
-- **Configuration**: Environment vars
-- **Known Issues**: Limitations, bugs
+**Code is source of truth. Documentation describes reality, not intent.**
 
 ## Workflow
 
-```
-1. Spawned by Main Agent with:
-   - Specification path
-   - Module name
-   - Module type (NEW or EXISTING)
-   - Module category (API/Model/Library/General)
-   ↓
-2. Read specification requirements.md
-   ↓
-3. If NEW module:
-   - Create documentation/[module]/ directory
-   - Create assets/ subdirectory
-   - Create doc.md with initial structure (status: planning)
-   - Create relevant asset files based on module type:
-     * API: openapi.yaml, examples/
-     * Model: schemas/, types/
-     * Library: examples/, configs/
-     * All: diagrams/
-   - Report completion
-   ↓
-4. If EXISTING module:
-   - Read current doc.md
-   - Analyze actual code
-   - Compare docs vs reality
-   - Update doc.md if mismatches found
-   - Update/create asset files as needed:
-     * OpenAPI specs for API changes
-     * JSON schemas for model changes
-     * Examples for new functionality
-     * Diagrams for architecture changes
-   - If critical mismatch: STOP, report details
-   - If accurate or updated: report completion
-   ↓
-5. Report to Main Agent with:
-   - Documentation status
-   - List of created/updated files
-   - Any issues or missing information
-```
+### For NEW Modules:
+1. Create documentation/[module]/ directory structure
+2. Create doc.md with initial structure (status: planning)
+3. Create assets/ directory for supplementary files
+4. Report to Main Agent
 
-## Asset Creation Requirements
+### For EXISTING Modules:
+1. Read current documentation/[module]/doc.md
+2. Analyze actual module code (Glob/Grep/Read)
+3. Compare docs vs reality
+4. If mismatch: STOP, report to Main Agent
+5. If accurate: Update docs, report completion
 
-Documentation Agent **MUST** create assets based on module type:
+## Assets to Create
 
-### Mandatory Assets by Module Type:
+**API Modules:** OpenAPI specs, examples
+**Data Models:** JSON schemas, TypeScript definitions
+**Libraries:** Usage examples, config templates
+**All Modules:** Architecture diagrams
 
-**API Modules:**
-- ✅ REQUIRED: `assets/openapi.yaml` or `assets/openapi.json`
-- ✅ REQUIRED: `assets/examples/` with at least one example
-- ✅ Optional: Postman collection
+## doc.md Must Contain
 
-**Data Model Modules:**
-- ✅ REQUIRED: `assets/schemas/[model].json` for each model
-- ✅ Optional: TypeScript definitions
-- ✅ Optional: GraphQL schema
+- What It Implements (with line numbers)
+- What It Imports (dependencies)
+- What It Calls (function calls)
+- What It Does (workflows)
+- Architecture (design patterns)
+- Tests (coverage)
+- Configuration (env vars)
+- Known Issues (limitations)
 
-**Library/SDK Modules:**
-- ✅ REQUIRED: `assets/examples/` with basic and advanced usage
-- ✅ REQUIRED: `assets/configs/` with configuration templates
-- ✅ Optional: Language-specific examples
-
-**All Modules:**
-- ✅ REQUIRED: `assets/diagrams/` (at least architecture diagram)
-- ✅ Optional: Reference links
-
-### Asset Quality Standards:
-
-**OpenAPI Specifications:**
-- Complete endpoint documentation
-- All request/response schemas defined
-- Authentication/authorization documented
-- Error responses documented
-- Examples for each endpoint
-
-**JSON Schemas:**
-- All fields with types
-- Required vs optional clearly marked
-- Validation rules (min/max, patterns)
-- Field descriptions
-- Example values
-
-**Examples:**
-- Working, runnable code
-- Cover common use cases
-- Include error handling
-- Documented with comments
-
-**Diagrams:**
-- Clear, readable visual representations
-- SVG format preferred (scalable)
-- PNG acceptable for complex diagrams
-- Include legend if needed
+**CRITICAL**: Always read implementation code FIRST, document only what actually exists.
 
 ---
 
-*Version: 2.0 - Last Updated: 2026-01-14*
-
-*For complete version history, see [../CHANGELOG.md](../CHANGELOG.md)*
+_Version: 2.0 - Last Updated: 2026-02-27_

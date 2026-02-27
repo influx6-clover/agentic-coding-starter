@@ -1,31 +1,51 @@
 ---
 name: "Implementation Practices"
-description: "Complete implementation agent workflow including retrieval-led reasoning, TDD, self-review, and reporting"
+description: "Complete implementation workflow: ONE item at a time, retrieval-led reasoning, TDD, self-review"
 approved: Yes
 created: 2026-02-27
 license: "MIT"
 metadata:
   author: "Main Agent"
-  version: "1.0"
+  version: "2.0"
   last_updated: "2026-02-27"
-  tags: [implementation, workflow, tdd, self-review, retrieval, reasoning]
+  tags: [implementation, workflow, tdd, self-review, retrieval, reasoning, one-at-a-time]
 tools: []
 files: []
 ---
 
 # Implementation Practices
 
+## Read By
+
+1. **Implementation Agent** reads this skill
+2. Referenced by `.agents/agents/implementation.md`
+
 ## Overview
 
-Complete guide for implementation agents covering retrieval-led reasoning, TDD workflow, self-review checklist, and proper reporting to Main Agent.
+Complete guide for implementation agents with **MANDATORY one-item-at-a-time workflow**.
 
 **Usage Type**: EDUCATIONAL - Learn implementation best practices.
 
-## When to Use
+## CRITICAL: Work ONE Item at a Time
 
-- You are implementation agent spawned to write code
-- Need to understand complete implementation workflow
-- Before starting any coding work
+❌ **NEVER do this:**
+- Generate multiple functions/methods at once
+- Write multiple tests simultaneously
+- Create entire files with all functionality
+- Work on several tasks in parallel
+
+✅ **ALWAYS do this:**
+1. **ONE test** at a time - write, verify fail, implement, verify pass
+2. **ONE function** at a time - implement completely, test, move to next
+3. **ONE file** at a time - finish one file before starting another
+4. **ONE task** at a time - complete current task before next
+
+**Why ONE at a time:**
+- ✅ Stay focused and avoid mistakes
+- ✅ Catch issues immediately
+- ✅ Incremental verified progress
+- ✅ Easy to debug when something breaks
+- ✅ Clear rollback points
 
 ## Agent Identity (CRITICAL)
 
@@ -34,9 +54,11 @@ Complete guide for implementation agents covering retrieval-led reasoning, TDD w
 As sub-agent:
 - ✅ Report completion to Main Agent
 - ✅ Wait for Main Agent to coordinate verification
+- ✅ Work ONE item at a time
 - ❌ NEVER spawn verification agents (only Main Agent can)
 - ❌ NEVER commit code directly
 - ❌ NEVER push to remote
+- ❌ NEVER generate multiple items at once
 
 ## Retrieval-Led Reasoning (MANDATORY)
 
@@ -67,10 +89,10 @@ As sub-agent:
 ## Before Starting Work
 
 1. Load Rules 01-04 (mandatory)
-2. Load Rule 12 (agent registry usage)
-3. Load Rule 11 (if using skills)
+2. Read AGENTS.md (agent registry)
+3. Read skills-management skill (if using skills)
 4. Load your agent documentation (`.agents/agents/[name].md`)
-5. Load relevant stack file (`.agents/stacks/[language].md`)
+5. Load relevant language skills (`.agents/skills/[language]-clean-code/skill.md`)
 6. Main Agent provides COMPACT_CONTEXT.md path (already generated)
 7. Read COMPACT_CONTEXT.md (self-contained with embedded machine_prompt)
 8. Parse FILES section and read ONLY listed files
@@ -95,28 +117,44 @@ As sub-agent:
 
 **Principle**: If you know what "good" looks like per rules/specs, DO IT. Only ask when truly unclear.
 
-## Work Priority Order (MANDATORY)
+## Work Priority Order (MANDATORY - ONE at a TIME)
 
-1. Fix ALL broken tests (highest priority)
-2. Ensure ALL tests pass
-3. Complete incomplete tests (never skip/remove without approval)
-4. Resolve build/compilation issues
-5. Fix lint/format/type errors
-6. Implement new features
+**Process items in this order, ONE at a time:**
+
+1. Fix ONE broken test (highest priority)
+2. When that test passes, fix NEXT broken test
+3. Complete ONE incomplete test
+4. Resolve ONE build/compilation issue
+5. Fix ONE lint/format/type error
+6. Implement ONE new feature/function
 
 **Zero Tolerance**: No bugs, failures, or incomplete work in commits.
 
-## TDD Workflow (MANDATORY)
+**Example Correct Workflow:**
+```
+1. Write test_function_a
+2. Verify it fails
+3. Implement function_a
+4. Verify test_function_a passes
+5. NOW write test_function_b (not before!)
+6. Verify it fails
+7. Implement function_b
+8. Verify test_function_b passes
+9. Continue...
+```
+
+## TDD Workflow (MANDATORY - ONE Test at a Time)
 
 **See**: `.agents/skills/test-driven-development/skill.md`
 
-**Summary:**
-1. Write test FIRST (before implementation)
-2. Verify test FAILS
-3. Implement minimum code to pass
-4. Verify test PASSES
+**ONE Test at a Time:**
+1. Write ONE test FIRST (before implementation)
+2. Verify that ONE test FAILS
+3. Implement minimum code to pass THAT ONE test
+4. Verify THAT test PASSES
 5. Refactor if needed
-6. Repeat cycle
+6. Move to NEXT test
+7. Repeat
 
 **Test Documentation**: Every test MUST have WHY/WHAT comments.
 
@@ -203,7 +241,7 @@ fn process_user(user: User) -> Result<Response> {
 
 **Where to Document:**
 - **Specification-specific** → `specifications/[spec]/LEARNINGS.md`
-- **Stack-generic** → `.agents/stacks/[language].md`
+- **Language-generic** → Relevant language skill file (if applicable)
 
 **How to Document:**
 - 1-2 lines max per entry
@@ -262,7 +300,7 @@ Main Agent may resume you to fix issues:
    ↓
 4. Read COMPACT_CONTEXT.md (has embedded machine_prompt)
    ↓
-5. Read stack file (.agents/stacks/[language].md)
+5. Read language skills (.agents/skills/[language]-clean-code/skill.md)
    ↓
 6. Retrieval-led reasoning (search, read existing code)
    ↓

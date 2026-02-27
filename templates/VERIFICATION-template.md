@@ -1,83 +1,94 @@
-# [Specification Name] - Verification Sign-Off
+---
+workspace_name: "ewe_platform"
+spec_directory: "specifications/[NN-spec-name]"
+this_file: "specifications/[NN-spec-name]/VERIFICATION.md"
 
-> **Note**: For feature-based specifications (has_features: true), this is the SPEC-WIDE verification. Individual features have their own verification during implementation.
+created: YYYY-MM-DD
+verification_status: FAIL
+language: [language]
+---
 
-## Executive Summary
-**Specification**: [NN]: [Specification Name]
-**Verification Date**: [YYYY-MM-DD]
-**Verification Agent**: [Agent Name]
-**Status**: ✅ APPROVED | ⚠️ APPROVED WITH NOTES | ❌ REJECTED
-**Confidence Level**: [High/Medium/Low]
-**Specification Type**: [Simple / Feature-Based]
+# Verification Report: [Specification Name]
 
-## ✅ Verification Results
+## Read By
 
-### Requirements Compliance
-- [X]/[Y] requirements fully met
-- [ ] [Any unmet requirements]
+1. **[Implementation Agent]** reads this to understand what failed
+2. **[Main Agent]** reads this to decide next steps
 
-**Compliance Rating**: [X%]
+## Status: FAIL ❌
 
-### Code Quality
-✅ [Quality check passed]
-✅ [Another check passed]
-⚠️ [Warning or note if any]
-
-### Testing Coverage
-- Unit tests: [X%]
-- Integration tests: [X%]
-- Overall coverage: [X%]
-
-## 📊 Quality Assessment
-
-### Performance
-[Performance assessment results]
-
-### Security
-[Security assessment results]
-
-### Maintainability
-[Code maintainability assessment]
-
-## 🎯 Specification Compliance
-
-### Functional Requirements
-- ✅ [Requirement]: Fully implemented
-- ✅ [Requirement]: Fully implemented
-
-### Non-Functional Requirements
-- ✅ [Requirement]: Met
-- ✅ [Requirement]: Met
-
-## ⚠️ Issues Found
-
-[List any issues, or "None - all checks passed"]
-
-## 🏆 Final Verdict
-
-**Status**: ✅ APPROVED FOR PRODUCTION
-
-[Or if conditional: ⚠️ APPROVED WITH RECOMMENDATIONS]
-
-**Recommendation**: Ready for merge and deployment
-
-**Conditions** (if any):
-- [Condition 1]
-
-## 📝 Verification Checklist
-
-- [x] All requirements implemented
-- [x] All tests passing
-- [x] Code quality standards met
-- [x] Documentation complete
-- [x] No critical issues found
-
-## 🚀 Sign-Off
-
-**Verified By**: [Agent Name]
-**Date**: [YYYY-MM-DD]
-**Signature**: [Agent Identifier]
+Date: YYYY-MM-DD
+Language: [Language]
 
 ---
-*Official Verification Report*
-*This specification has been formally verified and approved*
+
+## Check Results
+
+### 1. Incomplete Implementation Check: PASS ✅ / FAIL ❌
+- TODO markers: [N] found
+- FIXME markers: [N] found
+- Unimplemented macros: [N] found
+- Stub methods: [N] found
+
+**Details** (if any found):
+```
+FILE: path/to/file.ext
+- Line XX: // TODO: Description
+- Line YY: fn stub() { Ok(()) }
+```
+
+### 2. Format Check: PASS ✅ / FAIL ❌
+- Command: [format command]
+- Result: [details]
+
+### 3. Lint Check: PASS ✅ / FAIL ❌
+- Command: [lint command]
+- Warnings: [N]
+- Details: [warnings]
+
+### 4. Type Check: PASS ✅ / FAIL ❌
+- Command: [type check command]
+- Errors: [N]
+- Details: [errors]
+
+### 5. Tests: PASS ✅ / FAIL ❌
+- Command: [test command]
+- Total: [N], Passed: [N], Failed: [N]
+- Details: [failures]
+
+### 6. Build: PASS ✅ / FAIL ❌
+- Command: [build command]
+- Result: [details]
+
+### 7. Standards Compliance: PASS ✅ / FAIL ❌
+- Check 1: PASS/FAIL
+- Check 2: PASS/FAIL
+
+---
+
+## Actions Required
+
+**URGENT - Fix these issues:**
+
+1. **Issue 1**
+   - File: path/to/file.ext
+   - Line: XX
+   - Fix: Description
+
+2. **Issue 2**
+   - File: path/to/file.ext
+   - Line: YY
+   - Fix: Description
+
+---
+
+## Next Steps
+
+1. Implementation Agent will fix all failures
+2. Re-run verification
+3. If PASS: Main Agent commits
+4. If FAIL: Repeat
+
+---
+
+_Created: YYYY-MM-DD_

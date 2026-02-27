@@ -1,8 +1,89 @@
 # .agents Directory - Change Log
 
-This file contains the complete version history for all files in the `.agents/` directory. Individual files no longer contain version history sections to reduce context size.
+This file contains the version history for the `.agents/` directory.
 
-**Format**: Each entry lists the file path, version, date, and changes.
+---
+
+## 2026-02-27 - MAJOR ARCHITECTURE MIGRATION (Version 6.0.0)
+
+### System-Wide Transformation: Rules → Skills
+
+**BREAKING CHANGE**: Complete migration from rules-based to skill-based architecture
+
+**What Changed:**
+- ✅ Deleted 15 individual rule files (01-15)
+- ✅ Created 21 focused skills covering all workflows
+- ✅ Single entry point: `AGENTS.md` with agent registry
+- ✅ Agent documentation in `agents/` directory (10 files)
+- ✅ Skills in `skills/` directory (organized by domain)
+- ✅ Deleted `stacks/` directory (4 files) - replaced by language skills
+- ✅ Deleted `rule.md` - merged into `AGENTS.md`
+- ✅ Simplified all templates - minimal frontmatter
+
+**Skills Created:**
+1. main-agent-orchestration - Main Agent workflow
+2. implementation-practices - Implementation best practices
+3. test-driven-development - TDD workflow (ONE test at a time)
+4. learning-documentation - LEARNINGS.md patterns
+5. code-verification - Complete verification workflow
+6. git-workflow - Commit and push requirements
+7. skills-management - Creating and using skills
+8. agent-documentation - Agent documentation standards
+9. context-compaction - compacted.md approach (90% token reduction)
+10. specifications-management - Specification structure
+11. dangerous-operations - Safety protocols
+12. language-standards - Cross-language patterns
+13+ Language skills: rust-clean-code, python-clean-code, etc.
+
+**Context Optimization:**
+- ❌ Deleted `machine_prompt.md` approach
+- ❌ Deleted `COMPACT_CONTEXT.md` approach
+- ✅ New unified approach: `compacted.md` (single temporary file)
+- ✅ 90% token reduction through pipe-delimited compression
+- ❌ Deleted Python generation scripts (generate_machine_prompt.py, generate_compact_context.py)
+
+**Workflow Changes:**
+- ✅ New `START-template.md` with 13-step workflow
+- ✅ Mandatory: ONE item at a time (one test, one function, one file)
+- ✅ Mandatory: TDD with test-first approach
+- ✅ Mandatory: Retrieval-led reasoning (read code first, not assumptions)
+- ✅ Mandatory: Context compaction for all agents
+
+**Template Updates:**
+- ✅ All templates simplified with minimal frontmatter
+- ✅ Removed verbose section headers in YAML
+- ✅ Added frontmatter where missing
+- ❌ Deleted obsolete templates (COMPACT_CONTEXT, machine_prompt_example, compact_context_example)
+- ❌ Deleted TEMPLATE_IMPROVEMENTS.md
+- ❌ Deleted MAKEFILE-SPEC-template
+
+**Files Deleted (Total: 26 files):**
+- 15 rule files (.agents/rules/01-15.md)
+- 1 rule.md
+- 4 stack files (.agents/stacks/*.md)
+- 1 context-optimization skill
+- 3 template files
+- 2 Python generation scripts
+
+**Result:**
+- System reduced from ~8,700 lines to ~4,500 lines
+- Clearer separation: AGENTS.md = entry, agents/ = docs, skills/ = procedures
+- Zero duplication: skills referenced, not repeated
+- Better organization: 2 layers instead of 5
+- Token efficiency: 90% reduction with compacted.md
+
+**Migration Guide:**
+- Old: Read Rules 01-15 → New: Read AGENTS.md, identify agent, read agent file, load specified skills
+- Old: Rules referenced by number → New: Skills referenced by name
+- Old: machine_prompt.md + COMPACT_CONTEXT.md → New: compacted.md only
+- Old: Stacks directory → New: Language skills in skills/ directory
+
+---
+
+## Archive: Pre-6.0 History (Rules-Based System)
+
+The entries below document the old rules-based architecture (prior to Feb 27, 2026).
+This system has been replaced by the skill-based architecture described above.
 
 ---
 

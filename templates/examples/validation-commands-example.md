@@ -126,7 +126,7 @@ grep "^status:" requirements.md        # Should still be in-progress until ALL c
   - `completion_percentage`: is `100`
 - `requirements.md` frontmatter:
   - `has_fundamentals`: matches if `fundamentals/` exists
-  - `metadata.stack_files`: lists correct stack files
+  - `metadata.stack_files`: lists correct language skills
   - `metadata.skills`: lists used skills or `[]`
 
 ### 5. Documentation Quality Validation

@@ -1,6 +1,6 @@
 # Commit Message Examples and Special Cases
 
-**Reference**: This document contains detailed examples for Rule 04 (Work Commit and Push Rules)
+**Reference**: This document contains detailed examples for the 'git-workflow' skill (Commit and Push Requirements)
 
 ---
 
@@ -125,7 +125,7 @@ git push
 ❌ No verification agent was delegated to
 ❌ Tests might be failing
 ❌ Code might not compile
-❌ This violates Rule 05 (ZERO TOLERANCE)
+❌ This violates the code verification skill (ZERO TOLERANCE)
 ```
 
 ---
@@ -206,7 +206,7 @@ Sub-agent: "Task completed. Files changed: [list]. Implementation done."
 Main Agent MUST:
 1. Check: "Did you git push?"
 2. If not mentioned, verify git status
-3. If unpushed commits detected, remind: "You must git push per Rule 04"
+3. If unpushed commits detected, remind: "You must git push per git-workflow skill requirements"
 4. Wait for push confirmation
 ```
 
@@ -217,7 +217,7 @@ Sub-agent: "Changes committed successfully."
 
 Main Agent MUST:
 1. Immediately ask: "Did you git push?"
-2. If no: "You must git push immediately per Rule 04"
+2. If no: "You must git push immediately per git-workflow skill requirements"
 3. If yes: "Confirm push with git status output"
 4. Verify before proceeding
 ```
@@ -239,5 +239,5 @@ Main Agent MUST:
 
 ---
 
-_Reference document for Rule 04_
+_Reference document for git-workflow skill requirements_
 _Last Updated: 2026-01-25_

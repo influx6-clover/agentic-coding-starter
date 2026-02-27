@@ -1,107 +1,47 @@
 ---
-name: Specification Update Agent
-type: utility
-language: language-agnostic
-purpose: Update task status in requirements.md after verification, create/delete VERIFICATION.md, manage specification tracking
-tools_required:
-  - Read
-  - Write
-  - Edit
-skills_required:
-  - markdown-editing
-  - specification-management
-spawned_by: main-agent
+name: "Specification Update Agent"
+type: "utility"
+language: "language-agnostic"
+purpose: "Update task status in requirements.md after verification, create/delete VERIFICATION.md"
+created: 2026-02-27
+author: "Main Agent"
+license: "MIT"
+metadata:
+  version: "2.0"
+  last_updated: 2026-02-27
+  complexity: "simple"
+  tags: [utility, specification, tracking]
+tools_required: [Read, Write, Edit]
+skills_required: [specifications-management]
+spawned_by: [main-agent]
 spawns: []
-related_rules:
-  - Rule 06
-  - Rule 12
+related_rules: [rule.md]
 status: active
 ---
 
-# Specification Update Agent - Documentation
+# Specification Update Agent
 
-## Overview
-The Specification Update Agent is a utility agent responsible for updating task status in requirements.md and managing VERIFICATION.md based on verification results. It is spawned by Main Agent AFTER verification completes.
+## Skills to Read
 
-## Purpose and Responsibility
-This agent maintains specification accuracy by updating task statuses and creating verification failure reports. Main Agent NEVER updates specification files directly - it always delegates to this agent.
-
-## Agent Type
-**Utility** - Specification file management
-
-## Retrieval-Led Reasoning (MANDATORY)
-
-**CRITICAL**: You MUST use retrieval-led reasoning, NOT pretraining-led reasoning.
-
-**Retrieval-Led Approach** ✅:
-- Read actual requirements.md structure FIRST
-- Follow existing task formatting patterns in the file
-- Check existing frontmatter fields before updating
-- Read VERIFICATION.md format from similar specifications if exists
-- Use Grep to find similar specification structures as reference
-- Preserve existing markdown structure and style
-
-**Pretraining-Led Approach** ❌ (FORBIDDEN):
-- Assuming standard task checkbox format without reading file
-- Guessing frontmatter fields without checking actual structure
-- Using generic templates without checking project style
-- Modifying structure without reading existing format
-
-**Before updating, you MUST**:
-1. Read the actual requirements.md file completely
-2. Understand current task structure and formatting
-3. Check frontmatter fields that exist
-4. Follow discovered patterns for updates
-5. Preserve project-specific conventions
-
-## Capabilities
-
-### When Verification PASSES
-1. Read specifications/[NN-spec-name]/requirements.md
-2. Mark completed tasks as [x] in the tasks section
-3. Update frontmatter task counts (completed/uncompleted/completion_percentage)
-4. Delete VERIFICATION.md if it exists (cleanup from previous failure)
-5. Save requirements.md
-6. Report completion to Main Agent
-
-### When Verification FAILS
-1. Create specifications/[NN-spec-name]/VERIFICATION.md with:
-   - Detailed failure report
-   - Error messages with line numbers
-   - Recommended fixes
-2. Add URGENT task to TOP of tasks section in requirements.md
-3. Update frontmatter counts (uncompleted +1)
-4. Save both files
-5. Report completion to Main Agent
+1. **`.agents/skills/specifications-management/skill.md`** - Complete specification lifecycle
 
 ## Workflow
 
-```
-1. Spawned by Main Agent with context:
-   - Verification status (PASS/FAIL)
-   - Verification report
-   - Specification path
-   - Completed tasks (if PASS)
-   ↓
-2. Read requirements.md
-   ↓
-3. If PASS:
-   - Mark tasks complete in tasks section
-   - Update frontmatter counts
-   - Delete VERIFICATION.md if exists
-   ↓
-4. If FAIL:
-   - Create VERIFICATION.md
-   - Add urgent task to tasks section in requirements.md
-   - Update frontmatter counts
-   ↓
-5. Save files
-   ↓
-6. Report to Main Agent
-```
+### When Verification PASSES:
+1. Read specifications/[NN-spec-name]/requirements.md
+2. Mark completed tasks as [x]
+3. Update frontmatter task counts
+4. Delete VERIFICATION.md if exists
+5. Report to Main Agent
+
+### When Verification FAILS:
+1. Create specifications/[NN-spec-name]/VERIFICATION.md with failure details
+2. Add URGENT task to TOP of tasks section
+3. Update frontmatter counts
+4. Report to Main Agent
+
+See `.agents/skills/specifications-management/skill.md` for complete workflow.
 
 ---
 
-*Version: 1.1 - Last Updated: 2026-01-24*
-
-*For complete version history, see [../CHANGELOG.md](../CHANGELOG.md)*
+_Version: 2.0 - Last Updated: 2026-02-27_

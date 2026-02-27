@@ -396,7 +396,7 @@ After skill first used, create `learnings.md`:
 - Copy templates to project, import from there
 - Verify approval before using
 - Read all documentation before using
-- Reference templates from rules
+- Reference templates from skills or current configuration
 - Check for duplicates before creating
 
 ## Summary

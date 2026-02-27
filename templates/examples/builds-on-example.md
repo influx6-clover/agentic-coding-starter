@@ -35,7 +35,7 @@ metadata:
     - redis
     - enhancement
   stack_files:
-    - .agents/stacks/rust.md
+    - .agents/skills/rust-clean-code/skill.md
   skills: []
 builds_on:
   - specifications/01-basic-caching-layer

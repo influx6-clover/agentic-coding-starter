@@ -1,6 +1,13 @@
+---
+this_file: ".agents/templates/examples/README.md"
+purpose: "Reference examples for specifications, features, and workflows"
+created: 2026-01-22
+last_updated: 2026-02-27
+---
+
 # Specification Examples
 
-This directory contains extracted examples from Rule 06 (Specifications and Requirements Management) to improve maintainability and follow DRY principles.
+This directory contains reference examples for specifications, features, git workflows, and agent orchestration patterns.
 
 ## Available Examples
 
@@ -10,13 +17,11 @@ This directory contains extracted examples from Rule 06 (Specifications and Requ
 Example of how to structure the main `tasks.md` file when using feature-based specifications.
 - Shows feature priority order
 - Demonstrates task counts and dependencies
-- Referenced in Rule 06, line 279
 
 #### [feature-frontmatter-examples.md](./feature-frontmatter-examples.md)
 Complete frontmatter examples for feature files:
 - `feature.md` frontmatter with status, dependencies, effort
 - `tasks.md` frontmatter with completion tracking
-- Referenced in Rule 06, line 283
 
 ### 2. Specification Versioning
 
@@ -25,7 +30,6 @@ Example showing how to create new specifications that build upon completed speci
 - When to use `builds_on` field
 - Proper frontmatter structure
 - Specification versioning principles
-- Referenced in Rule 06, line 348
 
 ### 3. Documentation Requirements
 
@@ -35,7 +39,6 @@ Example of "User-Facing Documentation Requirements" section for specifications t
 - Structure for requirements.md section
 - Corresponding tasks.md entries
 - Documentation principles
-- Referenced in Rule 06, line 1127
 
 ### 4. Git Workflow
 
@@ -45,7 +48,6 @@ Complete examples of proper git commit and push practices:
 - Final commit after completion
 - Commit message formats
 - Safety rules and best practices
-- Referenced in Rule 06, line 1307
 
 ### 5. Self-Containment Requirements
 
@@ -55,17 +57,14 @@ Example of mandatory cross-reference links for requirements.md:
 - Bottom link at end (to verification.md)
 - Why these links matter
 - Validation checklist
-- Referenced in Rule 06, section "Requirements.md Self-Containment"
 
 #### [enhanced-frontmatter-example.md](./enhanced-frontmatter-example.md)
-Example of enhanced frontmatter for requirements.md (Rule 06 v6.0):
-- `metadata.stack_files` array
-- `metadata.skills` array
+Example of enhanced frontmatter for requirements.md:
+- Simplified metadata structure
 - `has_features` boolean
 - `has_fundamentals` boolean
 - Migration from old format
 - Validation checklist
-- Referenced in Rule 06, section "Requirements.md Self-Containment"
 
 ### 6. Completion and Verification
 
@@ -78,7 +77,6 @@ Complete "MANDATORY Completion and Verification Requirements" section:
 - Specification tracking verification
 - Verification issue resolution
 - Validation script example
-- Referenced in Rule 06, section "Mandatory 100% Completion Verification"
 
 #### [validation-commands-example.md](./validation-commands-example.md)
 Exact bash commands for specification completion validation:
@@ -89,9 +87,8 @@ Exact bash commands for specification completion validation:
 - Documentation quality checks
 - Complete validation script
 - Common validation failures
-- Referenced in Rule 06, section "Validation Before Marking Complete"
 
-### 7. Agent Orchestration (Rule 05)
+### 7. Agent Orchestration
 
 #### [agent-identity-reference.md](./agent-identity-reference.md)
 Complete reference for MAIN AGENT vs SUB-AGENT distinction:
@@ -99,7 +96,6 @@ Complete reference for MAIN AGENT vs SUB-AGENT distinction:
 - Authority hierarchy and verification spawning rules
 - Self-awareness requirements
 - Common violations and corrections
-- Referenced in Rule 05 and Rule 08, section "Agent Identity and Verification Authority"
 
 #### [workflow-success-example.md](./workflow-success-example.md)
 Complete successful workflow from user request to commit:
@@ -107,7 +103,6 @@ Complete successful workflow from user request to commit:
 - Agent interactions and authority respect
 - Quality gates and success factors
 - Time savings from first-attempt pass
-- Referenced in Rule 05, section "Complete Workflow Examples"
 
 #### [workflow-failure-example.md](./workflow-failure-example.md)
 Failed verification with fix cycle and recovery:
@@ -116,7 +111,6 @@ Failed verification with fix cycle and recovery:
 - Fix cycle process
 - Re-verification and commit
 - Comparison of with vs without verification
-- Referenced in Rule 05, section "Complete Workflow Examples"
 
 #### [test-documentation-examples.md](./test-documentation-examples.md)
 Comprehensive test documentation guide (WHY/WHAT/IMPORTANCE):
@@ -124,9 +118,8 @@ Comprehensive test documentation guide (WHY/WHAT/IMPORTANCE):
 - Format requirements and validation checklist
 - DO and DON'T guidelines
 - Quick reference card
-- Referenced in Rule 05, section "Test Documentation Requirements"
 
-### 8. Agent Documentation (Rule 10)
+### 8. Agent Documentation
 
 #### [agent-frontmatter-reference.md](./agent-frontmatter-reference.md)
 Complete frontmatter field reference for agent documentation:
@@ -135,9 +128,8 @@ Complete frontmatter field reference for agent documentation:
 - Field-by-field explanations
 - Update guidelines and versioning
 - Common mistakes and corrections
-- Referenced in Rule 10, section "Frontmatter Fields Reference"
 
-### 9. Commit Messages (Rule 04)
+### 9. Commit Messages
 
 #### [commit-message-templates.md](./commit-message-templates.md)
 Comprehensive commit message guide with templates and examples:
@@ -147,12 +139,11 @@ Comprehensive commit message guide with templates and examples:
 - Language-specific examples (Rust, TypeScript, JavaScript)
 - Common mistakes and corrections
 - HEREDOC usage guide
-- Referenced in Rule 04, section "Commit Message Format"
 
 ## Usage
 
-These examples are referenced throughout Rules 04, 05, 06, 08, and 10 to:
-- ✅ Reduce the main rule files size (saved 700+ lines across all rules)
+These examples are referenced throughout agent skills and documentation to:
+- ✅ Reduce documentation size
 - ✅ Make examples reusable across documentation
 - ✅ Allow independent updates to examples
 - ✅ Improve searchability and organization
@@ -162,21 +153,20 @@ These examples are referenced throughout Rules 04, 05, 06, 08, and 10 to:
 
 ## Summary Statistics
 
-**Total Templates/Examples**: 11 files
-**Total Lines Extracted**: 5,000+ lines
-**Rules Consolidated**: 5 major rules (04, 05, 06, 08, 10)
-**Total Reduction**: 400+ lines from rules (~13% average)
-**Context Optimization**: Significant improvement for agent loading
+**Total Templates/Examples**: 19 files
+**Total Lines**: 5,000+ lines
+**Coverage**: Specifications, features, git workflows, agent patterns, commit messages
 
 ## Maintenance
 
 When updating these examples:
 1. Update the specific example file
-2. Verify references in Rule 06 are still accurate
+2. Verify references in related documentation are still accurate
 3. Check if related template files need updates
 4. Commit with clear message explaining changes
 
 ---
 
 *Created: 2026-01-22*
-*Purpose: DRY refactoring of Rule 06 inline examples*
+*Updated: 2026-02-27*
+*Purpose: Reference examples for specifications and agent workflows*

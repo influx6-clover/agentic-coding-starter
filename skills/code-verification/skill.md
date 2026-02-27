@@ -31,7 +31,7 @@ Use this skill when:
 
 ## Prerequisites
 
-- Access to language stack files (`.agents/stacks/[language].md`)
+- Access to language language skills (`language-specific skill files`)
 - Understanding of verification tools (cargo, npm, pytest, etc.)
 - Clear understanding of what files changed
 
@@ -369,7 +369,7 @@ Fix: Resolve compilation errors, add missing dependencies
 
 ### Must Do
 1. Check for incomplete implementations FIRST
-2. Run ALL checks from language stack file
+2. Run ALL checks from language language skill
 3. Validate test quality (real vs mock)
 4. Main Agent spawns verification agents (one per language)
 5. Include verification status in commits

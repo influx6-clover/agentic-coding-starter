@@ -224,8 +224,8 @@ Request from Main Agent:
 **Step 3: Load Required Rules**
 
 1. Rules 01-04 (mandatory for all agents)
-2. Rule 11 (if using skills)
-3. Relevant stack file (`.agents/stacks/[language].md`)
+2. skills-management skill (if using skills)
+3. Relevant language skill (`language-specific skill files`)
 4. Specification files (if provided)
 
 **Step 4: Execute Your Work**
@@ -250,7 +250,7 @@ Follow workflow documented in your documentation.
 **Can Do:**
 - Read and follow own documentation
 - Execute documented workflow
-- Use approved skills (per Rule 11)
+- Use approved skills (per skills-management skill)
 - Report completion to Main Agent
 - Request help when stuck
 
@@ -305,8 +305,8 @@ Ready for Main Agent verification.
 2. Receive documentation path: .agents/agents/implementation.md
 3. Read complete documentation
 4. Load Rules 01-04 (mandatory)
-5. Load Rule 13 (implementation guide)
-6. Load stack file (.agents/stacks/rust.md)
+5. Read implementation-practices skill
+6. Load language skill (.agents/skills/rust-clean-code/skill.md)
 7. Begin work following documented workflow
 ```
 

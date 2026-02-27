@@ -1,7 +1,7 @@
 // Basic Rust Implementation Template
 //
 // Copy this file as starting point for new implementations.
-// Follow all standards from .agents/stacks/rust.md
+// Follow all standards from .agents/skills/rust-clean-code/skill.md
 
 /// Example demonstrating clean, synchronous Rust implementation patterns.
 

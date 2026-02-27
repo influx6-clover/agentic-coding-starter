@@ -8,181 +8,105 @@ metadata:
   author: "Main Agent"
   version: "1.0"
   last_updated: "YYYY-MM-DD"
-  tags:
-    - tag-1
-    - tag-2
-    - tag-3
-tools:
-  - Tool 1
-  - Tool 2
-files:
-  - templates/file1.ext: "Brief description"
-  - scripts/run.sh: "Brief description"
-  - examples/example1.ext: "Brief description"
-assets:
-  - docs/deep-dive.md: "Extended documentation for users"
-  - assets/diagrams/flow.png: "Architecture diagram"
+  tags: [tag-1, tag-2, tag-3]
 ---
 
 # [Skill Name]
+
+## Read By
+
+1. **[Agent Type]** reads `.agents/agents/[agent].md` which references this skill
+2. Agents load this skill as specified in their documentation
 
 ## Overview
 
 Brief overview of what this skill is about (2-3 paragraphs).
 
-## When to Use This Skill
+**Usage Type**: TEMPLATE | EXECUTABLE | EDUCATIONAL
 
-- List specific scenarios where this skill applies
-- Be clear about scope and limitations
-- Include use cases
+## When to Use
+
+- Scenario 1
+- Scenario 2
+- Scenario 3
 
 ## Prerequisites
 
-- Knowledge required before using this skill
-- Dependencies that must be installed
-- Environment setup needed
+- Prerequisite 1
+- Prerequisite 2
 
-## Skill Usage Type
+## Usage Instructions
 
-**Choose ONE**: TEMPLATE | EXECUTABLE | EDUCATIONAL
+### For TEMPLATE Skills
 
----
+**Files to Copy**:
+- `templates/file.ext` → Copy to `your/project/path/`
+- `templates/other.ext` → Copy to `your/project/path/`
 
-### For TEMPLATE Skills:
+**Steps**:
+1. Copy all files from templates/ to your project
+2. Customize for your use case
+3. Import from PROJECT location, NOT from .agents/skills/
 
-**Skill Usage Type**: TEMPLATE - Copy all files to project and customize
+### For EXECUTABLE Skills
 
-**Files to Copy** (from `templates/` directory):
-| File | Purpose | Copy To |
-|------|---------|---------|
-| `templates/client.ts` | Main implementation | `src/clients/your-client.ts` |
-| `templates/helpers.ts` | Helper functions | `src/clients/helpers.ts` |
+**Available Scripts**:
+- `scripts/run.sh` - Description
+  ```bash
+  ./scripts/run.sh --arg value
+  ```
 
-**Instructions**:
-1. Copy ALL files from `templates/` to your project
-2. Customize copied files for your use case
-3. Import from PROJECT location, NOT from `.agents/skills/`
+### For EDUCATIONAL Skills
 
----
-
-### For EXECUTABLE Skills:
-
-**Skill Usage Type**: EXECUTABLE - Run scripts as external tools
-
-**Available Scripts** (in `scripts/` directory):
-| Script | Purpose | Usage |
-|--------|---------|-------|
-| `scripts/run.sh` | Main execution | `./run.sh --arg value` |
-
-**Arguments**:
-- `--arg1`: Description (required)
-- `--arg2`: Description (optional, default: X)
-
-**Output**: Description of output format
-
----
-
-### For EDUCATIONAL Skills:
-
-**Skill Usage Type**: EDUCATIONAL - Learn pattern and implement fresh
-
-**External Dependencies**:
-```bash
-npm install package-name
-# or
-cargo add package-name
-```
-
-**Examples to Study** (in `examples/` directory):
-| File | What It Demonstrates |
-|------|---------------------|
-| `examples/basic.rs` | Core pattern implementation |
-| `examples/advanced.rs` | Extended patterns |
-
-**Instructions**:
-1. Study the examples to understand the pattern
-2. Install the external dependencies
-3. Implement FRESH code in your project
-4. NEVER import from `.agents/skills/`
-
----
+Read and understand the concepts, patterns, and best practices described below.
 
 ## Core Concepts
 
-Key concepts needed to understand this skill:
+### Concept 1
 
-- **Concept 1**: Explanation
-- **Concept 2**: Explanation
-- **Concept 3**: Explanation
+Explanation with examples.
 
-## Step-by-Step Guide
+### Concept 2
 
-### Step 1: [First Step Name]
+Explanation with examples.
 
-Detailed explanation with code examples.
+## Best Practices
 
-### Step 2: [Second Step Name]
+- Practice 1
+- Practice 2
+- Practice 3
 
-Detailed explanation with code examples.
+## Common Pitfalls
 
-[Continue for all steps...]
+❌ **Don't:**
+- Pitfall 1
+- Pitfall 2
 
-## Common Patterns
-
-Frequently used patterns when applying this skill:
-
-- **Pattern 1**: When and how to use
-- **Pattern 2**: When and how to use
-
-## Pitfalls to Avoid
-
-Common mistakes and how to avoid them:
-
-- **Pitfall 1**: What to avoid and why
-- **Pitfall 2**: What to avoid and why
+✅ **Do:**
+- Correct approach 1
+- Correct approach 2
 
 ## Examples
 
-### Example 1: [Scenario Name]
+### Example 1: [Scenario]
 
-```[language]
+```language
 // Code example
 ```
 
-### Example 2: [Another Scenario]
+### Example 2: [Scenario]
 
-```[language]
+```language
 // Code example
 ```
 
-## File Reference
+## Summary
 
-| File | Location | Type | Purpose |
-|------|----------|------|---------|
-| file1.ext | `templates/` | TEMPLATE | Purpose |
-| run.sh | `scripts/` | EXECUTABLE | Purpose |
-| example1.ext | `examples/` | EDUCATIONAL | Purpose |
-
-## Additional Resources
-
-**In `docs/` directory** (optional - for user reference):
-- `deep-dive.md` - Extended explanation
-- `troubleshooting.md` - Common issues
-- `faq.md` - Frequently asked questions
-
-**In `assets/` directory** (optional - supporting files):
-- `diagrams/` - Architecture diagrams
-- `configs/` - Configuration templates
-- `data/` - Sample data files
-
-## References
-
-- Official documentation links
-- Tutorials used
-- Stack Overflow discussions
-- Blog posts or guides
+Key takeaways:
+1. Point 1
+2. Point 2
+3. Point 3
 
 ---
 
-*Created: [Date]*
-*Last Updated: [Date]*
+_Version: 1.0 - Last Updated: YYYY-MM-DD_

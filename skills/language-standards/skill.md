@@ -1,14 +1,14 @@
 ---
 name: "Language Standards"
-description: "How to read and follow language-specific standards from stack files with learning log management"
+description: "How to read and follow language-specific standards from language skills with learning log management"
 approved: Yes
 created: 2026-02-27
 license: "MIT"
 metadata:
   author: "Main Agent"
-  version: "1.0"
+  version: "2.0"
   last_updated: "2026-02-27"
-  tags: [language, standards, stack-files, conventions, learning-log]
+  tags: [language, standards, conventions, learning-log, skills]
 tools: []
 files: []
 ---
@@ -17,9 +17,9 @@ files: []
 
 ## Overview
 
-Complete guide for reading and following language-specific coding standards from stack files, including how to update learning logs when mistakes occur or patterns discovered.
+Complete guide for reading and following language-specific coding standards from language skills, including how to document learnings when mistakes occur or patterns discovered.
 
-**Usage Type**: EDUCATIONAL - Learn how to use stack files and maintain standards.
+**Usage Type**: EDUCATIONAL - Learn how to use language skills and maintain standards.
 
 ## When to Use
 
@@ -28,20 +28,28 @@ Complete guide for reading and following language-specific coding standards from
 - When making mistakes that should be documented
 - When updating coding standards
 
-## Stack Files Location
+## Language-Specific Skills Location
 
 ```
-.agents/stacks/
-├── javascript.md          # JavaScript/TypeScript
-├── rust.md                # Rust
-├── python.md              # Python
-├── go.md                  # Go
-└── [language].md          # Other languages
+.agents/skills/
+├── rust-clean-code/              # Rust standards and conventions
+│   ├── skill.md                  # Main Rust standards
+│   ├── implementation/           # Implementation patterns
+│   ├── testing/                  # Testing practices
+│   └── async/                    # Async patterns
+├── python-clean-code/            # Python standards and conventions
+│   ├── skill.md                  # Main Python standards
+│   ├── implementation/           # Implementation patterns
+│   ├── testing/                  # Testing practices
+│   └── django/                   # Django-specific
+├── python-testing-excellence/    # Python testing best practices
+├── python-with-async-code/       # Python async patterns
+└── dst-tokio-rust/               # Tokio/async Rust patterns
 ```
 
-## Stack File Contents
+## Language Skill Contents
 
-Each stack file MUST contain:
+Each language skill contains:
 
 1. **Language Overview**: Version requirements, use cases
 2. **Coding Standards**: Formatting, naming, organization, documentation
@@ -50,22 +58,26 @@ Each stack file MUST contain:
 5. **Common Pitfalls**: Mistakes to avoid, anti-patterns
 6. **Tools and Configuration**: Required tools, configs, build system
 7. **Examples**: Good/bad code examples, common patterns
-8. **Learning Log**: Date-stamped lessons learned, mistakes corrected, new patterns
 
 ## For Implementation Agents
 
 ### Before Writing ANY Code
 
 **MANDATORY:**
-1. Read `.agents/stacks/[language].md` for each language being used
+1. Read `.agents/skills/[language]-clean-code/skill.md` for each language being used
 2. Understand ALL coding standards and requirements
 3. Internalize best practices and anti-patterns
 4. Note tools and configurations required
 
+**Language-Specific Skills:**
+- **Rust**: `.agents/skills/rust-clean-code/skill.md`
+- **Python**: `.agents/skills/python-clean-code/skill.md`
+- **JavaScript/TypeScript**: (refer to general standards)
+
 ### Follow Standards Strictly
 
 **ZERO TOLERANCE for deviations:**
-- Code MUST conform to all requirements in stack file
+- Code MUST conform to all requirements in language skills
 - If unsure about standard, stop and ask for clarification
 - Never "improvise" or "use own judgment" against documented standards
 
@@ -91,17 +103,17 @@ This specification will be implemented using:
 - **Rust**: Backend API implementation
   - Version: 1.75+
   - Purpose: High-performance, type-safe backend
-  - See: `.agents/stacks/rust.md`
+  - See: `.agents/skills/rust-clean-code/skill.md`
 
-- **TypeScript**: Frontend UI components
-  - Version: 5.0+
-  - Purpose: Type-safe React components
-  - See: `.agents/stacks/javascript.md`
+- **Python**: Backend services
+  - Version: 3.11+
+  - Purpose: Data processing and APIs
+  - See: `.agents/skills/python-clean-code/skill.md`
 ```
 
 ### Reference Stack Standards
 
-- Include clear references to stack files
+- Include clear references to language skills
 - Mention agents MUST read before implementation
 - Note deviations not allowed
 
@@ -157,13 +169,13 @@ Update Learning Log section when:
 
 1. Implementation agent discovers learning
 2. Reports to Main Agent with insight
-3. Main Agent updates stack file Learning Log
+3. Main Agent updates language skill Learning Log (if applicable)
 4. Commit with clear message
 5. All future implementations benefit from learning
 
 ## Stack File Self-Improvement
 
-Stack files evolve over time:
+Language skills evolve over time:
 
 1. **Initial State**: Basic standards and common patterns
 2. **After Mistakes**: Learning Log updated with corrections
@@ -171,7 +183,7 @@ Stack files evolve over time:
 4. **After Tool Updates**: Configuration updated
 5. **After Standards Change**: Best practices refined
 
-**Result**: Stack files become comprehensive guides refined by actual project experience.
+**Result**: Language skills become comprehensive guides refined by actual project experience.
 
 ## Language-Specific Examples
 
@@ -210,7 +222,7 @@ Stack files evolve over time:
 ### Zero Tolerance Policy
 
 **FORBIDDEN:**
-- Writing code without reading stack file
+- Writing code without reading language skills
 - Deviating from documented standards without approval
 - Ignoring coding conventions
 - Not updating Learning Log when mistakes made
@@ -228,7 +240,7 @@ Any agent violating:
 
 ### Mandatory Checks (Before ANY Commit)
 
-1. **Stack Standards Read**: Agent confirms reading stack files
+1. **Standards Read**: Agent confirms reading language skills
 2. **Code Format**: Pass formatter (rustfmt, prettier, black)
 3. **Linter**: Pass linter with zero warnings
 4. **Type Check**: Pass type checker if supported
@@ -244,7 +256,7 @@ Any agent violating:
 
 ```
 1. Read requirements.md → See "Language Stack: Rust"
-2. IMMEDIATELY read .agents/stacks/rust.md (MANDATORY)
+2. IMMEDIATELY read .agents/skills/rust-clean-code/skill.md (MANDATORY)
 3. Study coding standards:
    - Use Result<T, E> for errors
    - Run rustfmt, clippy
@@ -265,12 +277,12 @@ Any agent violating:
 2. Verification catches issue
 3. Agent fixes issue
 4. Agent reports to Main Agent: "Discovered: unwrap() causes panics, use Result<T,E>"
-5. Main Agent updates .agents/stacks/rust.md Learning Log:
+5. Main Agent updates .agents/skills/rust-clean-code/skill.md (if needed)
    - Date: 2026-02-27
    - Issue: Used unwrap()
    - Learning: Always use Result
    - New Standard: Never unwrap() in production
-6. Commit stack file update
+6. Commit skill file update (if applicable)
 7. All future implementations benefit
 ```
 
@@ -278,7 +290,7 @@ Any agent violating:
 
 **Before Coding:**
 1. Identify languages from requirements.md
-2. Read `.agents/stacks/[language].md` for EACH language
+2. Read `.agents/skills/[language]-clean-code/skill.md` for EACH language
 3. Understand ALL standards
 4. Note tools required
 

@@ -1,6 +1,6 @@
 # Enhanced Frontmatter for requirements.md
 
-This example shows the mandatory frontmatter fields added in Rule 06 v6.0 for self-contained specifications.
+This example shows the mandatory frontmatter fields added in skills migration guideline v6.0 for self-contained specifications.
 
 ## Purpose
 
@@ -24,7 +24,7 @@ metadata:
     - networking
     - async
   stack_files:
-    - .agents/stacks/rust.md
+    - .agents/skills/rust-clean-code/skill.md
   skills: []
 has_features: false
 has_fundamentals: true
@@ -38,10 +38,10 @@ related_specs:
 
 ### `metadata.stack_files` (REQUIRED)
 - **Type**: Array of strings
-- **Purpose**: Specifies which language stack files agents should load
+- **Purpose**: Specifies which language language skills agents should load
 - **Format**: Relative path from project root
-- **Example**: `.agents/stacks/rust.md`
-- **If multiple languages**: List all (e.g., `[".agents/stacks/rust.md", ".agents/stacks/typescript.md"]`)
+- **Example**: `.agents/skills/rust-clean-code/skill.md`
+- **If multiple languages**: List all (e.g., `[".agents/skills/rust-clean-code/skill.md", "language skill"]`)
 - **If no code**: Empty array `[]`
 
 ### `metadata.skills` (REQUIRED)
@@ -73,9 +73,9 @@ related_specs:
 
 **BEFORE (body text)**:
 ```markdown
-## Agent Rules Reference
+## Agent Skills Reference
 
-**Language**: Rust → .agents/stacks/rust.md
+**Language**: Rust → .agents/skills/rust-clean-code/skill.md
 
 **Skills**: None
 ```
@@ -84,7 +84,7 @@ related_specs:
 ```yaml
 metadata:
   stack_files:
-    - .agents/stacks/rust.md
+    - .agents/skills/rust-clean-code/skill.md
   skills: []
 ```
 
@@ -95,9 +95,9 @@ Before committing requirements.md, verify:
 - ✅ `metadata.skills` present (array, not null)
 - ✅ `has_features` present (true/false)
 - ✅ `has_fundamentals` present (true/false)
-- ✅ Stack files paths are correct and files exist
+- ✅ Language skills paths are correct and files exist
 - ✅ Skill names match actual skill files
-- ✅ All stack files from `.agents/stacks/`
+- ✅ All language skills from `.agents/stacks/`
 - ✅ All skills from `.agents/skills/`
 
 ## Why This Matters
@@ -111,11 +111,11 @@ Before committing requirements.md, verify:
 
 **Self-Containment Benefits**:
 - Agents know exactly what to load
-- No need to search body for stack files
+- No need to search body for language skills
 - Clear declaration of all dependencies
 - Frontmatter is single source of truth
 
 ---
 
 *Created: 2026-01-22*
-*Referenced in: Rule 06, section "Requirements.md Self-Containment"*
+*Referenced in: Skills-based self-containment guideline*

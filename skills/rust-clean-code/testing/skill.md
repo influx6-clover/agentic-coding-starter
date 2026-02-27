@@ -96,6 +96,14 @@ right tests and crate.
 Actually do the work, dont just fake tests with contents asserting true to claim you wrote them, do the actual 
 work and write the tests correctly.
 
+**Bad:**
+```rust
+/// Test token expiration
+#[test]
+fn test_token_expiry() { }  // ❌ No WHY, vague WHAT
+fn test_token_expiry() { assert(true, "this is me cheating") }  // lies and cheating
+```
+
 **Principle: Project Building Blocks → Stdlib → External Dependencies (in that order)**
 
 **STEP 1: Check Project Building Blocks**

@@ -1,52 +1,69 @@
 ---
 name: "Test-Driven Development (TDD)"
-description: "Complete TDD workflow including test-first development, test documentation, and test quality validation"
+description: "Complete TDD workflow: ONE test at a time, test-first, finish before moving to next"
 approved: Yes
 created: 2026-02-27
 license: "MIT"
 metadata:
   author: "Main Agent"
-  version: "1.0"
+  version: "2.0"
   last_updated: "2026-02-27"
-  tags: [tdd, testing, test-first, quality, workflow]
+  tags: [tdd, testing, test-first, quality, workflow, one-at-a-time]
 tools: []
 files: []
 ---
 
 # Test-Driven Development (TDD)
 
+## Read By
+
+1. **Implementation Agent** reads this when writing code
+2. Referenced by `.agents/agents/implementation.md`
+
 ## Overview
 
-This skill defines the mandatory Test-Driven Development workflow that all implementation agents must follow when writing code. TDD ensures tests are written before implementation, validating behavior before code exists.
+**MANDATORY**: Work on ONE test at a time. Finish it completely before moving to the next test.
 
-**Usage Type**: EDUCATIONAL - Learn TDD patterns and implement in your workflow.
+**TDD Workflow**: Test first → Implement → Pass → Next test
 
-## When to Use
+**Usage Type**: EDUCATIONAL - Learn and follow TDD patterns.
 
-Use this skill when:
-- Implementing new functionality
-- Adding features to existing code
-- Writing any code that has testable behavior
-- Ensuring code quality through tests
+## Critical Rule: ONE Test at a Time
 
-**When TDD May Not Apply:**
-- Exploratory/spike work with unclear requirements
-- Refactoring code with good existing test coverage
-- Fixing build/infrastructure issues
-- UI/visual work requiring manual testing
+❌ **NEVER do this:**
+- Write multiple tests at once
+- Generate test file with all tests
+- Write implementation for multiple tests simultaneously
+- Skip ahead to other tests before current one passes
 
-## Prerequisites
+✅ **ALWAYS do this:**
+1. Write ONE test
+2. Verify it FAILS
+3. Implement minimum code to pass THAT test
+4. Verify it PASSES
+5. Refactor if needed
+6. Move to NEXT test
+7. Repeat
 
-- Understanding of testing frameworks for your language
-- Access to language stack file (`.agents/stacks/[language].md`)
-- Clear requirements for what to implement
-
-## The TDD Cycle
+## The TDD Cycle (One Test at a Time)
 
 ```
-1. Write Test FIRST → 2. Verify FAILS → 3. Implement Code →
-4. Verify PASSES → 5. Refactor → 6. Repeat
+ONE TEST:
+Write Test → Verify FAILS → Implement Code → Verify PASSES → Refactor
+
+THEN NEXT TEST:
+Write Test → Verify FAILS → Implement Code → Verify PASSES → Refactor
+
+THEN NEXT TEST:
+...
 ```
+
+**Why One at a Time:**
+- ✅ Stay focused on single behavior
+- ✅ Catch issues immediately
+- ✅ Incremental progress
+- ✅ Clear failure points
+- ✅ Easier to debug
 
 ### Step 1: Write the Test FIRST
 
@@ -271,6 +288,7 @@ test('calculates correct cart total with tax and shipping', () => {
 /// Test token expiration
 #[test]
 fn test_token_expiry() { }  // ❌ No WHY, vague WHAT
+fn test_token_expiry() { assert(true, "this is me cheating") }  // ❌ No WHY, vague WHAT
 ```
 
 ## Test Quality Validation
@@ -449,12 +467,13 @@ WHAT: [Specific behavior being tested]
 - Complete coverage of requirements
 
 **Key Principles:**
-1. Test first, code second
+1. Test first, finish first test, then code second
 2. Red → Green → Refactor
 3. Document every test
 4. Test real behavior
 5. One test per requirement
 6. Fix failures immediately
+7. Do not do any other thing (new test, new code) until current test is fully finished and passing
 
 ---
 

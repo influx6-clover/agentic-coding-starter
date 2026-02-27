@@ -1,3 +1,10 @@
+---
+skill_name: "[skill-name]"
+this_file: ".agents/skills/[skill-name]/LEARNINGS.md"
+created: YYYY-MM-DD
+last_updated: YYYY-MM-DD
+---
+
 # Learnings - [Skill Name]
 
 ## Quick Tips

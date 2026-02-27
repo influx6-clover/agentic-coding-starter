@@ -1,3 +1,10 @@
+---
+workspace_name: "ewe_platform"
+this_file: "specifications/SPEC.md"
+created: YYYY-MM-DD
+last_updated: YYYY-MM-DD
+---
+
 # Project Specifications
 
 ## Overview

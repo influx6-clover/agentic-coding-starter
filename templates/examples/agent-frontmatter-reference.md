@@ -26,7 +26,7 @@ tools_required: [Tool 1, Tool 2]
 skills_required: [Skill 1, Skill 2]
 spawned_by: [main-agent|sub-agent-name|both]
 spawns: [list of spawnable agents]
-related_rules: [Rule NN]
+related_skills: [git-workflow, code-verification]
 status: [active|deprecated|experimental]
 ---
 ```
@@ -48,7 +48,7 @@ status: [active|deprecated|experimental]
 | `metadata.tags` | array | ✅ | Searchable tags | Minimum 2 tags, lowercase-with-hyphens |
 | `tools_required` | array | ✅ | Required tools/dependencies | List of tool names |
 | `spawned_by` | string | ✅ | Who can spawn this agent | main-agent, sub-agent-name, or both |
-| `related_rules` | array | ✅ | Associated rule numbers | e.g., ["Rule 03", "Rule 07"] |
+| `related_skills` | array | ✅ | Associated rule numbers | e.g., ["Rule 03", "Rule 07"] |
 | `status` | enum | ✅ | Current status | One of: active, deprecated, experimental |
 | `skills_required` | array | ⚪ Optional | Required skills | Skills from `.agents/skills/` |
 | `spawns` | array | ⚪ Optional | Agents this can spawn | List of spawnable agent names |
@@ -162,10 +162,10 @@ status: [active|deprecated|experimental]
 **Examples**: `["specification-update", "implementation"]`
 **Note**: Sub-agents generally should NOT spawn verification agents
 
-### `related_rules` (REQUIRED)
-**Purpose**: Cross-reference relevant rules
+### `related_skills` (REQUIRED)
+**Purpose**: Cross-reference relevant skills or configuration
 **Format**: Array of rule identifiers
-**Examples**: `["Rule 05", "Rule 08"]`
+**Examples**: `["git-workflow", "code-verification"]`
 **Minimum**: Should reference at least one rule
 
 ### `status` (REQUIRED)
@@ -282,15 +282,15 @@ Remove tags when:
 - ✅ Capabilities removed
 - ✅ No longer relevant
 
-## Integration with Rule 10
+## Integration with agent documentation standard
 
-This reference is extracted from Rule 10 (Agent Documentation and Registry) to:
+This reference is extracted from agent documentation standard (Agent Documentation and Registry) to:
 - ✅ Reduce rule file size
 - ✅ Provide comprehensive field documentation
 - ✅ Enable easy reference during agent creation
 - ✅ Maintain single source of truth
 
-**See Rule 10** for:
+**See agent documentation standard** for:
 - Complete agent documentation workflow
 - Duplicate prevention process
 - Registry usage patterns
@@ -299,5 +299,5 @@ This reference is extracted from Rule 10 (Agent Documentation and Registry) to:
 ---
 
 *Created: 2026-01-22*
-*Referenced in: Rule 10, section "Frontmatter Fields Reference"*
-*Source: Extracted from Rule 10 for better maintainability*
+*Referenced in: agent documentation standard, section "Frontmatter Fields Reference"*
+*Source: Extracted from agent documentation standard for better maintainability*

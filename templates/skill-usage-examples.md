@@ -1,3 +1,10 @@
+---
+this_file: ".agents/templates/skill-usage-examples.md"
+purpose: "Reference examples for skill usage patterns"
+created: 2026-01-20
+last_updated: 2026-02-27
+---
+
 # Skill Usage Examples
 
 Reference examples for how agents should use skills based on their usage type.
@@ -200,4 +207,5 @@ Request: Please review and clarify before I proceed.
 ---
 
 *Created: 2026-01-20*
-*Purpose: Code examples and templates for Rule 09 (Skills Creation) and Rule 11 (Skills Usage)*
+*Updated: 2026-02-27*
+*Purpose: Code examples and templates for skills management*

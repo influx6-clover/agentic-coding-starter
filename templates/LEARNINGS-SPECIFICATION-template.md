@@ -1,50 +1,53 @@
-# [Specification Name] - Learnings
+---
+workspace_name: "ewe_platform"
+spec_directory: "specifications/[NN-spec-name]"
+this_file: "specifications/[NN-spec-name]/LEARNINGS.md"
 
-## Overview
-[Brief summary of what was learned during this specification]
+created: YYYY-MM-DD
+last_updated: YYYY-MM-DD
+---
 
-## Key Insights
-1. **[Insight Category]**
-   - [Specific learning or discovery]
-   - [Why this matters]
+# Learnings: [Specification Name]
 
-2. **[Another Insight]**
-   - [Details]
+## Read By
 
-## Challenges and Solutions
+1. **[Implementation Agent]** reads this for context on previous discoveries
+2. **[Main Agent]** reads this when resuming work on specification
+3. **Future agents** read this to avoid repeating mistakes
 
-### Challenge: [Challenge Description]
-**Problem**: [What the problem was]
-**Solution**: [How it was solved]
-**Outcome**: [Result]
+## Purpose
 
-## Best Practices Discovered
-- [Best practice 1]
-- [Best practice 2]
+Document non-obvious discoveries, critical decisions, and gotchas specific to THIS specification.
 
-## Anti-Patterns to Avoid
-- [What not to do and why]
-
-## Recommendations for Future Work
-1. [Recommendation for next time]
-2. [Another recommendation]
-
-## Knowledge Gained
-
-### Technical Knowledge
-- [New technical knowledge acquired]
-
-### Process Knowledge
-- [Process improvements identified]
-
-## Documentation Improvements Needed
-- [Documentation gaps found]
-
-## Technical Debt Identified
-- [Technical debt discovered]
-
-## Success Factors
-[What made this specification successful]
+**Note**: Generic language patterns go in `.agents/skills/[language]-clean-code/` instead.
 
 ---
-*Learnings Documented: [Date]*
+
+## Critical Implementation Details
+
+- Detail 1: Description
+- Detail 2: Description
+
+## Common Failures and Fixes
+
+- Issue → Solution
+- Issue → Solution
+
+## Testing Insights
+
+- Insight 1
+- Insight 2
+
+## Dependencies and Interactions
+
+- Component A depends on Component B
+- Integration with System X requires Y
+
+## Future Considerations
+
+- Improvement idea
+- Technical debt to address
+
+---
+
+_Last Updated: YYYY-MM-DD_
