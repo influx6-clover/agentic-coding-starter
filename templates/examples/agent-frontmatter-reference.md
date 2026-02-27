@@ -48,7 +48,7 @@ status: [active|deprecated|experimental]
 | `metadata.tags` | array | ✅ | Searchable tags | Minimum 2 tags, lowercase-with-hyphens |
 | `tools_required` | array | ✅ | Required tools/dependencies | List of tool names |
 | `spawned_by` | string | ✅ | Who can spawn this agent | main-agent, sub-agent-name, or both |
-| `related_skills` | array | ✅ | Associated rule numbers | e.g., ["Rule 03", "Rule 07"] |
+| `related_skills` | array | ✅ | Associated skill references | e.g., ["git-workflow", "code-verification"] |
 | `status` | enum | ✅ | Current status | One of: active, deprecated, experimental |
 | `skills_required` | array | ⚪ Optional | Required skills | Skills from `.agents/skills/` |
 | `spawns` | array | ⚪ Optional | Agents this can spawn | List of spawnable agent names |
@@ -164,9 +164,9 @@ status: [active|deprecated|experimental]
 
 ### `related_skills` (REQUIRED)
 **Purpose**: Cross-reference relevant skills or configuration
-**Format**: Array of rule identifiers
+**Format**: Array of skill identifiers
 **Examples**: `["git-workflow", "code-verification"]`
-**Minimum**: Should reference at least one rule
+**Minimum**: Should reference at least one skill or be empty array
 
 ### `status` (REQUIRED)
 **Purpose**: Indicate agent lifecycle state
@@ -195,7 +195,7 @@ Before creating or updating agent documentation, verify:
 - [ ] Tags are lowercase with hyphens
 - [ ] Name matches filename (title case to kebab-case)
 - [ ] Type accurately reflects agent function
-- [ ] Related rules are correct
+- [ ] Related skills are correct
 
 ### Clarity
 - [ ] Purpose is immediately understandable
@@ -284,8 +284,8 @@ Remove tags when:
 
 ## Integration with agent documentation standard
 
-This reference is extracted from agent documentation standard (Agent Documentation and Registry) to:
-- ✅ Reduce rule file size
+This reference is extracted from agent documentation standard to:
+- ✅ Reduce documentation file size
 - ✅ Provide comprehensive field documentation
 - ✅ Enable easy reference during agent creation
 - ✅ Maintain single source of truth

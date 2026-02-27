@@ -402,15 +402,15 @@ EOF
 
 ---
 
-## Integration with Rules
+## Integration with Documentation
 
-- **Rule 03 (Dangerous Operations)**: Commit after every change
-- **Rule 04 (Work Commit and Push)**: Immediate commit and automatic push
-- **Rule 05 (Agent Orchestration)**: Verification before commit
-- **Rule 08 (Verification Workflow)**: Complete verification details
+- **Dangerous operations documentation**: Commit after every change
+- **Work commit and push documentation**: Immediate commit and automatic push
+- **Agent orchestration documentation**: Verification before commit
+- **Verification workflow documentation**: Complete verification details
 
 ---
 
 *Created: 2026-01-22*
-*Referenced in: Rule 04, section "Commit Message Format"*
-*Source: Extracted from Rule 04 for better maintainability*
+*Referenced in: work commit and push documentation*
+*Source: Extracted for better maintainability*

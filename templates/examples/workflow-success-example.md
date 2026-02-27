@@ -17,7 +17,7 @@ Demonstrates the ideal path where implementation is correct, verification passes
    - Waits for completion report
 
 3. Implementation Agent (SUB-AGENT):
-   - Reads AGENTS.md and all required rules
+   - Reads agent documentation and all required skills
    - Reads specification (requirements.md, tasks.md)
    - Implements using TDD workflow:
      * Write test first (RED)
@@ -146,10 +146,10 @@ Success! ✅
 
 - See `workflow-failure-example.md` for what happens when verification fails
 - See `workflow-fix-cycle-example.md` for the iterative fix process
-- See Rule 05 for complete agent orchestration guidelines
-- See Rule 08 for detailed verification requirements
+- See agent orchestration documentation for complete guidelines
+- See verification workflow documentation for requirements
 
 ---
 
 *Created: 2026-01-22*
-*Referenced in: Rule 05, section "Complete Workflow Example"*
+*Referenced in: agent orchestration documentation*

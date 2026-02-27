@@ -57,7 +57,7 @@ Every agent file must contain:
 **Before creating a new agent:**
 1. Check if existing agent can handle the task
 2. If new agent needed, create documentation FIRST
-3. Use template from Rule 10
+3. Use template from agent documentation standard
 4. Commit documentation before spawning agent
 
 **Process:**
@@ -76,7 +76,7 @@ git commit -m "Add [Agent Name] documentation"
 
 ## Mandatory Requirement
 
-**From Rule 10: Agent Documentation and Registry**
+**From agent documentation standard**
 
 ❌ **NEVER spawn an undocumented agent**
 ❌ **NEVER create a new agent without documentation**
@@ -113,9 +113,9 @@ git commit -m "Add [Agent Name] documentation"
 
 ## See Also
 
-- **Rule 10**: Agent Documentation and Registry - Main Agent creating agents
-- **Rule 12**: Agent Registry Usage - Sub-agents being spawned (concise)
-- **Rule 05**: Agent Orchestration - Spawning and coordination
+- **Agent documentation standard**: Complete guide for agent creation and documentation
+- **Agent orchestration documentation**: Spawning and coordination best practices
+- **Skills documentation**: Available skills agents can use
 
 ---
-*This directory is governed by Rule 10 (Main Agent) and Rule 12 (Sub-agents)*
+*This directory contains the registry of all available agents in the system*

@@ -1,18 +1,22 @@
 ---
-workspace_name: "ewe_platform"
-spec_directory: "specifications/[NN-spec-name]"
-this_file: "specifications/[NN-spec-name]/requirements.md"
-
-status: in-progress
-priority: medium
+description: "[Brief description of what this specification implements]"
+status: "in-progress"
+priority: "medium"
 created: YYYY-MM-DD
-
-builds_on: []
-related_specs: []
-
+author: "Main Agent"
+metadata:
+  version: "1.0"
+  last_updated: YYYY-MM-DD
+  estimated_effort: "small | medium | large"
+  tags:
+    - tag1
+    - tag2
+  skills: []
+  tools: []
 has_features: true
-has_fundamentals: true
-
+has_fundamentals: false
+builds_on: ""
+related_specs: []
 features:
   completed: 0
   uncompleted: [N]
@@ -20,13 +24,9 @@ features:
   completion_percentage: 0
 ---
 
-# [Specification Name]
+# Overview
 
-> **Start Here**: Read `start.md` for agent workflow instructions
-
-## Overview
-
-Brief description of what this specification implements.
+Brief description of what this specification implements and why.
 
 ## Goals
 
@@ -34,53 +34,77 @@ Brief description of what this specification implements.
 - Goal 2: Description
 - Goal 3: Description
 
-## Requirements
+## Implementation Location
 
-### Functional Requirements
+- Primary implementation: `[path/to/implementation]`
+- Feature specifications: `specifications/[NN-spec-name]/features/*/feature.md`
+- Documentation: `documentation/[module]/doc.md`
 
-1. **[Category]**
-   - Requirement detail
-   - Requirement detail
+## Known Issues
 
-2. **[Category]**
-   - Requirement detail
+None currently identified.
 
-### Non-Functional Requirements
+## Feature Index
 
-1. **Performance**
-   - Requirement detail
+The implementation is divided into features with clear dependencies. Each feature contains detailed requirements, tasks, and verification steps in its respective `feature.md` file.
 
-2. **Security**
-   - Requirement detail
+**Implementation Guidelines:**
+- Implement features in dependency order
+- Each feature contains complete requirements and tasks
+- Refer to individual feature.md files for detailed specifications
 
-## Language Stack
+| #  | Feature | Description | Dependencies | Status |
+|----|---------|-------------|--------------|--------|
+| 0  | [feature-name](./features/feature-name/feature.md) | Brief description | None | ⬜ Pending |
+| 1  | [another-feature](./features/another-feature/feature.md) | Brief description | 0 | ⬜ Pending |
 
-- **[Language]**: [Purpose]
-  - Version: [X.Y]+
-  - Skills: `.agents/skills/[language]-clean-code/skill.md`
+Status Key: ⬜ Pending | 🔄 In Progress | ✅ Complete
 
-## Features
+## Requirements Conversation Summary
 
-> Features are in `features/` directory
+This specification was created through collaborative requirements gathering with the user, focusing on:
+- Key decision 1
+- Key decision 2
+- Key decision 3
 
-- [ ] Feature 1: `features/feature-1/`
-- [ ] Feature 2: `features/feature-2/`
+## High-Level Architecture
 
-## Fundamentals
+Brief description of the architectural approach:
 
-> Core types and utilities in `fundamentals/`
+1. **Layer 1**: Description
+2. **Layer 2**: Description
+3. **Layer 3**: Description
 
-- `fundamentals/types.ext` - Core type definitions
-- `fundamentals/errors.ext` - Error types
-- `fundamentals/config.ext` - Configuration
+Each layer is implemented as a separate feature with clear dependencies.
 
-## Success Criteria
+# Success Criteria (Spec-Wide)
 
-- [ ] All features completed
-- [ ] All tests passing
-- [ ] All verification checks passing
-- [ ] Documentation updated
+This specification is considered complete when:
+
+## Functionality
+- All features completed and verified (see Feature Index)
+- [Specific functional requirement 1]
+- [Specific functional requirement 2]
+
+## Code Quality
+- Zero warnings from linting tools
+- Code formatting passes
+- All unit and integration tests pass
+- End-to-end integration tests demonstrate full feature interoperability
+
+## Documentation
+- Module documentation updated
+- `LEARNINGS.md` captures design decisions and trade-offs
+- `VERIFICATION.md` produced with all verification checks passing
+- `REPORT.md` created documenting final implementation
+
+## Module References
+
+Agents implementing features should read these documentation files:
+- `documentation/[module]/doc.md` - Module patterns and conventions
 
 ---
 
 _Created: YYYY-MM-DD_
+_Last Updated: YYYY-MM-DD_
+_Structure: Feature-based (has_features: true)_

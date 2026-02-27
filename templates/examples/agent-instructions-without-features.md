@@ -4,7 +4,7 @@
 
 **CRITICAL REMINDERS**:
 
-1. **Load Relevant Rules**: Before starting work, ensure you have loaded all rules specified in `files_required.main_agent.rules` from the frontmatter above.
+1. **Read Agent Documentation**: Before starting work, read your agent documentation at `.agents/agents/main-agent.md` which specifies what skills and files you need.
 
 2. **Autonomous Agent Behavior**: Work autonomously without unnecessary back-and-forth. Make informed decisions based on loaded context and instructions.
 
@@ -24,14 +24,15 @@
 
 **CRITICAL REMINDERS**:
 
-1. **Load Your Role-Specific Rules**:
-   - **Implementation agents**: Load rules from `files_required.implementation_agent.rules`
-   - **Verification agents**: Load rules from `files_required.verification_agent.rules`
-   - Load appropriate language skills specified in metadata
+1. **Read Your Agent Documentation**:
+   - **Implementation agents**: Read `.agents/agents/implementation-agent.md`
+   - **Verification agents**: Read `.agents/agents/verification-agent.md`
+   - Your documentation specifies what skills to load and files to read
 
 2. **Read Required Context**:
    - **MUST READ** this requirements.md file for complete context
    - **MUST READ** fundamentals/* documentation if has_fundamentals: true
+   - Read any skill files specified in metadata (e.g., skills from `.agents/skills/`)
 
 3. **Autonomous Execution**:
    - Execute your assigned tasks without seeking unnecessary approval
@@ -48,6 +49,5 @@
    - Do NOT expand scope without explicit instruction
    - Update Tasks section and frontmatter counts as you progress
    - Mark tasks complete only when fully implemented and verified
-   - Commit after task completion + verification pass (Rule 04)
 
 ---

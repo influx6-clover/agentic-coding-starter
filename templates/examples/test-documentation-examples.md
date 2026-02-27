@@ -382,4 +382,4 @@ Before committing tests, verify:
 ---
 
 *Created: 2026-01-22*
-*Referenced in: Rule 05, section "Test Documentation Requirements"*
+*Referenced in: agent orchestration documentation*

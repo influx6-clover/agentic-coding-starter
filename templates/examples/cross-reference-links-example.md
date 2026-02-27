@@ -47,4 +47,4 @@ Before committing `requirements.md`, verify:
 ---
 
 *Created: 2026-01-22*
-*Referenced in: Rule 06, section "Requirements.md Self-Containment"*
+*Referenced in: specification completion documentation*

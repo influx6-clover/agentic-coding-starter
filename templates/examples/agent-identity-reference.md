@@ -318,14 +318,14 @@ Violations cause:
 
 ---
 
-## Integration with Other Rules
+## Integration with Other Documentation
 
-- **Rule 05**: Complete agent orchestration workflow
-- **Rule 08**: Detailed verification workflow requirements
-- **Rule 10**: Agent documentation and registry
-- **Rule 12**: Sub-agent guide (concise)
+- **Agent orchestration documentation**: Complete agent orchestration workflow
+- **Verification workflow documentation**: Detailed verification workflow requirements
+- **Agent documentation standard**: Agent documentation and registry
+- **Skills documentation**: Available skills and their usage
 
 ---
 
 *Created: 2026-01-22*
-*Referenced in: Rule 05 and Rule 08, section "Agent Identity and Verification Authority"*
+*Referenced in: agent orchestration and verification documentation*

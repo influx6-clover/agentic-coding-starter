@@ -33,8 +33,8 @@ status: active
 ## Workflow
 
 1. Spawned by Main Agent after specifications created
-2. Read requirements.md and files_required.review_agent section
-3. Load required context files
+2. Read requirements.md (or feature.md for feature-specific review)
+3. Load required context files as specified in agent documentation
 4. Search codebase extensively (Glob/Grep)
 5. Verify task status matches reality
 6. Identify inconsistencies

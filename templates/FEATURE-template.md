@@ -19,8 +19,6 @@ tasks:
 
 # [Feature Name]
 
-> **Start Here**: Read `../../start.md` for agent workflow instructions
-
 ## Overview
 
 Brief description of what this feature implements.

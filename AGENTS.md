@@ -110,7 +110,7 @@ You are an Implementation Agent for [task description].
 
 1. Read your agent documentation: .agents/agents/implementation.md
 2. Read required skills as specified in your documentation
-3. Read COMPACT_CONTEXT.md (provided by Main Agent)
+3. Read compacted.md (provided by Main Agent)
 4. Begin implementation following TDD
 5. Report completion to Main Agent (do NOT commit)
 ```

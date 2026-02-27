@@ -372,7 +372,7 @@ mod input_validation_tests {
 
 ## References
 
-- [`rust.md`](../stacks/rust.md) - Comprehensive Rust testing conventions (MANDATORY reading)
+- `.agents/skills/rust-clean-code/skill.md` - Comprehensive Rust conventions (MANDATORY reading)
 - The `proptest` crate documentation: https://docs.rs/proptest/latest/
 - Official Rust Testing Guide: https://doc.rust-lang.org/book/ch11-00-testing.html
 - Tokio async test patterns if using tokio

@@ -49,11 +49,9 @@ As sub-agent:
 
 1. Read agent documentation (this file)
 2. Read the 4 skills listed above
-3. Load Rules 01-04 (mandatory for all agents)
-4. Load Rule 11 (if using additional skills)
-5. Read COMPACT_CONTEXT.md (provided by Main Agent)
-6. Read stack file (`.agents/stacks/[language].md`)
-7. Begin work with clean context
+3. Read compacted.md (provided by Main Agent)
+4. Read language skill (`.agents/skills/[language]-clean-code/skill.md`)
+5. Begin work with clean context
 
 ## Capabilities
 

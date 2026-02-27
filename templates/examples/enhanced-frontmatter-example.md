@@ -23,8 +23,6 @@ metadata:
     - http
     - networking
     - async
-  stack_files:
-    - .agents/skills/rust-clean-code/skill.md
   skills: []
 has_features: false
 has_fundamentals: true
@@ -35,14 +33,6 @@ related_specs:
 ```
 
 ## New Fields Explained
-
-### `metadata.stack_files` (REQUIRED)
-- **Type**: Array of strings
-- **Purpose**: Specifies which language language skills agents should load
-- **Format**: Relative path from project root
-- **Example**: `.agents/skills/rust-clean-code/skill.md`
-- **If multiple languages**: List all (e.g., `[".agents/skills/rust-clean-code/skill.md", "language skill"]`)
-- **If no code**: Empty array `[]`
 
 ### `metadata.skills` (REQUIRED)
 - **Type**: Array of strings
@@ -69,35 +59,14 @@ related_specs:
 - **When true**: Implementation agent MUST write fundamentals docs FIRST
 - **Criteria**: User-facing libraries, APIs, reusable components, complex patterns
 
-## Migration from Old Format
-
-**BEFORE (body text)**:
-```markdown
-## Agent Skills Reference
-
-**Language**: Rust → .agents/skills/rust-clean-code/skill.md
-
-**Skills**: None
-```
-
-**AFTER (frontmatter)**:
-```yaml
-metadata:
-  stack_files:
-    - .agents/skills/rust-clean-code/skill.md
-  skills: []
-```
-
 ## Validation Checklist
 
 Before committing requirements.md, verify:
-- ✅ `metadata.stack_files` present (array, not null)
 - ✅ `metadata.skills` present (array, not null)
 - ✅ `has_features` present (true/false)
 - ✅ `has_fundamentals` present (true/false)
-- ✅ Language skills paths are correct and files exist
+- ✅ Skill references are correct and files exist
 - ✅ Skill names match actual skill files
-- ✅ All language skills from `.agents/stacks/`
 - ✅ All skills from `.agents/skills/`
 
 ## Why This Matters

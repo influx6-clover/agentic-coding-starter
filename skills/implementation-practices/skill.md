@@ -6,8 +6,8 @@ created: 2026-02-27
 license: "MIT"
 metadata:
   author: "Main Agent"
-  version: "2.0"
-  last_updated: "2026-02-27"
+  version: "3.0"
+  last_updated: "2026-02-28"
   tags: [implementation, workflow, tdd, self-review, retrieval, reasoning, one-at-a-time]
 tools: []
 files: []
@@ -88,15 +88,13 @@ As sub-agent:
 
 ## Before Starting Work
 
-1. Load Rules 01-04 (mandatory)
-2. Read AGENTS.md (agent registry)
-3. Read skills-management skill (if using skills)
-4. Load your agent documentation (`.agents/agents/[name].md`)
-5. Load relevant language skills (`.agents/skills/[language]-clean-code/skill.md`)
-6. Main Agent provides COMPACT_CONTEXT.md path (already generated)
-7. Read COMPACT_CONTEXT.md (self-contained with embedded machine_prompt)
-8. Parse FILES section and read ONLY listed files
-9. Begin work with clean, minimal context (~5K tokens)
+1. Read AGENTS.md (agent registry)
+2. Read skills-management skill (if using skills)
+3. Load your agent documentation (`.agents/agents/[name].md`)
+4. Load relevant language skills (`.agents/skills/[language]-clean-code/skill.md`)
+5. Read specification requirements and features
+6. Parse FILES section and read ONLY listed files
+7. Begin work with clean, minimal context
 
 ## Autonomous Decision-Making
 
@@ -296,28 +294,26 @@ Main Agent may resume you to fix issues:
    ↓
 2. Read agent documentation (.agents/agents/implementation.md)
    ↓
-3. Load Rules 01-04, 12, 11 (if skills)
+3. Read specification requirements and features
    ↓
-4. Read COMPACT_CONTEXT.md (has embedded machine_prompt)
+4. Read language skills (.agents/skills/[language]-clean-code/skill.md)
    ↓
-5. Read language skills (.agents/skills/[language]-clean-code/skill.md)
+5. Retrieval-led reasoning (search, read existing code)
    ↓
-6. Retrieval-led reasoning (search, read existing code)
+6. TDD workflow (test first, verify fail, implement, verify pass)
    ↓
-7. TDD workflow (test first, verify fail, implement, verify pass)
+7. Self-review (completeness, quality, simplicity, alignment, coverage)
    ↓
-8. Self-review (completeness, quality, simplicity, alignment, coverage)
+8. Document learnings (if any)
    ↓
-9. Document learnings (if any)
+9. Report completion to Main Agent
    ↓
-10. Report completion to Main Agent
+10. STOP and WAIT for Main Agent
    ↓
-11. STOP and WAIT for Main Agent
+11. Main Agent spawns verification
    ↓
-12. Main Agent spawns verification
-   ↓
-13. If PASS: Main Agent commits
-14. If FAIL: Main Agent resumes you with fix requirements
+12. If PASS: Main Agent commits
+13. If FAIL: Main Agent resumes you with fix requirements
 ```
 
 ## Common Patterns
@@ -325,9 +321,9 @@ Main Agent may resume you to fix issues:
 ### Pattern: Starting New Task
 
 ```
-1. Receive COMPACT_CONTEXT.md path from Main Agent
-2. Read COMPACT_CONTEXT.md (self-contained)
-3. Read files listed in FILES section
+1. Receive task specification from Main Agent
+2. Read specification requirements and feature files
+3. Read files listed in specification
 4. Search for similar implementations (retrieval-led)
 5. Read existing patterns and conventions
 6. Write test first (TDD)
@@ -357,15 +353,14 @@ Main Agent may resume you to fix issues:
 
 **Implementation Checklist:**
 1. ✅ Read agent documentation
-2. ✅ Load required rules and stack file
-3. ✅ Read COMPACT_CONTEXT.md
-4. ✅ Use retrieval-led reasoning (read code first)
-5. ✅ Follow TDD (test first)
-6. ✅ Prioritize work (fix tests first)
-7. ✅ Self-review (5 checks)
-8. ✅ Document learnings
-9. ✅ Report completion
-10. ✅ WAIT for Main Agent
+2. ✅ Read specification requirements and features
+3. ✅ Use retrieval-led reasoning (read code first)
+4. ✅ Follow TDD (test first)
+5. ✅ Prioritize work (fix tests first)
+6. ✅ Self-review (5 checks)
+7. ✅ Document learnings
+8. ✅ Report completion
+9. ✅ WAIT for Main Agent
 
 **Key Principles:**
 1. Retrieval-led reasoning (read code first, NOT assumptions)
@@ -379,4 +374,4 @@ Main Agent may resume you to fix issues:
 
 ---
 
-_Version: 1.0 - Last Updated: 2026-02-27_
+_Version: 3.0 - Last Updated: 2026-02-28_

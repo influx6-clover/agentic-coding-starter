@@ -251,11 +251,11 @@ Implementation → Verify → Fail → Fix → Verify → Pass → Commit → Pu
 ## Related Workflows
 
 - See `workflow-success-example.md` for ideal path without failures
-- See Rule 05 for complete agent orchestration guidelines
-- See Rule 08 for detailed verification requirements
-- See verification agent docs for check specifics
+- See agent orchestration documentation for complete guidelines
+- See verification workflow documentation for check details
+- See verification agent documentation for check specifics
 
 ---
 
 *Created: 2026-01-22*
-*Referenced in: Rule 05, section "Complete Workflow Example"*
+*Referenced in: agent orchestration documentation*

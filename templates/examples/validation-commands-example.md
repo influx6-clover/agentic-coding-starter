@@ -335,4 +335,4 @@ test result: FAILED. 10 passed; 2 failed  # ❌ FAIL
 ---
 
 *Created: 2026-01-22*
-*Referenced in: Rule 06, section "Validation Before Marking Complete"*
+*Referenced in: specification completion documentation*
