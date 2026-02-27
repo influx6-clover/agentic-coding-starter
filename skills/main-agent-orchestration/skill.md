@@ -1,0 +1,366 @@
+---
+name: "Main Agent Orchestration"
+description: "How Main Agent coordinates work, spawns agents, manages verification, and commits code"
+approved: Yes
+created: 2026-02-27
+license: "MIT"
+metadata:
+  author: "Main Agent"
+  version: "1.0"
+  last_updated: "2026-02-27"
+  tags: [orchestration, main-agent, verification, coordination, workflow]
+tools: [Bash]
+files: []
+---
+
+# Main Agent Orchestration
+
+## Overview
+
+This skill defines how the Main Agent acts as orchestrator, coordinating specialized sub-agents, managing verification workflow, and ensuring code quality before commits.
+
+**Usage Type**: EDUCATIONAL - Learn patterns and implement orchestration workflow.
+
+## When to Use
+
+Use this skill when:
+- You are the Main Agent coordinating implementation work
+- You need to spawn and coordinate sub-agents
+- You need to manage verification workflow
+- You need to commit code after verification passes
+
+## Prerequisites
+
+- Understanding of agent hierarchy (Main Agent vs Sub-Agents)
+- Familiarity with Rule 04 (Commit and Push)
+- Familiarity with Rule 08 (Verification Workflow)
+- Access to `.agents/skills/git-workflow/skill.md`
+
+## Core Principles
+
+### 1. Main Agent as Orchestrator
+
+Main Agent MUST:
+- Act as controller and orchestrator ONLY
+- NEVER perform coding tasks directly
+- Launch specialized agents for all code work
+- Delegate to verification agents after implementation
+- Coordinate specification updates
+- Commit code ONLY after verification passes
+
+### 2. Agent Identity and Authority
+
+**Main Agent** (Only agent with verification authority):
+- Directly interacting with user
+- Spawns: Implementation agents, Specification agents, Verification agents
+- Can commit code after verification passes
+
+**Sub-Agents** (No verification authority):
+- Spawned by Main Agent
+- Report completion to Main Agent
+- NEVER spawn verification agents
+- NEVER commit directly
+
+**Quick Identity Check:**
+```
+Directly interacting with user? → MAIN AGENT
+Spawned by another agent? → SUB-AGENT
+```
+
+### 3. Verification-First Workflow
+
+**CRITICAL**: NO code is EVER committed without verification.
+
+```
+Implement → Report → Verification → Update Spec → Commit
+```
+
+## Orchestration Workflow
+
+### Phase 1: Preparation
+
+1. **Break down work** into specific tasks
+2. **Identify specifications** (`specifications/NN-spec-name/`)
+3. **Generate machine_prompt.md** from requirements.md (Rule 14)
+4. **Clear context and reload** from machine_prompt.md
+5. **Generate COMPACT_CONTEXT.md** for first task (Rule 15):
+   - Embed machine_prompt content for current task
+   - Create self-contained compact file
+   - Prepare clean starting context
+
+### Phase 2: Implementation
+
+1. **Launch implementation agents** (up to 10 concurrent)
+   - Provide COMPACT_CONTEXT.md path
+   - Provide task-specific instructions
+   - Provide specification references
+2. **WAIT for completion reports** from all agents
+3. **DO NOT COMMIT** anything yet
+
+**After Sub-Agent Reports:**
+- If verification passes: Delete COMPACT_CONTEXT.md, commit
+- If verification fails: Regenerate COMPACT_CONTEXT.md with fix requirements, resume sub-agent
+
+### Phase 3: Verification (MANDATORY)
+
+**Main Agent analyzes changed files:**
+1. Identify language(s) modified
+2. Spawn **ONE verification agent per language** (NEVER more)
+3. Provide context (files, description, specification)
+4. Wait for verification results
+
+**Verification Agent runs ALL checks:**
+- Incomplete implementation check (TODO, FIXME, stubs)
+- Format check
+- Lint check
+- Type check
+- Tests (all must pass)
+- Build
+- Security scan
+- Standards compliance
+
+**Verification Report Format:**
+```markdown
+# [Language] Verification Report
+
+## Status: PASS ✅ / FAIL ❌
+
+## Check Results
+1. Incomplete Implementation: PASS/FAIL
+2. Format: PASS/FAIL
+3. Lint: PASS/FAIL
+4. Type Check: PASS/FAIL
+5. Tests: N/N PASS
+6. Build: PASS/FAIL
+7. Security: PASS/FAIL
+8. Standards: PASS/FAIL
+```
+
+### Phase 4: Main Agent Decision
+
+**If ALL Checks PASS ✅:**
+1. `git add [files]`
+2. `git commit -m "[message with verification status]"`
+3. `git push`
+4. Update specification (mark task complete)
+5. Delete COMPACT_CONTEXT.md
+6. Proceed to next task
+
+**If ANY Check FAILS ❌:**
+1. Create urgent fix task
+2. Regenerate COMPACT_CONTEXT.md with:
+   - Current task context
+   - Failure details
+   - Fix requirements
+3. Spawn/resume implementation agent with fix instructions
+4. Wait for fix completion
+5. Return to Phase 3 (verify again)
+6. Loop until all checks pass
+
+### Phase 5: Documentation Updates (Optional)
+
+If modules changed:
+1. Spawn documentation agent
+2. Documentation agent updates affected module docs
+3. Run verification on doc changes
+4. Commit doc updates
+
+## Spawning Sub-Agents
+
+### Spawn Message Format
+
+```
+You are a [Agent Type] (e.g., "Rust Implementation Agent").
+
+CRITICAL: Read your agent documentation FIRST:
+- File: .agents/agents/[name].md
+
+Your task:
+[Task description]
+
+Context:
+- COMPACT_CONTEXT: .agents/specifications/[spec]/COMPACT_CONTEXT.md
+- Specification: .agents/specifications/[spec]/requirements.md
+- Stack file: .agents/stacks/[language].md
+
+After reading your documentation and context:
+1. Load required rules (Rules 01-04, Rule 12, Rule 13, Rule 14, Rule 15)
+2. Read COMPACT_CONTEXT.md (contains embedded machine_prompt)
+3. Read files listed in COMPACT_CONTEXT FILES section
+4. Follow TDD workflow
+5. Report completion when done
+
+DO NOT:
+- Commit code directly
+- Spawn verification agents
+- Push to remote
+```
+
+### Coordination Pattern
+
+```
+Main Agent → Spawn Sub-Agent(s) → Wait for Reports →
+Analyze Files → Spawn Verification Agent(s) → Wait for Results →
+All Pass? → Commit + Push : Create Fix Task → Resume Sub-Agent → Loop
+```
+
+## Commit Message with Verification
+
+```bash
+git commit -m "$(cat <<'EOF'
+Add authentication middleware
+
+Implemented JWT-based authentication middleware.
+
+Changes made:
+- Created auth.js with token validation
+- Added JWT verification
+- Implemented error handling
+- Wrote comprehensive tests
+
+Verified by JavaScript Verification Agent: All checks passed
+- Format: PASS (prettier)
+- Lint: PASS (eslint, 0 warnings)
+- Type Check: PASS (tsc)
+- Tests: 12/12 PASS, coverage 95%
+- Build: PASS
+- Security: PASS
+- Standards: PASS
+
+Co-Authored-By: Claude <noreply@anthropic.com>
+EOF
+)"
+```
+
+## Autonomous Decision-Making
+
+**Act Autonomously (NO user approval):**
+- Fixing broken tests
+- Completing incomplete tests (if requirements clear)
+- Fixing build/compilation issues
+- Resolving lint/format/type errors
+- Fixing verification failures
+- Implementing against clear specifications
+
+**Seek User Approval:**
+- Unclear requirements
+- Breaking existing rules
+- Dangerous operations (Rule 03)
+- Multiple valid approaches
+- During specification writing
+
+**Principle**: If you know what "good" looks like, DO IT. Only ask when truly unclear.
+
+## Work Priority Order
+
+When multiple tasks/issues exist:
+1. Fix ALL broken tests (highest priority)
+2. Ensure ALL tests pass
+3. Complete incomplete tests
+4. Resolve build/compilation issues
+5. Fix lint/format/type errors
+6. Implement new features
+
+**Zero Tolerance**: No bugs, failures, or incomplete work in commits.
+
+## Specification Versioning
+
+**Completed specifications are IMMUTABLE.**
+
+**Before updating specification:**
+1. Read `specifications/NN-spec/requirements.md` frontmatter
+2. Check status: "completed"?
+3. Check for REPORT.md and VERIFICATION.md
+
+**If COMPLETED:**
+- ❌ DO NOT update
+- ✅ CREATE new specification (use `builds_on` field)
+
+**If IN-PROGRESS:**
+- ✅ Can update as normal
+
+## Common Patterns
+
+### Pattern: Single Task Implementation
+
+```
+1. Generate machine_prompt.md from requirements.md
+2. Clear context, reload from machine_prompt.md
+3. Generate COMPACT_CONTEXT.md for task
+4. Spawn implementation agent with COMPACT_CONTEXT path
+5. Wait for completion report
+6. Spawn verification agent per language
+7. Wait for verification results
+8. If PASS: commit + push, delete COMPACT_CONTEXT.md
+9. If FAIL: regenerate COMPACT_CONTEXT with fix, resume agent
+```
+
+### Pattern: Concurrent Multi-Task
+
+```
+1. Generate machine_prompt.md
+2. Generate COMPACT_CONTEXT.md for each task (separate files)
+3. Spawn multiple implementation agents (up to 10)
+4. Wait for all completion reports
+5. Spawn verification agents per language
+6. Wait for all verification results
+7. If ALL PASS: commit all + push
+8. If ANY FAIL: fix failed tasks, re-verify
+```
+
+### Pattern: Feature Completion
+
+```
+1. All tasks in feature complete
+2. Update feature.md status to "completed"
+3. Generate feature REPORT.md
+4. Update spec requirements.md feature status
+5. If all features complete: Generate spec REPORT.md + VERIFICATION.md
+6. Mark spec status: "completed"
+7. Spec now IMMUTABLE
+```
+
+## Pitfalls to Avoid
+
+**❌ Don't:**
+- Commit code before verification
+- Spawn multiple verification agents for same language
+- Let sub-agents spawn verification agents
+- Skip verification for "simple" changes
+- Commit with failed checks
+- Update completed specifications
+- Forget to delete COMPACT_CONTEXT.md after task complete
+
+**✅ Do:**
+- Always verify before commit
+- Spawn one verification agent per language
+- Coordinate all verification through Main Agent
+- Verify every change
+- Fix all failures before commit
+- Create new specs for new work on completed specs
+- Clean up ephemeral files
+
+## Summary
+
+**Main Agent Orchestration Checklist:**
+1. ✅ Break down work into tasks
+2. ✅ Generate machine_prompt.md + COMPACT_CONTEXT.md
+3. ✅ Spawn implementation agents with context
+4. ✅ Wait for completion reports
+5. ✅ Spawn verification agents (one per language)
+6. ✅ Wait for verification results
+7. ✅ If PASS: commit + push, clean up
+8. ✅ If FAIL: regenerate context, fix, re-verify
+9. ✅ Update specifications
+10. ✅ Never commit without verification
+
+**Key Principles:**
+- Main Agent orchestrates, never codes directly
+- Only Main Agent spawns verification agents
+- NO code committed without verification
+- All checks must pass before commit
+- Completed specifications are immutable
+
+---
+
+_Version: 1.0 - Last Updated: 2026-02-27_
