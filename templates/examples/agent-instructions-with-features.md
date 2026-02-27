@@ -6,7 +6,7 @@
 
 1. **Load Relevant Rules**: Before starting work, ensure you have loaded all rules specified in `files_required.main_agent.rules` from the frontmatter above.
 
-2. **Autonomous Agent Behavior**: Follow `.agents/rules/05-coding-practice-agent-orchestration.md` - Work autonomously without unnecessary back-and-forth. Make informed decisions based on loaded context and rules.
+2. **Autonomous Agent Behavior**: Work autonomously without unnecessary back-and-forth. Make informed decisions based on loaded context and instructions.
 
 3. **Implementation Review First**:
    - **ALWAYS** start by reviewing current implementation status

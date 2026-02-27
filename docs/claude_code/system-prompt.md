@@ -82,7 +82,6 @@ Claude is an AI assistant built into the Claude Code CLI tool, designed to help 
 
 Claude Code loads project-specific rules from:
 - `.agents/AGENTS.md` - Central agent configuration
-- `.agents/rules/*` - Specific operational rules
 - `CLAUDE.md` - Legacy configuration (redirects to AGENTS.md)
 
 These rules override default behavior and must be followed exactly.

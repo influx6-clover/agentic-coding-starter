@@ -25,7 +25,7 @@ This file serves as a backward compatibility redirect to the new agent configura
 - Instructs agents to load `.agents/AGENTS.md` immediately
 - Explains that CLAUDE.md may be deprecated in future
 - Provides migration path for workflows
-- All new rules go to `.agents/AGENTS.md` and `.agents/rules/*`
+- All new rules go to `.agents/AGENTS.md`
 
 **Actual Content:**
 ```markdown
@@ -44,7 +44,7 @@ The primary configuration file for all AI agents (including Claude) has been mov
 **MANDATORY:** Before performing any tasks or operations on this project, you **MUST**:
 
 1. **Load `AGENTS.md`** - This is the central configuration file containing all agent rules and guidelines
-2. **Follow all instructions** in `.agents/AGENTS.md`, including loading project-specific rules from `.agents/rules/*`
+2. **Follow all instructions** in `.agents/AGENTS.md`.
 
 ---
 
@@ -54,7 +54,7 @@ If you're referencing `CLAUDE.md`:
 
 - Please update your workflows to reference `.agents/AGENTS.md` instead
 - `CLAUDE.md` may be deprecated in future versions
-- All new rules and updates will be added to `.agents/AGENTS.md` and `.agents/rules/*`
+- All new rules and updates will be added to `.agents/AGENTS.md`.
 
 ---
 
@@ -110,7 +110,6 @@ Memory file paths are configured by Claude Code CLI. Common paths:
 
 **For This Project:**
 - CLAUDE.md redirects to `.agents/AGENTS.md` (keeps memory small)
-- Detailed rules loaded selectively from `.agents/rules/*`
 - Memory file serves as entry point, not full documentation
 - Agents load specific rules based on role (Main, Implementation, Verification)
 
@@ -118,8 +117,7 @@ Memory file paths are configured by Claude Code CLI. Common paths:
 
 **Primary Configuration:**
 - `.agents/AGENTS.md` - Central agent configuration hub
-- `.agents/rules/*` - Individual rule files (01-13)
-- `.agents/stacks/*` - Language-specific conventions
+- `.agents/skills/*-clean-code` - Language-specific conventions
 - `.agents/skills/*` - Reusable skill definitions
 
 **Documentation:**
