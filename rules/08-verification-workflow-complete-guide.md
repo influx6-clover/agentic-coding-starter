@@ -1,41 +1,30 @@
 # Verification Workflow - Complete Integration Guide
 
 ## Purpose
-This rule provides a comprehensive guide to the iron-clad verification workflow system that ensures **NO code is EVER committed without passing ALL quality checks**. This is an **IRON-CLAD REQUIREMENT** with **ZERO TOLERANCE** for violations.
 
-This guide integrates and summarizes the complete verification workflow from Rules 03, 04, 05, 07 and all stack files, providing a single reference for understanding the entire system.
+Comprehensive guide to iron-clad verification workflow ensuring **NO code is EVER committed without passing ALL quality checks**. **ZERO TOLERANCE** for violations.
 
-## Rule
+Integrates verification workflow from Rules 03, 04, 05, 07 and all stack files.
 
-### Overview
-
-This document summarizes the comprehensive mandatory code verification workflow system that ensures **NO code is EVER committed without passing ALL quality checks**. This is an **IRON-CLAD REQUIREMENT** with **ZERO TOLERANCE** for violations.
-
----
-
-## System Architecture
-
-### Core Principle
+## Core Principle
 
 ```
-Task/Feature Complete → Report → Verify → Pass? → Commit → Push
-                                     ↓
-                                   Fail → Urgent Task → Fix → Loop
+Task Complete → Report → Verify → Pass? → Commit → Push
+                             ↓
+                           Fail → Fix → Loop
 ```
 
-**CRITICAL RULES**:
-- Code commits happen ONLY after task/feature complete + verification passes
-- Implementation agents **NEVER** commit directly
-- **ONLY Main Agent can spawn verification agents**
+**CRITICAL:**
+- Code commits ONLY after task complete + verification passes
+- Implementation agents NEVER commit directly
+- ONLY Main Agent can spawn verification agents
 
-### Agent Hierarchy and Verification Authority
-
-**Complete Reference**: See `.agents/templates/examples/agent-identity-reference.md` for detailed agent identity guide, authority hierarchy, and violation examples.
+## Agent Hierarchy
 
 **Main Agent** (Top of hierarchy):
 - ✅ Directly interacting with user
 - ✅ **ONLY agent with authority to spawn verification agents**
-- ✅ Spawns: Implementation agents, Specification agents, Verification agents
+- ✅ Spawns: Implementation, Specification, Verification agents
 
 **Sub-Agents**:
 - ❌ **NEVER spawn verification agents**
@@ -44,718 +33,237 @@ Task/Feature Complete → Report → Verify → Pass? → Commit → Push
 
 **Identity Rule**: If you were spawned by another agent → You are a SUB-AGENT (no verification authority)
 
-### Specification Versioning Requirements
-
-**From Rule 06**: Completed specifications are **IMMUTABLE** and must not be modified.
-
-**Complete Details**: See Rule 06, section "Specification Versioning and Evolution" for full requirements.
-
-**Before updating any specification, Main Agent MUST check**:
-1. Read `specifications/NN-spec-name/requirements.md` frontmatter
-2. Check status field: is it "completed"?
-3. Check for REPORT.md and VERIFICATION.md existence
-
-**If specification is COMPLETED**:
-- ❌ DO NOT update the completed specification
-- ✅ CREATE a new specification that references the old one (using `builds_on` field)
-
-**If specification is IN-PROGRESS**:
-- ✅ Can update tasks.md as normal
-
----
-
 ## The Four-Phase Workflow
 
 ### Phase 1: Implementation
 
-**What Happens:**
-- Implementation agent reads AGENTS.md, all rules, relevant stack files, and specifications
-- **Implementation agent recognizes it is a SUB-AGENT** (spawned by Main Agent)
-- Implements code following all documented standards
-- Writes tests for new functionality
-- Keeps track of changes made
-
-**CRITICAL**: After completing work, implementation agent:
-1. ✅ **REPORTS to Main Agent** (provides changed files, description, language(s) used)
-2. ✅ **STOPS and WAITS** for Main Agent response
-3. ❌ **DOES NOT commit** anything
-4. ❌ **DOES NOT push** anything
-5. ❌ **DOES NOT update** tasks.md directly
-6. ❌ **DOES NOT spawn verification agents** (only Main Agent has this authority)
+Implementation agent:
+1. Implements code following all documented standards
+2. Writes tests for new functionality
+3. Tracks changes made
+4. **REPORTS to Main Agent** (changed files, description, language(s))
+5. **STOPS and WAITS**
+6. ❌ DOES NOT commit, push, update tasks.md, or spawn verification
 
 ### Phase 2: Mandatory Verification
 
-**What Happens:**
-- Main Agent analyzes changed files to identify language(s) modified
-- Main Agent spawns **ONE verification agent per language stack** (NEVER more)
-- Verification agent receives context (files, description, specification)
-- **Verification agent MUST check for incomplete implementations FIRST** (see Incomplete Implementation Check below)
-- Verification agent runs **ALL checks** defined in stack file:
+Main Agent:
+1. Analyzes changed files to identify language(s)
+2. Spawns **ONE verification agent per language stack**
+3. Verification agent runs **ALL checks** from stack file
 
 **Incomplete Implementation Check** (MANDATORY FIRST):
-1. Search all modified files for: `TODO`, `FIXME`, `unimplemented!()`, `todo!()`, `panic!("not implemented")`
-2. Check for stub methods: functions that just return default values or Ok(())
-3. Verify all public methods have real implementations (not just structure)
-4. If ANY incomplete implementations found → **FAIL IMMEDIATELY** with detailed report
-5. **CRITICAL**: Features/specifications claiming "complete" status MUST have zero incomplete implementations
+1. Search for: `TODO`, `FIXME`, `unimplemented!()`, `todo!()`, `panic!("not implemented")`
+2. Check for stub methods (functions returning default/Ok(()) only)
+3. Verify all public methods have real implementations
+4. If ANY incomplete → **FAIL IMMEDIATELY**
 
-**For Rust** (from `.agents/stacks/rust.md`):
-1. **Incomplete implementation check** (MANDATORY - see above)
-2. `cargo fmt -- --check` (format)
-3. `cargo clippy -- -D warnings` (lint, zero warnings)
-4. `cargo test` or `cargo test --package [crate]` (tests)
-5. `cargo build --all-features` (build)
-6. `cargo doc --no-deps` (documentation)
-7. `cargo audit` (security)
-8. Standards compliance checks (no unwrap(), proper docs, etc.)
+**Per Language Checks:**
 
-**For JavaScript/TypeScript** (from `.agents/stacks/javascript.md`):
-1. **Incomplete implementation check** (MANDATORY - check for TODO, FIXME, stub functions)
-2. `npx prettier --check .` (format)
-3. `npx tsc --noEmit` (type check, zero errors)
-4. `npx eslint . --max-warnings 0` (lint, zero warnings)
-5. `npm test` (tests with coverage)
-6. `npm run build` (build)
-7. `npm audit` (security)
-8. Standards compliance checks (no `any` type, etc.)
+**Rust** (from `.agents/stacks/rust.md`):
+1. Incomplete implementation check (MANDATORY)
+2. `cargo fmt -- --check`
+3. `cargo clippy -- -D warnings`
+4. `cargo test`
+5. `cargo build --all-features`
+6. `cargo doc --no-deps`
+7. `cargo audit`
+8. Standards compliance (no unwrap(), proper docs)
 
-**For Python** (from `.agents/stacks/python.md`):
-1. **Incomplete implementation check** (MANDATORY - check for TODO, FIXME, NotImplementedError, pass-only functions)
-2. `black --check .` (format)
-3. `ruff check .` (lint, zero errors)
-4. `mypy .` (type check, strict mode)
-5. `pytest --cov` (tests with coverage)
-6. `python -m py_compile src/**/*.py` (import check)
-7. `pip-audit` or `bandit` (security)
-8. Standards compliance checks (no mutable defaults, etc.)
+**JavaScript/TypeScript** (from `.agents/stacks/javascript.md`):
+1. Incomplete implementation check (MANDATORY)
+2. `npx prettier --check .`
+3. `npx tsc --noEmit`
+4. `npx eslint . --max-warnings 0`
+5. `npm test` (with coverage)
+6. `npm run build`
+7. `npm audit`
+8. Standards compliance (no `any` type)
 
-**Verification Agent Generates Report:**
+**Python** (from `.agents/stacks/python.md`):
+1. Incomplete implementation check (MANDATORY)
+2. `black --check .`
+3. `ruff check .`
+4. `mypy .` (strict mode)
+5. `pytest --cov`
+6. `python -m py_compile src/**/*.py`
+7. `pip-audit` or `bandit`
+8. Standards compliance (no mutable defaults)
+
+**Test Quality Check (MANDATORY):**
+
+Tests must validate real code behavior, not mock behavior.
+
+**Valid Test Usage:**
+- ✅ Unit tests with real components (localhost, temp files)
+- ✅ Integration tests with real local services (test servers, test DBs)
+- ✅ End-to-end tests with full workflows
+- ✅ Limited mocks only for external services (payment gateways, third-party APIs)
+
+**Invalid Test Usage (FAIL):**
+- ❌ Mocking our own code (HTTP clients, databases we wrote)
+- ❌ Integration tests without integration (all external calls mocked)
+- ❌ Mock-only testing (no real component validation)
+- ❌ Untested integration points
+
+**Verification Report Format:**
 ```markdown
 # [Language] Verification Report
 
 ## Status: PASS ✅ / FAIL ❌
 
 ## Files Verified
-- [list of files]
+- [list]
 
 ## Check Results
-1. **Incomplete Implementation Check**: PASS ✅ / FAIL ❌
-   - TODO/FIXME markers: [count] found
-   - Stub methods: [count] found
-   - Unimplemented macros: [count] found
-   - **CRITICAL**: If ANY found → FAIL (cannot mark feature/spec complete)
-2. Format: PASS ✅ / FAIL ❌
-3. Lint: PASS ✅ / FAIL ❌
-4. Type Check: PASS ✅ / FAIL ❌
-5. Tests: PASS ✅ / FAIL ❌ ([N] passed, [N] failed)
-6. Build: PASS ✅ / FAIL ❌
-7. Security: PASS ✅ / FAIL ❌
-8. Standards: PASS ✅ / FAIL ❌
-
-## Incomplete Implementations (if any)
-**FILE: [file_path]**
-- Line [N]: TODO: [description]
-- Line [M]: FIXME: [description]
-- Line [K]: Function `foo()` - stub implementation (just returns Ok(()))
-- Line [L]: unimplemented!() macro found
-
-[Repeat for each file with issues]
+1. Incomplete Implementation: PASS/FAIL
+2. Format: PASS/FAIL
+3. Lint: PASS/FAIL
+4. Type Check: PASS/FAIL
+5. Tests: PASS/FAIL ([N] passed, [N] failed)
+6. Build: PASS/FAIL
+7. Security: PASS/FAIL
+8. Standards: PASS/FAIL
 
 ## Test Results
-- Total: [N]
-- Passed: [N]
-- Failed: [N]
-- Coverage: [N]%
+- Total: [N] | Passed: [N] | Failed: [N] | Coverage: [N]%
 
-## Test Quality Check (MANDATORY)
-**CRITICAL**: Tests must validate real code behavior, not mock behavior.
-
-### Mock Usage Validation
-For each mock found in tests, verification agent MUST confirm:
-1. ✅ **Is this really external?** Mock is for third-party service/system resource outside our control
-2. ✅ **Are we testing real logic?** Test validates actual implementation code, not just mock setup
-3. ✅ **Are integration points tested?** Separate tests exist that validate real component integration
-
-### Invalid Mock Usage (FAIL Verification)
-❌ **Mocking our own code** - HTTP clients, databases, file I/O that we wrote
-❌ **Integration tests without integration** - Tests that mock all external calls without testing real flows
-❌ **Mock-only testing** - No tests exist that validate real component behavior
-❌ **Untested integration points** - Using mocks without separate real integration tests
-
-### Required Real Testing
-All features MUST include:
-1. **Unit tests** - Test individual functions with real components (use localhost, temp files, etc.)
-2. **Integration tests** - Test complete flows with real local services (test HTTP servers, test databases)
-3. **End-to-end tests** - Full user workflows with real components
-4. **Limited mocks** - Only for external services (payment gateways, third-party APIs, OS resources)
-
-### Examples of Valid vs Invalid Testing
-
-**❌ INVALID - Integration Theater:**
-```rust
-#[test]
-fn test_http_client() {
-    let mock_dns = MockDnsResolver::new();
-    let mock_tcp = MockTcpConnection::new();
-    let client = HttpClient::new(mock_dns, mock_tcp);
-    // Only tests that mocks work, not that HTTP works!
-}
-```
-
-**✅ VALID - Real Integration:**
-```rust
-#[test]
-fn test_http_client_real() {
-    let server = TestServer::start(); // Real HTTP server
-    let client = HttpClient::new(); // Real DNS, TCP, HTTP
-    let response = client.get(&server.url("/")).unwrap();
-    assert_eq!(response.status(), 200);
-}
-```
-
-**✅ VALID - External Service Mock:**
-```rust
-#[test]
-fn test_payment_timeout() {
-    let mock_gateway = MockPaymentGateway::timeout(); // Valid: external service
-    let result = processor.charge(100);
-    assert!(matches!(result, Err(PaymentError::Timeout)));
-}
-```
-
-### Red Flags
-Verification agent MUST flag these issues:
-- Tests pass but production code fails
-- "Integration tests" that never use real I/O
-- More mock setup code than actual test code
-- 100% mock coverage, 0% real integration tests
-- Comments like "// TODO: test with real database"
-
-## Details
-[Specific errors if any]
+## Failures (if any)
+[Details for each failed check]
 ```
 
 ### Phase 3: Main Agent Decision
 
-**IF ALL Verifications PASS ✅:**
+**If ALL Checks PASS ✅:**
+1. Main Agent: `git add [files]`
+2. Main Agent: `git commit -m "[message with verification status]"`
+3. Main Agent: `git push`
+4. Update tasks.md (mark task complete)
+5. Proceed to next task
 
-1. Main Agent identifies related specification (if applicable)
-2. Main Agent spawns **Specification Update Agent** (NEVER updates directly)
-3. Main Agent provides Specification Agent with context:
-   - Verification report (PASS status)
-   - Completed tasks list
-   - Files changed
-   - Implementation description
-4. Specification Agent reads `specifications/NN-spec-name/tasks.md`
-5. Specification Agent marks relevant tasks as `[x]` completed
-6. Specification Agent updates frontmatter (`completed: N`, `uncompleted: M`)
-7. Specification Agent deletes `verification.md` if exists (cleanup from previous failure)
-8. Specification Agent saves tasks.md and reports completion to Main Agent
-9. Main Agent commits code AND specification updates with **verification status** (Rule 03):
-   ```
-   Brief summary of change
+**If ANY Check FAILS ❌:**
+1. Main Agent creates urgent fix task
+2. Main Agent spawns/resumes implementation agent with fix instructions
+3. Implementation agent fixes ALL failures
+4. Implementation agent reports completion
+5. Return to Phase 2 (verify again)
+6. Loop until all checks pass
 
-   Detailed explanation...
+### Phase 4: Documentation Updates (Optional)
 
-   Changes made:
-   - Change 1
-   - Change 2
-   - Change 3
+If modules changed, Main Agent may:
+1. Spawn documentation agent
+2. Documentation agent updates affected module docs
+3. Verification runs on doc changes
+4. Commit doc updates
 
-   Verified by [Language] Verification Agent: All checks passed
-   - Format: PASS
-   - Lint: PASS
-   - Type Check: PASS
-   - Tests: [N]/[N] PASS
-   - Build: PASS
-   - Coverage: [N]%
+## Commit Message Format (with Verification)
 
-   Specification: specifications/NN-name/
-   Tasks completed: [N]
-   Tasks remaining: [M]
+```bash
+git commit -m "$(cat <<'EOF'
+Add authentication middleware
 
-   Co-Authored-By: Claude <noreply@anthropic.com>
-   ```
-10. Main Agent automatically pushes to remote (Rule 05)
-11. Main Agent reports success to user
+Implemented JWT-based authentication middleware to secure API endpoints.
 
-**CRITICAL**: Main Agent MUST NOT read/write tasks.md directly - ALWAYS delegates to Specification Agent.
+Changes made:
+- Created auth.js middleware with token validation
+- Added JWT verification using jsonwebtoken
+- Implemented error handling for invalid tokens
+- Wrote comprehensive test suite
 
-**IF ANY Verification FAILS ❌:**
+Verified by JavaScript Verification Agent: All checks passed
+- Format: PASS (prettier)
+- Lint: PASS (eslint, 0 warnings)
+- Type Check: PASS (tsc)
+- Tests: 12/12 PASS, coverage 95%
+- Build: PASS
+- Security: PASS (audit, 0 vulnerabilities)
+- Standards: PASS
 
-1. Main Agent **DOES NOT COMMIT** any code
-2. Main Agent **DOES NOT PUSH** anything
-3. Main Agent identifies related specification directory
-4. Main Agent spawns **Specification Update Agent** (NEVER updates directly)
-5. Main Agent provides Specification Agent with context:
-   - Full verification FAIL report
-   - Failed checks details
-   - Files affected
-   - Recommended fixes
-6. Specification Agent creates **verification.md** in specification directory:
-   ```markdown
-   # Verification Report - FAILED
-
-   **Status**: FAIL ❌
-   **Date**: [timestamp]
-   **Language**: [Rust/JavaScript/Python]
-   **Specification**: [path]
-
-   ## Failed Checks
-   [Detailed errors with line numbers, stack traces, etc.]
-
-   ## Files Affected
-   [List of files with specific issues]
-
-   ## Recommended Fixes
-   [Step-by-step fix instructions]
-
-   ## Agent Action Required
-   Read this report, fix all issues, mark urgent task done,
-   report completion to Main Agent, verification will run again.
-   ```
-7. Specification Agent adds **NEW URGENT TASK at TOP** of tasks.md:
-   ```markdown
-   ## URGENT: Failed Verification Tasks
-   - [ ] **FIX: Verification failures in [feature-name]**
-     - Verification failed on [date/time]
-     - Language: [Rust/JavaScript/Python]
-     - Failed checks: [summary]
-     - See verification.md for detailed report
-     - Files affected: [list]
-     - Must fix before proceeding
-   ```
-8. Specification Agent updates frontmatter (`uncompleted: N+1`)
-9. Specification Agent saves tasks.md and verification.md
-10. Specification Agent reports completion to Main Agent
-11. Main Agent reports detailed failures to user with fix recommendations
-
-**CRITICAL**: Main Agent MUST NOT create verification.md or update tasks.md directly - ALWAYS delegates to Specification Agent.
-
-### Phase 4: Fix and Retry (If Verification Failed)
-
-**Autonomous Fix Workflow** (when fix is clear):
-
-1. Main Agent analyzes verification failures
-2. **If fix is CLEAR** (lint, format, type errors, simple test failures):
-   - Spawn/resume Implementation Agent
-   - Agent reads verification.md
-   - Agent fixes ALL issues autonomously (NO user approval)
-   - Agent marks fix task complete
-   - Agent reports completion
-   - Main Agent re-runs verification
-3. **If verification PASSES**:
-   - Delete verification.md
-   - Mark tasks complete
-   - Commit changes
-4. **If verification FAILS again**:
-   - Update verification.md
-   - Continue fix cycle if still clear
-   - Report to user if now unclear
-
-**User Guidance Workflow** (when fix is unclear):
-
-1. Main Agent reports failures to user
-2. Explains what's unclear or needs decision
-3. User provides guidance
-4. Spawn Implementation Agent with clear direction
-5. Continue autonomous fix workflow
-
-**Clear Fixes** (autonomous):
-- Lint errors
-- Format issues
-- Type errors
-- Simple test failures
-- Build/dependency errors
-
-**Unclear Fixes** (need user):
-- Architectural decisions
-- Multiple valid approaches
-- Unclear test expectations
-- Breaking changes
-
-**CRITICAL**: Loop continues until ALL checks pass. NO bypass.
-
-**verification.md Lifecycle**:
-- Created on FAIL
-- Read by Implementation Agent
-- Overwritten on subsequent failures
-- Deleted on PASS
-
----
-
-## Race Condition Prevention
-
-**CRITICAL RULE**: Only **ONE verification agent per language stack** at any time.
-
-### Prevention Strategy
-
-Main Agent tracks active verifications:
-```
-active_verifications = {
-  'rust': null,      # No Rust verification running
-  'javascript': null, # No JS verification running
-  'python': null      # No Python verification running
-}
-
-Before spawning verification agent:
-  IF active_verifications[language] is not null:
-    WAIT for existing agent to complete
-  ELSE:
-    Spawn new verification agent
-    Mark active_verifications[language] = agent_id
-
-After verification completes:
-  Mark active_verifications[language] = null
+Co-Authored-By: Claude <noreply@anthropic.com>
+EOF
+)"
 ```
 
-### Why This Matters
+## Specification Versioning
 
-**Good ✅:**
-```
-Main Agent sees Rust changes
-→ Spawns ONE Rust Verification Agent
-→ Waits for completion
-→ Agent finishes and reports
-→ Proceeds based on results
-```
+**From Rule 06:** Completed specifications are **IMMUTABLE**.
 
-**Bad ❌:**
-```
-Main Agent sees Rust changes
-→ Spawns Rust Verification Agent #1
-→ Also spawns Rust Verification Agent #2  ❌ VIOLATION
-→ Race condition possible
-→ File conflicts
-→ Inconsistent results
-```
+**Before updating any specification:**
+1. Read `specifications/NN-spec-name/requirements.md` frontmatter
+2. Check status: is it "completed"?
+3. Check for REPORT.md and VERIFICATION.md existence
 
----
+**If COMPLETED:**
+- ❌ DO NOT update
+- ✅ CREATE new specification (use `builds_on` field)
 
-## Rule Integration
+**If IN-PROGRESS:**
+- ✅ Can update tasks.md as normal
 
-### Rule 03 (Work Commit Rules)
-- Verification happens **BEFORE** commit
-- Commit message **MUST include** verification status
-- Only verified code is committed
-- Specification updates included in commit
+## Enforcement
 
-### Rule 04 (Agent Orchestration)
-- Defines the 4-phase workflow
-- Establishes verification as mandatory gate
-- ONE verification agent per stack
-- Race condition prevention
-- Specification update process
+### Zero Tolerance Violations
 
-### Rule 05 (Git Auto-Approval and Push)
-- Push happens **AFTER** successful verification
-- No manual approval needed (verification is the gate)
-- Automatic push on verification pass
-- No push if verification fails (no commit = no push)
+**CRITICAL VIOLATIONS:**
+1. Committing code without verification
+2. Sub-agent spawning verification agents
+3. Committing with failed verification
+4. Skipping any required checks
+5. Using mock-only testing
+6. Committing incomplete implementations (TODO, FIXME, stubs)
 
-### Rule 06 (Specifications and Requirements)
-- Verification agent receives specification context
-- Tasks.md updated based on verification results
-- Failed verification creates urgent task at top
-- Successful verification marks tasks complete
+**Consequences:**
+1. Code rejected immediately
+2. Must fix all issues
+3. Re-run complete verification
+4. Document violation in Learning Log
+5. Report violation to user
 
-### Rule 07 (Language Conventions)
-- Verification enforces all stack standards
-- Stack files define exact verification commands
-- Learning Logs updated with issues found
-- Standards continuously improved
+### Mandatory Requirements
 
-### Stack Files (rust.md, javascript.md, python.md)
-- Define exact checks verification agents must run
-- Provide verification workflow sections
-- Document standards to verify against
-- Include report format templates
-- Show good/bad workflow examples
+**Must Do:**
+1. Run ALL checks from stack file
+2. Check for incomplete implementations FIRST
+3. Validate test quality (real vs mock)
+4. Main Agent spawns verification agents
+5. Include verification status in commits
+6. Fix ALL failures before commit
+7. Push after successful commit
 
----
+**Must Not Do:**
+1. Skip any verification checks
+2. Commit with incomplete implementations
+3. Use mock-only testing
+4. Sub-agents spawn verification
+5. Commit before verification passes
+6. Ignore failed checks
 
-## Zero Tolerance Enforcement
+## Integration with Other Rules
 
-### Critical Violations
-
-The following are **CRITICAL VIOLATIONS** with **ZERO TOLERANCE**:
-
-1. ❌ **Implementation agent commits directly** (bypasses verification)
-2. ❌ **Main agent commits without verification** (skips quality gate)
-3. ❌ **Verification agent skips checks** (incomplete verification)
-4. ❌ **Multiple verification agents for same language** (race condition)
-5. ❌ **Committing code with failed verification** (quality breach)
-6. ❌ **Not updating specification on verification failure** (lost tracking)
-7. ❌ **Marking feature/spec complete with TODO/FIXME/unimplemented!() present** (incomplete implementation)
-8. ❌ **Verification agent doesn't check for incomplete implementations** (missing critical check)
-9. ❌ **Stub methods in code marked complete** (non-functional code)
-
-### Consequences
-
-Any violation results in:
-1. **IMMEDIATE REVERT** of any committed code
-2. **STOP ALL WORK** until violation is corrected
-3. **DOCUMENT in Learning Log** (violation details)
-4. **REPORT to user** (transparency)
-5. **RE-RUN proper workflow** (correct process)
-
-### Why Zero Tolerance
-
-Violations have severe consequences:
-- ❌ **Broken builds** in production
-- ❌ **Failed tests** discovered too late
-- ❌ **Race conditions** from concurrent verifications
-- ❌ **Lost work** from reverts
-- ❌ **Wasted time** fixing avoidable issues
-- ❌ **User frustration** and lost trust
-
-**THE USER WILL BE VERY UPSET** if this workflow is not followed!
-
----
-
-## Complete Workflow Example (Success)
-
-```
-1. User: "Implement user authentication in Rust"
-
-2. Main Agent:
-   - Reads specification: specifications/03-user-authentication/
-   - Reads requirements.md and tasks.md
-   - Identifies tasks to complete
-   - Spawns Rust Implementation Agent
-
-3. Rust Implementation Agent:
-   - Reads AGENTS.md
-   - Reads all rules from .agents/rules/*
-   - Reads .agents/stacks/rust.md
-   - Reads specification files
-   - Implements authentication code following ALL standards
-   - Writes comprehensive tests
-   - REPORTS completion to Main Agent:
-     * Files: [src/auth/mod.rs, src/auth/token.rs, tests/auth_tests.rs]
-     * Language: Rust
-     * Description: Implemented JWT-based authentication
-     * Specification: 03-user-authentication
-   - STOPS and WAITS
-
-4. Main Agent:
-   - Receives completion report
-   - Identifies language: Rust
-   - Checks active_verifications['rust'] = null ✅
-   - Spawns ONE Rust Verification Agent
-   - Marks active_verifications['rust'] = agent-id-123
-   - Provides context (files, spec, description)
-
-5. Rust Verification Agent:
-   - Reads .agents/stacks/rust.md
-   - Runs cargo fmt -- --check → PASS ✅
-   - Runs cargo clippy -- -D warnings → PASS ✅
-   - Runs cargo test → PASS ✅ (45 tests passed)
-   - Runs cargo build → PASS ✅
-   - Runs cargo doc → PASS ✅
-   - Runs cargo audit → PASS ✅
-   - Checks standards compliance → PASS ✅
-   - Generates comprehensive report
-   - Reports to Main Agent: PASS ✅
-
-6. Main Agent:
-   - Receives PASS report
-   - Marks active_verifications['rust'] = null
-   - Opens specifications/03-user-authentication/tasks.md
-   - Updates completed tasks:
-     * [x] Implement authentication middleware
-     * [x] Add JWT token generation
-     * [x] Write authentication tests
-   - Updates frontmatter: completed: 8, uncompleted: 2
-   - Saves tasks.md
-
-7. Main Agent:
-   - git add [files]
-   - git commit with message:
-     ```
-     Implement user authentication middleware
-
-     Added JWT token generation and validation with authentication
-     middleware for securing API endpoints.
-
-     Changes made:
-     - Implemented JWT token generation and validation
-     - Created authentication middleware
-     - Added comprehensive tests (45 tests, all passing)
-     - Updated error handling for auth failures
-
-     Verified by Rust Verification Agent: All checks passed
-     - Format: PASS (rustfmt)
-     - Lint: PASS (clippy, 0 warnings)
-     - Tests: 45/45 PASS
-     - Build: PASS (debug and release)
-     - Doc: PASS (cargo doc)
-     - Security: PASS (cargo audit)
-     - Coverage: 89%
-
-     Specification: specifications/03-user-authentication/
-     Tasks completed: 3
-     Tasks remaining: 2
-
-     Co-Authored-By: Claude <noreply@anthropic.com>
-     ```
-   - git status (verify commit)
-   - git push (automatic, Rule 05)
-
-8. Main Agent reports success to user:
-   ```
-   ✅ User authentication implemented successfully!
-
-   Verification Status: PASS
-   - All 45 tests passing
-   - Code coverage: 89%
-   - Zero lint warnings
-   - Build successful (debug and release)
-   - Documentation complete
-   - No security vulnerabilities
-
-   Specification updated: 3 tasks completed, 2 remaining
-
-   Changes pushed to remote: foundation_ai branch
-   ```
-```
-
----
-
-## Complete Workflow Example (Failure)
-
-```
-1. User: "Add data validation to API endpoints"
-
-2. Main Agent:
-   - Reads specification: specifications/05-data-validation/
-   - Spawns Python Implementation Agent
-
-3. Python Implementation Agent:
-   - Implements validation logic
-   - Writes some tests (but not comprehensive)
-   - REPORTS completion to Main Agent
-
-4. Main Agent:
-   - Spawns ONE Python Verification Agent
-
-5. Python Verification Agent:
-   - Runs black --check → PASS ✅
-   - Runs ruff check . → FAIL ❌ (3 lint errors)
-   - Runs mypy . → FAIL ❌ (missing type hints)
-   - Runs pytest → FAIL ❌ (2 tests failing)
-   - Stops checking (failures detected)
-   - Generates FAIL report with details
-
-6. Main Agent:
-   - Receives FAIL report
-   - DOES NOT COMMIT code ❌
-   - Opens specifications/05-data-validation/tasks.md
-   - Adds NEW task at TOP:
-     ```markdown
-     ## URGENT: Failed Verification Tasks
-     - [ ] **FIX: Verification failures in data validation**
-       - Verification failed on 2026-01-11 15:30
-       - Language: Python
-       - Failed checks:
-         * Lint: 3 errors (unused imports, line too long, undefined var)
-         * Type Check: Missing type hints on 5 functions
-         * Tests: 2 failing tests
-           - test_email_validation: AssertionError
-           - test_phone_validation: KeyError
-       - Files affected: src/validation.py, tests/test_validation.py
-       - Must fix before proceeding
-     ```
-   - Updates frontmatter: uncompleted: 4 → 5
-   - Saves tasks.md
-   - DOES NOT push anything ❌
-
-7. Main Agent reports to user:
-   ```
-   ❌ VERIFICATION FAILED ❌
-
-   Python Verification Agent found issues:
-
-   Lint Errors (3):
-   - Line 45: Unused import 're'
-   - Line 103: Line too long (115 > 100 characters)
-   - Line 67: Undefined variable 'pattern'
-
-   Type Errors (5):
-   - Function 'validate_email' missing return type hint
-   - Function 'validate_phone' missing parameter type hints
-   [...]
-
-   Test Failures (2):
-   - test_email_validation: Expected True, got False
-   - test_phone_validation: KeyError: 'country_code'
-
-   Code has NOT been committed.
-
-   Action Required:
-   1. Fix the 3 lint errors
-   2. Add missing type hints (5 functions)
-   3. Fix the 2 failing tests
-   4. Re-submit for verification
-
-   Specification updated with urgent task at top.
-   Please address these issues and the verification will run again.
-   ```
-
-8. Implementation Agent (or Owner):
-   - Fixes all lint errors
-   - Adds type hints
-   - Fixes failing tests
-   - REPORTS completion to Main Agent again
-
-9. Main Agent:
-   - Spawns Python Verification Agent again
-   - Agent runs all checks
-   - All checks PASS ✅
-   - Main Agent updates tasks.md:
-     * Marks urgent fix task as [x] completed
-     * Marks original tasks as [x] completed
-   - Commits code with verification status
-   - Pushes to remote
-   - Reports success to user
-```
-
----
-
-## Files Modified in This Integration
-
-### Rule Files
-- `.agents/rules/03-work-commit-rules.md` - Added verification status requirement
-- `.agents/rules/04-coding-practice-agent-orchestration.md` - Complete rewrite (125 → 693 lines)
-- `.agents/rules/05-git-auto-approval-and-push.md` - Added verification-aware workflows
-- `.agents/rules/07-language-conventions-and-standards.md` - Created comprehensive rule
-
-### Stack Files
-- `.agents/stacks/rust.md` - Added ~400 line verification workflow section
-- `.agents/stacks/javascript.md` - Added ~400 line verification workflow section
-- `.agents/stacks/python.md` - Added ~420 line verification workflow section
-
-### Configuration Files
-- `AGENTS.md` - Updated with verification requirements
-- `.agents/rules/08-verification-workflow-complete-guide.md` - This rule (comprehensive guide)
-
----
+- **Rule 03 (Dangerous Operations)**: Git checkpoint required before dangerous operations
+- **Rule 04 (Commit and Push)**: Verification required before all code commits
+- **Rule 05 (Agent Orchestration)**: Main Agent orchestrates verification workflow
+- **Rule 07 (Language Standards)**: Stack files define verification requirements
+- **Rule 06 (Specifications)**: Completed specs are immutable
 
 ## Summary
 
-**100% VERIFIED CODE**: Every commit passes all quality gates.
+**Golden Rules:**
+1. **NO code committed without verification** (ZERO TOLERANCE)
+2. **ONLY Main Agent spawns verification agents**
+3. **ALL checks must pass** (format, lint, type, tests, build, security, standards)
+4. **Check incomplete implementations FIRST** (TODO, FIXME, stubs)
+5. **Real tests over mocks** (test actual behavior, not mock setup)
+6. **Fix ALL failures** (loop until pass)
+7. **Include verification status in commits**
 
-**AUTONOMOUS FIXING**: Agents fix clear issues (lint, format, tests) without user interruption.
-
-**SMART ESCALATION**: Only involve user when fix is genuinely unclear or needs decisions.
-
-**IRON-CLAD ENFORCEMENT**: No exceptions, no bypasses, zero tolerance.
-
-**RACE CONDITION FREE**: ONE verification agent per stack prevents conflicts.
-
-**FIX-FIRST WORKFLOW**: Broken tests → Fix immediately → Pass all checks → Then proceed.
+**Workflow:**
+```
+Implement → Report → Main Agent → Spawn Verification →
+Run ALL Checks → PASS? → Commit + Push : Fix → Loop
+```
 
 ---
 
-*Created: 2026-01-11*
-*Last Updated: 2026-01-11*
+_Version: 1.0 - Last Updated: 2026-02-27_
