@@ -6,75 +6,77 @@ created: 2026-02-27
 license: "MIT"
 metadata:
   author: "Main Agent"
-  version: "2.0"
-  last_updated: "2026-02-27"
+  version: "3.0-streamlined"
+  last_updated: "2026-03-03"
   tags: [tdd, testing, test-first, quality, workflow, one-at-a-time]
 tools: []
-files: []
+files:
+  - examples/tdd-workflow-examples.md: "Complete TDD cycle examples in Rust, TypeScript, Python"
+  - examples/tdd-patterns.md: "Common patterns for features, edge cases, refactoring"
+  - examples/test-documentation.md: "WHY/WHAT documentation standards and templates"
 ---
 
 # Test-Driven Development (TDD)
 
-## Read By
+## When to Use This Skill
 
-1. **Implementation Agent** reads this when writing code
-2. Referenced by `.agents/agents/implementation.md`
+**Read when:** Writing implementation code with tests.
 
-## Overview
+**Referenced by:** Implementation Agent (`.agents/agents/implementation.md`)
 
-**MANDATORY**: Work on ONE test at a time. Finish it completely before moving to the next test.
+---
 
-**TDD Workflow**: Test first → Implement → Pass → Next test
+## 🎯 Critical Rule: ONE Test at a Time 🚨
 
-**Usage Type**: EDUCATIONAL - Learn and follow TDD patterns.
+**⚠️ MANDATORY - NON-NEGOTIABLE ⚠️**
 
-## Critical Rule: ONE Test at a Time
+Work on **ONE** test at a time. Finish it **completely** before moving to the next test.
 
-❌ **NEVER do this:**
-- Write multiple tests at once
-- Generate test file with all tests
-- Write implementation for multiple tests simultaneously
-- Skip ahead to other tests before current one passes
+**This is the MOST IMPORTANT rule in TDD.**
 
-✅ **ALWAYS do this:**
-1. Write ONE test
-2. Verify it FAILS
-3. Implement minimum code to pass THAT test
-4. Verify it PASSES
-5. Refactor if needed
-6. Move to NEXT test
-7. Repeat
-
-## The TDD Cycle (One Test at a Time)
+### The Cycle (ONE at a time)
 
 ```
-ONE TEST:
-Write Test → Verify FAILS → Implement Code → Verify PASSES → Refactor
-
-THEN NEXT TEST:
-Write Test → Verify FAILS → Implement Code → Verify PASSES → Refactor
-
-THEN NEXT TEST:
-...
+🔴 ONE TEST: Write → Verify FAILS → Implement → Verify PASSES → Refactor
+                              ↓
+🔴 NEXT TEST: Write → Verify FAILS → Implement → Verify PASSES → Refactor
+                              ↓
+🔴 NEXT TEST: Write → Verify FAILS → Implement → Verify PASSES → Refactor
 ```
 
-**Why One at a Time:**
-- ✅ Stay focused on single behavior
-- ✅ Catch issues immediately
-- ✅ Incremental progress
-- ✅ Clear failure points
-- ✅ Easier to debug
+### ❌ NEVER Do This (FORBIDDEN)
+- ❌ Write multiple tests at once
+- ❌ Generate test file with all tests
+- ❌ Write implementation for multiple tests simultaneously
+- ❌ Skip ahead to other tests before current one passes
+- ❌ Plan out 10 tests and write them all
+- ❌ Copy-paste test template with TODO comments
+
+### ✅ ALWAYS Do This (MANDATORY)
+1. ✅ Write **ONE** test (just one!)
+2. ✅ Verify it **FAILS** (red)
+3. ✅ Implement **minimum** code to pass **THAT** test
+4. ✅ Verify it **PASSES** (green)
+5. ✅ Refactor if needed (while staying green)
+6. ✅ **ONLY THEN** move to **NEXT** test
+7. ✅ Repeat: ONE test at a time
+
+**Why ONE at a time:**
+- ✅ **Focus**: Single behavior, no distractions
+- ✅ **Validation**: Each test proves the last code works
+- ✅ **Debugging**: Know exactly what broke
+- ✅ **Progress**: Concrete progress with each passing test
+- ✅ **Design**: Better API design from incremental feedback
+- ✅ **Safety**: Tests catch regressions immediately
+
+---
+
+## 📖 The TDD Workflow
 
 ### Step 1: Write the Test FIRST
 
 **Before any implementation code:**
 
-1. Write test with WHY/WHAT documentation
-2. Test describes expected behavior
-3. Test should be specific to one requirement/behavior
-4. Use meaningful test names
-
-**Example (Rust):**
 ```rust
 /// WHY: Token must expire at midnight (edge case from security review)
 /// WHAT: Token with midnight expiry should be treated as expired
@@ -85,396 +87,176 @@ fn test_token_expires_at_midnight() {
 }
 ```
 
-**Example (TypeScript):**
-```typescript
-/**
- * WHY: Rate limiter must track per-IP (security requirement)
- * WHAT: Same IP with different users should hit rate limit
- */
-test('rate limiter tracks by IP address', async () => {
-  const limiter = new RateLimiter({ maxRequests: 3, windowMs: 1000 });
-
-  // Same IP, different users
-  await limiter.check('192.168.1.1', 'user1');
-  await limiter.check('192.168.1.1', 'user2');
-  await limiter.check('192.168.1.1', 'user3');
-
-  // Fourth request from same IP should be rate limited
-  await expect(limiter.check('192.168.1.1', 'user4'))
-    .rejects.toThrow('Rate limit exceeded');
-});
-```
-
-**Example (Python):**
-```python
-def test_password_strength_validation():
-    """
-    WHY: Password requirements from security policy
-    WHAT: Passwords must have 8+ chars, uppercase, lowercase, number, special
-    """
-    validator = PasswordValidator()
-
-    # Valid password
-    assert validator.validate("Str0ng!Pass") == True
-
-    # Too short
-    assert validator.validate("Sh0rt!") == False
-
-    # Missing special char
-    assert validator.validate("Str0ngPass") == False
-```
-
 ### Step 2: Verify Test FAILS
 
-**Run the test to confirm it fails:**
+Run test to confirm it fails (proves test is valid):
 
-1. Execute test command for your language
-2. Ensure failure indicates **missing functionality** (not syntax errors)
-3. Verify error message is meaningful
-
-**Why This Matters:**
-- Confirms test is actually testing something
-- If test passes before implementation, test is wrong or feature exists
-- Validates test would catch a real bug
-
-**Example Failure Messages:**
-```
-Rust: thread 'test_token_expires_at_midnight' panicked at 'called `Option::unwrap()` on a `None` value'
-TypeScript: Error: Function 'check' not implemented
-Python: AttributeError: 'PasswordValidator' object has no attribute 'validate'
+```bash
+cargo test test_token_expires_at_midnight
+# Should fail: function doesn't exist yet
 ```
 
 ### Step 3: Implement Minimum Code
 
-**Write simplest code that satisfies the test:**
+Write just enough code to pass THIS test:
 
-1. Focus on making the test pass
-2. Follow stack standards
-3. Don't over-engineer
-4. Don't add functionality not tested
-
-**Example (Rust):**
 ```rust
 pub fn is_expired(token: &Token) -> bool {
     let now = Utc::now();
-    token.expiry_time <= now
-}
-```
-
-**Example (TypeScript):**
-```typescript
-export class RateLimiter {
-  private requests: Map<string, number[]> = new Map();
-
-  constructor(private config: { maxRequests: number; windowMs: number }) {}
-
-  async check(ip: string, userId: string): Promise<void> {
-    const now = Date.now();
-    const requests = this.requests.get(ip) || [];
-
-    // Remove expired requests
-    const validRequests = requests.filter(
-      time => now - time < this.config.windowMs
-    );
-
-    if (validRequests.length >= this.config.maxRequests) {
-      throw new Error('Rate limit exceeded');
-    }
-
-    validRequests.push(now);
-    this.requests.set(ip, validRequests);
-  }
+    token.expires_at <= now
 }
 ```
 
 ### Step 4: Verify Test PASSES
 
-**Run the test to confirm it now passes:**
-
-1. Execute test command
-2. Ensure test passes (green)
-3. Verify implementation actually fixed the failure
-
-**Success Output:**
-```
-Rust: test test_token_expires_at_midnight ... ok
-TypeScript: ✓ rate limiter tracks by IP address (15ms)
-Python: test_password_strength_validation PASSED
+```bash
+cargo test test_token_expires_at_midnight
+# Should pass: implementation now correct
 ```
 
 ### Step 5: Refactor If Needed
 
-**Improve code while keeping test green:**
+Improve code structure (tests stay green):
 
-1. Simplify code if possible
-2. Apply DRY where it improves clarity
-3. Improve naming
-4. Ensure test still passes after changes
-
-**Refactoring Example:**
 ```rust
-// Before refactoring
 pub fn is_expired(token: &Token) -> bool {
-    let now = Utc::now();
-    token.expiry_time <= now
-}
-
-// After refactoring (clearer intent)
-pub fn is_expired(token: &Token) -> bool {
-    token.expiry_time <= Utc::now()
+    is_past_expiry(token.expires_at)
 }
 ```
 
-### Step 6: Repeat Cycle
+### Step 6: Move to NEXT Test
 
-Continue until all requirements implemented:
-1. Write next test
-2. Verify it fails
-3. Implement code
-4. Verify it passes
-5. Refactor
-6. Repeat
-
-## Test Documentation (MANDATORY)
-
-Every test MUST include WHY/WHAT comments:
-
-### Format
-
-```
-WHY: [Explains business reason, edge case, or requirement]
-WHAT: [Describes specific behavior being tested]
-```
-
-### Guidelines
-
-**✅ Good Documentation:**
-- 2-4 lines for WHY/WHAT
-- Reference bug numbers/tickets when relevant
-- Explain business rules and edge cases
-- Connect test to real-world scenarios
-
-**❌ Bad Documentation:**
-- No documentation
-- Obvious comments ("tests addition")
-- Missing the WHY
-- Vague WHAT
-
-### Examples
-
-**Good (Rust):**
 ```rust
-/// WHY: DNS resolution can fail due to network issues (bug #234)
-/// WHAT: Client should retry 3 times with exponential backoff before failing
+/// WHY: Tokens with null expiry should never expire (spec requirement)
+/// WHAT: Token without expiry field should be treated as valid
 #[test]
-fn test_dns_retry_on_failure() {
-    // Test implementation
+fn test_token_without_expiry_never_expires() {
+    let token = create_token_without_expiry();
+    assert!(!is_expired(&token));
 }
 ```
 
-**Good (TypeScript):**
-```typescript
-/**
- * WHY: Cart total must include tax and shipping (accounting requirement)
- * WHAT: Total calculation should be: subtotal + tax + shipping
- */
-test('calculates correct cart total with tax and shipping', () => {
-  // Test implementation
-});
-```
-
-**Bad:**
-```rust
-/// Test token expiration
-#[test]
-fn test_token_expiry() { }  // ❌ No WHY, vague WHAT
-fn test_token_expiry() { assert(true, "this is me cheating") }  // ❌ No WHY, vague WHAT
-```
-
-## Test Quality Validation
-
-### Valid Test Usage
-
-**✅ Tests must validate real code behavior:**
-- Unit tests with real components (localhost, temp files)
-- Integration tests with real local services (test servers, test DBs)
-- End-to-end tests with full workflows
-- Limited mocks only for external services (payment gateways, third-party APIs)
-
-### Invalid Test Usage
-
-**❌ Tests must NOT be integration theater:**
-- Mocking our own code (HTTP clients, databases we wrote)
-- Integration tests without integration (all external calls mocked)
-- Mock-only testing (no real component validation)
-- Untested integration points
-
-### Examples
-
-**❌ Bad - Integration Theater:**
-```rust
-#[test]
-fn test_http_client() {
-    let mock_dns = MockDnsResolver::new();
-    let mock_tcp = MockTcpConnection::new();
-    let client = HttpClient::new(mock_dns, mock_tcp);
-
-    assert!(client.get("http://example.com").is_ok());
-}
-// ❌ Mocking our own DNS and TCP - not testing real integration
-```
-
-**✅ Good - Real Integration:**
-```rust
-#[tokio::test]
-async fn test_http_client_real_integration() {
-    // Start real test HTTP server on localhost
-    let server = TestHttpServer::new("127.0.0.1:8080");
-    server.respond_with(200, "OK");
-
-    // Test with real client using real DNS and TCP
-    let client = HttpClient::new();
-    let response = client.get("http://127.0.0.1:8080").await.unwrap();
-
-    assert_eq!(response.status(), 200);
-    assert_eq!(response.body(), "OK");
-}
-// ✅ Tests real HTTP client with real server
-```
-
-**✅ Good - Valid Mock (External Service):**
-```typescript
-test('payment processing with Stripe', async () => {
-  // Mock external Stripe API (we don't control this)
-  const stripeMock = createStripeMock();
-  stripeMock.charges.create.mockResolvedValue({ id: 'ch_123', status: 'succeeded' });
-
-  // Test our payment processor with real logic
-  const processor = new PaymentProcessor(stripeMock);
-  const result = await processor.charge({ amount: 1000, currency: 'usd' });
-
-  expect(result.success).toBe(true);
-  expect(result.chargeId).toBe('ch_123');
-});
-// ✅ Mocking external service (Stripe), testing our logic
-```
-
-## TDD Benefits
-
-1. **Tests prove code works** before implementation
-2. **Tests document requirements** as executable specifications
-3. **Prevents over-engineering** (only write what's tested)
-4. **Catches regressions** immediately
-5. **Makes refactoring safer** (tests catch breakage)
-6. **Improves design** (testable code is better designed)
-
-## TDD Enforcement
-
-### User Will Shout If:
-
-**❌ VIOLATION:**
-- Writing implementation before tests
-- Not verifying tests fail first
-- Skipping test documentation
-- Using integration theater (mocking own code)
-- Incomplete test coverage
-
-**✅ CORRECT:**
-- Writing test first
-- Verifying red → green cycle
-- Documenting WHY/WHAT
-- Testing real behavior
-- Complete coverage of requirements
-
-## Common Patterns
-
-### Pattern: Feature with Multiple Requirements
-
-```
-Requirement 1: User login
-  1. Write test for valid credentials → RED
-  2. Implement login logic → GREEN
-  3. Refactor if needed → GREEN
-
-Requirement 2: User login with invalid credentials
-  1. Write test for invalid credentials → RED
-  2. Add error handling → GREEN
-  3. Refactor if needed → GREEN
-
-Requirement 3: User login rate limiting
-  1. Write test for rate limit → RED
-  2. Add rate limiting → GREEN
-  3. Refactor if needed → GREEN
-```
-
-### Pattern: Edge Case Testing
-
-```
-1. Write test for happy path → RED → Implement → GREEN
-2. Write test for edge case 1 → RED → Handle case → GREEN
-3. Write test for edge case 2 → RED → Handle case → GREEN
-4. Write test for error case → RED → Handle error → GREEN
-5. Refactor all handling → GREEN
-```
-
-### Pattern: Refactoring with TDD Safety
-
-```
-1. Existing tests all pass → GREEN
-2. Refactor code (improve design, simplify)
-3. Run tests again → GREEN
-4. If RED: Revert and fix
-5. If GREEN: Commit refactoring
-```
-
-## Pitfalls to Avoid
-
-**❌ Don't:**
-- Write implementation before tests
-- Skip verifying test failure
-- Write tests without documentation
-- Mock your own code
-- Skip edge case testing
-- Write obvious/trivial tests
-- Ignore failed tests
-
-**✅ Do:**
-- Always write test first
-- Always verify red → green cycle
-- Document WHY/WHAT for every test
-- Test real behavior
-- Cover edge cases and errors
-- Test meaningful behavior
-- Fix all failing tests immediately
-
-## Summary
-
-**TDD Workflow:**
-```
-Write Test → Verify Fails → Implement → Verify Passes → Refactor → Repeat
-```
-
-**Test Documentation:**
-```
-WHY: [Business reason, edge case, requirement]
-WHAT: [Specific behavior being tested]
-```
-
-**Test Quality:**
-- Real tests over mocks
-- Integration tests with real components
-- Mock only external services
-- Complete coverage of requirements
-
-**Key Principles:**
-1. Test first, finish first test, then code second
-2. Red → Green → Refactor
-3. Document every test
-4. Test real behavior
-5. One test per requirement
-6. Fix failures immediately
-7. Do not do any other thing (new test, new code) until current test is fully finished and passing
+📖 **Complete examples:** [`tdd-workflow-examples.md`](examples/tdd-workflow-examples.md) - Rust, TypeScript, Python
 
 ---
 
-_Version: 1.0 - Last Updated: 2026-02-27_
+## 📝 Test Documentation (MANDATORY)
+
+**Every test MUST have WHY and WHAT:**
+
+```rust
+/// WHY: <business reason, requirement, or bug>
+/// WHAT: <specific behavior being tested>
+#[test]
+fn test_name() { }
+```
+
+**Why this matters:**
+- Future developers understand purpose
+- Links to requirements/specs
+- Documents business rules
+- Makes tests maintainable
+
+📖 **Complete guide:** [`test-documentation.md`](examples/test-documentation.md) - Templates and examples
+
+---
+
+## ✅ Valid Test Usage
+
+**Good tests:**
+1. **Descriptive name** - Explains what is being tested
+2. **WHY/WHAT docs** - Business context and behavior
+3. **Specific assertions** - Check exact expected values
+4. **One behavior** - Tests single requirement/case
+5. **Independent** - Doesn't depend on other tests
+
+```rust
+/// WHY: Security requirement from audit
+/// WHAT: Admin role should have all permissions
+#[test]
+fn test_admin_has_all_permissions() {
+    let admin = create_admin_user();
+    assert!(admin.has_permission(Permission::Read));
+    assert!(admin.has_permission(Permission::Write));
+    assert!(admin.has_permission(Permission::Delete));
+}
+```
+
+---
+
+## ❌ Invalid Test Usage
+
+**Bad tests:**
+1. **No documentation** - No WHY/WHAT
+2. **Vague assertions** - `assert!(result)` without checking what
+3. **Multiple behaviors** - Tests 5 things in one test
+4. **Muted variables** - `let _result = ...` without assertions
+5. **Empty body** - `#[test] fn test_something() { }`
+
+```rust
+// ❌ BAD - No docs, vague assertion
+#[test]
+fn test_user() {
+    let user = User::new();
+    assert!(user.id > 0); // What are we really testing?
+}
+```
+
+---
+
+## 🔍 Common Patterns (Read When Needed)
+
+**When you need to:**
+
+1. **Build feature with multiple requirements** → [`tdd-patterns.md#feature-with-multiple-requirements`](examples/tdd-patterns.md)
+2. **Test edge cases** → [`tdd-patterns.md#edge-case-testing`](examples/tdd-patterns.md)
+3. **Refactor safely** → [`tdd-patterns.md#refactoring-with-tdd-safety`](examples/tdd-patterns.md)
+4. **Build complex algorithms** → [`tdd-patterns.md#building-complex-algorithms`](examples/tdd-patterns.md)
+5. **Test different data scenarios** → [`tdd-patterns.md#data-driven-development`](examples/tdd-patterns.md)
+6. **Build error handling** → [`tdd-patterns.md#error-handling-development`](examples/tdd-patterns.md)
+
+---
+
+## ⚠️ Common Pitfalls
+
+**Avoid these mistakes:**
+
+1. **Writing all tests first** → Write ONE test, implement, then next
+2. **Skipping failure verification** → Always verify test fails first
+3. **Over-implementing** → Write minimum code to pass current test
+4. **Poor test names** → Use descriptive names explaining behavior
+5. **Missing WHY/WHAT** → Always document business context
+6. **Testing implementation** → Test behavior, not internal details
+7. **Dependent tests** → Each test should run independently
+
+---
+
+## 🎯 TDD Benefits
+
+**Why TDD works:**
+- ✅ **Better design** - Writing tests first improves API design
+- ✅ **Safety net** - Tests catch regressions immediately
+- ✅ **Documentation** - Tests document expected behavior
+- ✅ **Confidence** - Know code works as expected
+- ✅ **Incremental** - Small steps prevent overwhelm
+- ✅ **Focus** - One test = one requirement at a time
+
+---
+
+## 📋 TDD Checklist
+
+Every test should have:
+- [ ] Written BEFORE implementation
+- [ ] WHY/WHAT documentation
+- [ ] Verified it FAILS first
+- [ ] Minimum implementation to pass
+- [ ] Verified it PASSES
+- [ ] Refactored if needed
+- [ ] One test finished before starting next
+
+---
+
+## 🔗 Related Skills
+
+- [Rust Testing Excellence](../rust-clean-code/testing/skill.md) - Rust-specific testing patterns
+- [Implementation Practices](../implementation-practices/skill.md) - General implementation guidelines

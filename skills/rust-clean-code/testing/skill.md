@@ -6,8 +6,8 @@ created: 2026-01-27
 license: "MIT"
 metadata:
   author: "Main Agent"
-  version: "3.2-approved"
-  last_updated: "2026-02-02"
+  version: "5.0-streamlined"
+  last_updated: "2026-03-03"
 tags:
   - rust
   - testing
@@ -15,1581 +15,325 @@ tags:
   - docker
   - testcontainers
 files:
-  - examples/intro-to-property-based-testing.md: "Complete beginner to advanced guide on property-based testing with proptest"
+  - examples/test-organization.md: "MUST READ - Complete project structure for tests (tests/units/, tests/integration/)"
+  - examples/three-test-validations.md: "Read when writing tests - The three validations every test must perform"
+  - examples/integration-theater-vs-real-testing.md: "Read when deciding mock vs real - Examples of bad mocking vs good testing"
+  - examples/common-pitfalls.md: "Read when tests fail unexpectedly - Common mistakes and solutions"
+  - examples/http-testing-with-project-types.md: "Read when testing HTTP - Using project's own types to create TestHttpServer"
+  - examples/tcp-testing-stdlib.md: "Read when testing TCP/network - Pure stdlib testing without dependencies"
+  - examples/docker-for-testing.md: "Read when testing databases/services - Docker-compose and CI integration"
+  - examples/testcontainers-examples.md: "Read when using testcontainers - PostgreSQL, Redis, MongoDB examples"
+  - examples/test-dependency-decisions.md: "Read when adding dependencies - Decision trees for choosing stdlib vs external deps"
+  - examples/feature-gated-tests.md: "Read when testing with features - Module-level feature gates"
+  - examples/property-based-testing-basics.md: "Read when testing invariants - Quick proptest patterns"
+  - examples/intro-to-property-based-testing.md: "Read for comprehensive proptest guide - Complete beginner to advanced"
+  - examples/running-tests.md: "Read when running tests - Cargo commands, features, parallel execution"
 ---
 
 # Rust Testing Excellence
 
 ## When to Use This Skill
 
-Read this when **writing or reviewing tests** (not implementation or async code). This covers:
-
-- Unit tests, integration tests, benchmarks
-- Validating both valid AND invalid inputs
-- Feature-gated test modules
-- Property-based testing
-- Avoiding false-positive tests
-
-**Do NOT read this for:**
-- Implementation → See [rust-clean-implementation](../implementation/skill.md)
-- Async code → See [rust-with-async-code](../async/skill.md)
+Read this skill when **writing or reviewing tests**. For implementation patterns, see [rust-clean-implementation](../implementation/skill.md). For async code, see [rust-with-async-code](../async/skill.md).
 
 ---
 
-## Core Testing Principles
+## 🎯 Core Principles (CRITICAL - Always Apply)
 
-### CRITICAL: Real Code Over Mocks 🚨
+### 1. Real Code Over Mocks 🚨
 
-**The Fundamental Rule**: Tests must validate actual code behavior, not mock behavior.
+**The Fundamental Rule:** Tests must validate actual code behavior, not mock behavior.
 
-#### When to Use Mocks (VERY SPARINGLY)
+**✅ VALID Mock Usage (External Only):**
+- Third-party services (Stripe, payment gateways)
+- System resources (hardware devices, OS calls)
+- Error injection (disk full, network partition)
 
-**✅ VALID Mock Usage - External Dependencies Only:**
-1. **Third-party services** - Payment gateways, external APIs, cloud services
-2. **System resources** - Hardware devices, OS calls you don't control
-3. **Error injection** - Rare failure scenarios (disk full, network partition)
+**❌ INVALID Mock Usage (Our Own Code):**
+- HTTP clients → Use real test servers
+- Databases → Use testcontainers/Docker
+- File I/O → Use `tempfile` with real filesystem
+- Internal services → Test the real thing
 
-**❌ INVALID Mock Usage - Our Own Code:**
-1. **HTTP clients** → Use real test HTTP servers (axum, hyper, wiremock)
-2. **Databases** → Use testcontainers, in-memory SQLite, or test databases
-3. **File I/O** → Use `tempfile` crate with real filesystem
-4. **DNS** → Use localhost or real DNS (with retry logic)
-5. **Internal services** → If you wrote it, test the real thing
+**The Three Questions Before Every Mock:**
+1. "Is this really external (third-party/OS)?" - If it's yours, **NO MOCK**
+2. "Am I testing real logic or mock setup?" - If just mock config, **INVALID**
+3. "Are integration points tested separately?" - Need real tests too
 
-#### The Three Questions (Ask Before Every Mock)
+📖 **See examples:** [`integration-theater-vs-real-testing.md`](examples/integration-theater-vs-real-testing.md)
 
-```rust
-// Before writing: let mock = Mock...::new()
-// Ask yourself:
+### 2. The Three Test Validations ✅
 
-1. "Is this really external (third-party/OS)?"
-   ❌ My HTTP client? → NO MOCK
-   ✅ Stripe payment API? → Mock OK
-
-2. "Am I testing real logic or mock setup?"
-   ❌ Testing mock returns what I configured? → INVALID
-   ✅ Testing my error handling of mock failure? → VALID
-
-3. "Are integration points tested separately?"
-   ❌ Only mock tests exist? → INVALID
-   ✅ Have separate real integration tests? → VALID
-```
-
-#### Real Testing Tools for Rust
-
-**Principle: Write one test at a time**
-
-You must go step by step, writing your first test, and keep working on it till it passes before going to 
-the next one. Do not even dare start working on the next test till the current one passes, is verified and committed to git.
-
-**Principle: Always update the tests crate mod.rs**
-
-When you are writing tests as individual files, you still need to add them to the crate mod.rs file so rust 
-actually sees them and inclue them in your execution, do not write tests and not include them then say its 
-all passing when you really are not executing them.
-
-Secondly identifying the correct crate to run with `rust tests --package` so that you are actually executing the 
-right tests and crate.
-
-**Principle: Do not dare making false claims of passing test**
-
-Actually do the work, dont just fake tests with contents asserting true to claim you wrote them, do the actual 
-work and write the tests correctly.
-
-**Bad:**
-```rust
-/// Test token expiration
-#[test]
-fn test_token_expiry() { }  // ❌ No WHY, vague WHAT
-fn test_token_expiry() { assert(true, "this is me cheating") }  // lies and cheating
-```
-
-**Principle: Project Building Blocks → Stdlib → External Dependencies (in that order)**
-
-**STEP 1: Check Project Building Blocks**
-
-Before adding test dependencies, search what the project already provides:
+**Every test MUST validate:**
+1. ✅ Valid input produces expected output
+2. ✅ Invalid input is properly rejected with clear errors
+3. ✅ Edge cases are handled (empty, max, boundary)
 
 ```rust
-// Example: HTTP Client Testing (02-build-http-client spec)
-// Project ALREADY has:
-// - wire::simple_http::HttpRequestReader
-// - wire::simple_http::SimpleOutgoingResponse
-// - wire::simple_http::RenderHttp trait + Http11
-// - wire::simple_http::SimpleIncomingRequest
-
-// ✅ BEST - Create dedicated testing crate
-// File: backends/foundation_testing/Cargo.toml
-// [dependencies]
-// foundation_core = { path = "../foundation_core" }
-
-// File: backends/foundation_testing/src/http_server.rs
-use foundation_core::wire::simple_http::{
-    HttpRequestReader, SimpleOutgoingResponse, Http11,
-    SimpleIncomingRequest, RenderHttp
-};
-use std::net::{TcpListener, TcpStream};
-use std::io::{Read, Write};
-use std::thread;
-
-/// Test HTTP server built on project's simple_http types.
-///
-/// WHY: Provides real HTTP server for testing without external dependencies.
-/// Uses foundation_core's existing HTTP implementation.
-pub struct TestHttpServer {
-    listener: TcpListener,
-    addr: String,
-    handle: Option<thread::JoinHandle<()>>,
+// ✅ Example - All three validations
+#[test]
+fn test_valid_registration() {
+    let user = register("alice", "alice@example.com").unwrap();
+    assert_eq!(user.username, "alice");
 }
-
-impl TestHttpServer {
-    /// Start a new test HTTP server on random port.
-    pub fn start() -> Self {
-        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
-        let addr = format!("http://{}", listener.local_addr().unwrap());
-
-        let listener_clone = listener.try_clone().unwrap();
-        let handle = thread::spawn(move || {
-            for stream in listener_clone.incoming() {
-                if let Ok(mut stream) = stream {
-                    // Use project's HttpRequestReader
-                    let reader = HttpRequestReader::new(stream.try_clone().unwrap());
-                    let _request = reader.read().unwrap();
-
-                    // Use project's SimpleOutgoingResponse + Http11
-                    let response = SimpleOutgoingResponse::new()
-                        .status(200)
-                        .body(b"OK");
-                    let rendered = Http11.render(&response).unwrap();
-                    stream.write_all(&rendered).unwrap();
-                }
-            }
-        });
-
-        Self {
-            listener,
-            addr,
-            handle: Some(handle)
-        }
-    }
-
-    /// Get URL for path on this test server.
-    pub fn url(&self, path: &str) -> String {
-        format!("{}{}", self.addr, path)
-    }
-}
-
-// File: backends/foundation_testing/src/lib.rs
-pub mod http_server;
-pub use http_server::TestHttpServer;
-
-// Now tests use it:
-// File: backends/foundation_core/tests/http_integration.rs
-use foundation_testing::TestHttpServer;
 
 #[test]
-fn test_http_client() {
-    let server = TestHttpServer::start();
-    let client = HttpClient::new();
-    let response = client.get(&server.url("/")).unwrap();
-    assert_eq!(response.status(), 200);
+fn test_invalid_email_rejected() {
+    assert!(register("bob", "not-an-email").is_err());
+}
+
+#[test]
+fn test_empty_username_rejected() {
+    assert!(register("", "test@example.com").is_err());
 }
 ```
 
-**Why separate testing crate is better:**
-- ✅ Clean separation: production vs test infrastructure
-- ✅ Parallel compilation: builds alongside main crates
-- ✅ Reusable: Multiple crates can depend on `foundation_testing`
-- ✅ No test code in production binaries
-- ✅ Clear dependency: `foundation_testing` → `foundation_core`
+📖 **See complete guide:** [`three-test-validations.md`](examples/three-test-validations.md)
 
-**Integration tests go in `./tests` directory:**
+### 3. Test Organization (MUST READ)
+
+**CRITICAL:** ALL tests go in `tests/` directory. **NO** `#[cfg(test)]` modules in source files.
+
 ```
-backends/foundation_core/
-├── src/                        # Production code
-├── tests/                      # Integration tests (separate crate)
-│   ├── http_internal.rs        # Tests using foundation_testing
-│   └── http_external.rs        # Tests against real servers
-└── Cargo.toml
-
-# Integration tests are a separate crate that depends on foundation_core
-# This prevents cyclical dependencies and keeps organization clean
+project_root/
+├── src/              # NO tests here
+├── tests/            # ALL tests here
+│   ├── units/        # Unit tests: {crate}_{module}_tests.rs
+│   └── integration/  # Integration tests: {crate}_{workflow}.rs
+└── benches/          # Benchmarks
 ```
 
-**Test Organization Strategy:**
+📖 **MUST READ:** [`test-organization.md`](examples/test-organization.md) - Complete structure and examples
+
+---
+
+## 🔧 Mandatory Workflow Principles
+
+### 🚨 ONE Test at a Time (CRITICAL)
+
+**⚠️ MANDATORY:** Write ONE test, make it pass, THEN move to next test.
+
+**TDD Cycle:**
+```
+🔴 Write ONE test → Verify FAILS → Implement → Verify PASSES → Refactor
+                              ↓ ONLY THEN
+🔴 Write NEXT test → ...
+```
+
+**Never:**
+- ❌ Write multiple tests at once
+- ❌ Generate test file with all tests
+- ❌ Skip ahead before current test passes
+
+📖 **Complete TDD workflow:** [Test-Driven Development](../../test-driven-development/skill.md)
+
+### Always Update tests/mod.rs
+
+When writing test files, add them to `tests/mod.rs` so Rust includes them:
 
 ```rust
-// File: backends/foundation_core/tests/http_internal.rs
-// Fast tests using our own TestHttpServer
-use foundation_testing::TestHttpServer;
-use foundation_core::wire::simple_http::client::HttpClient;
-
-#[test]
-fn test_http_get() {
-    let server = TestHttpServer::start();
-    let client = HttpClient::new();
-    let response = client.get(&server.url("/")).unwrap();
-    assert_eq!(response.status(), 200);
-}
-
-#[test]
-fn test_http_redirects() {
-    let server = TestHttpServer::with_redirect();
-    let client = HttpClient::new();
-    let response = client.get(&server.url("/redirect")).unwrap();
-    assert_eq!(response.status(), 200);
-}
-
-// File: backends/foundation_core/tests/http_external.rs
-// Slower validation tests against real HTTP servers
-use foundation_core::wire::simple_http::client::HttpClient;
-
-#[test]
-#[ignore] // Ignored by default (requires network)
-fn test_external_httpbin_get() {
-    let client = HttpClient::new();
-    let response = client.get("http://httpbin.org/get").unwrap();
-    assert_eq!(response.status(), 200);
-}
-
-#[test]
-#[ignore] // Requires network
-fn test_external_httpbin_redirects() {
-    let client = HttpClient::new();
-    let response = client.get("http://httpbin.org/redirect/1").unwrap();
-    assert_eq!(response.status(), 200); // After following redirect
-}
-
-#[test]
-#[ignore]
-fn test_external_https() {
-    let client = HttpClient::new();
-    let response = client.get("https://httpbin.org/get").unwrap();
-    assert_eq!(response.status(), 200);
-}
-
-#[test]
-#[ignore]
-fn test_external_error_codes() {
-    let client = HttpClient::new();
-    let response = client.get("http://httpbin.org/status/404").unwrap();
-    assert_eq!(response.status(), 404);
-}
-
-#[test]
-#[ignore]
-fn test_external_headers() {
-    let client = HttpClient::new();
-    let response = client.get("http://httpbin.org/headers").unwrap();
-    assert_eq!(response.status(), 200);
-    // Verify headers were sent/received correctly
-}
+// tests/mod.rs or tests/units/mod.rs
+mod myapp_parser_tests;
+mod myapp_validation_tests;
 ```
 
-**Test Pyramid:**
-1. **Many tests (90%)**: Unit tests in `src/` using foundation_testing - Fast, controlled
-2. **Some tests (9%)**: Integration tests in `./tests` using foundation_testing - Medium speed
-3. **Few tests (1%)**: External validation in `./tests` with `#[ignore]` - Slow, real-world
+### Run Correct Package
 
-**Run Strategy:**
 ```bash
-# Fast tests only (no external network calls)
-cargo test
+# Identify the right package
+cargo test --package crate_name
 
-# Include external validation tests
-cargo test -- --ignored
-
-# Run specific external test
-cargo test test_external_httpbin_get -- --ignored
-
-# Run all tests (internal + external)
-cargo test -- --include-ignored
+# Verify tests are actually running
+cargo test -- --list
 ```
 
-**Benefits of `./tests` directory for integration tests:**
-- ✅ **No cyclical dependencies** - Integration tests are separate crate
-- ✅ **Clean organization** - Clear separation of unit vs integration tests
-- ✅ **Realistic testing** - Tests use public API like real consumers
-- ✅ **Multiple sources** - Can test against foundation_testing AND external servers
-- ✅ **Conditional compilation** - Easy to exclude expensive tests from CI
+### No False Claims
 
-**STEP 2: Try Stdlib (if project doesn't have it)**
-
-**TCP Testing (Pure Stdlib - NO dependencies):**
-```rust
-// ✅ BEST - Pure stdlib TCP testing
-use std::net::{TcpListener, TcpStream};
-use std::io::{Read, Write};
-use std::thread;
-
-#[test]
-fn test_tcp_connection() {
-    // Real TCP server (no dependencies)
-    let listener = TcpListener::bind("127.0.0.1:0").unwrap();
-    let addr = listener.local_addr().unwrap();
-
-    // Spawn server thread
-    thread::spawn(move || {
-        let (mut stream, _) = listener.accept().unwrap();
-        let mut buf = [0u8; 1024];
-        let n = stream.read(&mut buf).unwrap();
-        // Echo back
-        stream.write_all(&buf[..n]).unwrap();
-    });
-
-    // Test actual TCP connection
-    let mut client = TcpStream::connect(addr).unwrap();
-    client.write_all(b"test data").unwrap();
-
-    let mut buf = [0u8; 1024];
-    let n = client.read(&mut buf).unwrap();
-    assert_eq!(&buf[..n], b"test data");
-}
-```
-
-**STEP 3: External Dependencies (ONLY when necessary)**
-
-**HTTP Testing (If project lacks HTTP types):**
-```rust
-// ✅ ACCEPTABLE - Use minimal test dependency if project has NO HTTP
-// Cargo.toml: [dev-dependencies] tiny_http = "0.12"
-
-#[test]
-fn test_http_client() {
-    use tiny_http::{Server, Response};
-    use std::thread;
-
-    // Real HTTP server (test-only dependency)
-    let server = Server::http("127.0.0.1:0").unwrap();
-    let addr = format!("http://{}", server.server_addr());
-
-    thread::spawn(move || {
-        let request = server.recv().unwrap();
-        request.respond(Response::from_string("OK")).unwrap();
-    });
-
-    // Test our real HTTP client
-    let client = HttpClient::new();
-    let response = client.get(&addr).unwrap();
-    assert_eq!(response.status(), 200);
-}
-```
-
-**Decision Tree:**
-
-```
-Need to test HTTP?
-├─ Does project have HTTP types? (wire::simple_http)
-│  ├─ YES → Create foundation_testing crate with TestHttpServer ✅ BEST
-│  └─ NO → Continue to stdlib
-├─ Can stdlib do it? (std::net::TcpListener + raw bytes)
-│  ├─ YES → Use stdlib with raw HTTP bytes ✅ GOOD
-│  └─ NO → Use minimal external dep (tiny_http) ✅ ACCEPTABLE
-
-Need to test JSON?
-├─ Does project have JSON types?
-│  ├─ YES → Create foundation_testing with helpers ✅ BEST
-│  └─ NO → Use serde_json ✅ ACCEPTABLE
-
-Need test utilities?
-├─ Multiple crates need it?
-│  ├─ YES → Create dedicated testing crate (e.g., foundation_testing) ✅ BEST
-│  └─ NO → Small helper module in single crate ✅ ACCEPTABLE
-```
-
-**When to Use Test-Only External Dependencies:**
-- ✅ Protocol stdlib doesn't provide (HTTP, WebSocket) AND project doesn't have
-- ✅ Complex test fixtures that would be extremely verbose to write manually
-- ✅ Specialized testing tools (proptest, criterion)
-
-**When NOT to Use External Test Dependencies:**
-- ❌ Project already has the building blocks (compose them instead)
-- ❌ TCP/UDP → Use `std::net` (stdlib)
-- ❌ File I/O → Use `std::fs` + `tempfile` (stdlib)
-- ❌ Threads/channels → Use `std::thread`, `std::sync::mpsc` (stdlib)
-
-**Database Testing:**
-```rust
-// ✅ GOOD - Real database testing
-use sqlx::SqlitePool;
-
-#[tokio::test]
-async fn test_user_repository() {
-    // Real in-memory SQLite database
-    let pool = SqlitePool::connect(":memory:").await.unwrap();
-    sqlx::migrate!().run(&pool).await.unwrap();
-
-    let repo = UserRepository::new(pool);
-    let user = repo.create("alice").await.unwrap();
-
-    assert_eq!(user.name, "alice");
-}
-```
-
-**File I/O Testing:**
-```rust
-// ✅ GOOD - Real file testing
-use tempfile::TempDir;
-use std::fs;
-
-#[test]
-fn test_config_loader() {
-    // Real temporary directory
-    let dir = TempDir::new().unwrap();
-    let config_path = dir.path().join("config.json");
-
-    // Real file write
-    fs::write(&config_path, r#"{"key": "value"}"#).unwrap();
-
-    // Real file read
-    let config = ConfigLoader::load(&config_path).unwrap();
-    assert_eq!(config.key, "value");
-}
-```
-
-**DNS Testing:**
-```rust
-// ✅ GOOD - Real DNS with localhost
-#[test]
-fn test_dns_resolver() {
-    let resolver = SystemDnsResolver::new();
-
-    // localhost always resolves - valid real test
-    let addrs = resolver.resolve("localhost", 80).unwrap();
-    assert!(!addrs.is_empty());
-}
-```
-
-#### Red Flags: Integration Theater
-
-⚠️ **These are WARNING SIGNS of invalid mock usage:**
+- ❌ Empty test bodies
+- ❌ `assert!(true)` to fake passing
+- ❌ Variables calculated but never asserted
 
 ```rust
-// ❌ BAD - Mocking our own code
+// ❌ BAD - Cheating
 #[test]
-fn test_http_client() {
-    let mock_dns = MockDnsResolver::new();
-    let mock_tcp = MockTcpConnection::new();
-    let client = HttpClient::new(mock_dns, mock_tcp);
-
-    // This only tests that mocks work!
-    assert!(client.get("http://example.com").is_ok());
-}
-
-// ❌ BAD - Mock-only testing
-#[test]
-fn test_database_save() {
-    let mock_db = MockDatabase::new();
-    mock_db.expect_save().return_ok();
-
-    // Never tests real database!
-    repo.save(mock_db).unwrap();
-}
-```
-
-#### Required Test Coverage
-
-**MANDATORY for all features:**
-1. **Unit tests** - Individual components with real dependencies
-2. **Integration tests** - Complete flows with real local services
-3. **End-to-end tests** - Full workflows (may use mocks for external services only)
-
-**Example Test Structure:**
-```rust
-// tests/my_feature_test.rs
-mod unit {
-    // Test individual functions with real components
-    #[test]
-    fn test_parser() { /* real parsing logic */ }
-}
-
-mod integration {
-    // Test complete flows with real services
-    #[tokio::test]
-    async fn test_api_endpoint() {
-        let server = start_test_server(); // Real HTTP
-        let response = real_client.get(server.url()).await.unwrap();
-        // ...
-    }
-}
-
-mod external_mocks {
-    // ONLY for external services
-    #[test]
-    fn test_payment_gateway_timeout() {
-        let mock = MockStripeAPI::timeout(); // Valid: external
-        // ...
-    }
-}
-```
-
-### The Three Test Validations ✅
-
-Every meaningful test MUST validate:
-
-1. **Input Validation** - Verify inputs are handled correctly
-2. **Output Verification** - Confirm result matches expectations
-3. **Error Path Testing** - Ensure error conditions produce appropriate errors
-
-```rust
-// BAD ❌ - Creates variable with no assertions
-#[test]
-fn test_process() {
-    let result = process("valid_input").unwrap(); // Assumes success!
-}
-
-// GOOD ✅ - Validates both success and error paths
-#[test]
-fn test_process_valid_input() {
-    let result = process("valid_input");
-    assert!(result.is_ok(), "valid input should succeed");
-    assert_eq!(result.unwrap().len(), 11);
-}
+fn test_logic() { }
 
 #[test]
-fn test_process_invalid_input() {
-    let result = process("");
-    assert_eq!(result, Err(Error::EmptyInput));
-}
-```
+fn test_logic() { assert!(true) }
 
-### Anti-Pattern: Muted Variables Without Assertions
-
-**CRITICAL:** Tests that create variables but never validate their content are **FORBIDDEN**.
-
-```rust
-// BAD ❌ - False confidence, no validation
+// ✅ GOOD - Real test
 #[test]
-fn test_user_creation() {
-    let user = User::new("Alice", "alice@example.com");
-    // Variable created but NEVER checked!
-}
-
-// GOOD ✅ - Explicit validation
-#[test]
-fn test_user_creation() {
-    let user = User::new("Alice", "alice@example.com")
-        .expect("should create user");
-
-    assert_eq!(user.name, "Alice");
-    assert_eq!(user.email(), "alice@example.com");
-    assert!(user.id() > 0);
+fn test_logic() {
+    let result = compute(input);
+    assert_eq!(result, expected);
 }
 ```
 
 ---
 
-## Docker/Docker-Compose for Real Infrastructure Testing 🐳
+## 📚 Testing Patterns (Read When Needed)
 
-**CRITICAL PRINCIPLE**: Always prefer Docker/docker-compose/podman to spawn real infrastructure for tests.
+### When Testing HTTP
 
-### The Infrastructure Testing Hierarchy
+**Decision:** Project types → Stdlib → External deps
 
-```
-1. Docker/docker-compose (FIRST - spawn real infrastructure locally)
-   ↓ Not possible locally?
-2. Test instance credentials (SECOND - use provided test environment)
-   ↓ No test environment available?
-3. Mock (LAST RESORT - only when infrastructure cannot run locally)
-```
+1. **Does project have HTTP types?** → Create `foundation_testing` crate
+2. **Can stdlib do it?** → Use `std::net::TcpListener`
+3. **Need external dep?** → Use minimal dep like `tiny_http`
 
-### When to Use Docker for Tests
+📖 **Read when implementing:** [`http-testing-with-project-types.md`](examples/http-testing-with-project-types.md), [`tcp-testing-stdlib.md`](examples/tcp-testing-stdlib.md)
 
-**✅ USE Docker/docker-compose for**:
-- PostgreSQL, MySQL, MongoDB, Redis (databases)
-- RabbitMQ, Kafka (message queues)
-- Elasticsearch, S3-compatible storage (MinIO)
-- Any service with official Docker image
+### When Testing Databases
 
-**❌ DON'T USE Docker when**:
-- Service is proprietary SaaS without local version (Snowflake, Salesforce)
-- Service requires special hardware/licenses
-- **ACTION**: Ask dev team for test instance credentials first!
+**Decision tree:**
 
-### Docker-Compose for Test Infrastructure
+1. **Can run in Docker?** → Use docker-compose or testcontainers ✅ BEST
+2. **Test instance available?** → Ask dev team for credentials
+3. **Can use SQLite?** → Use `:memory:` for SQL
+4. **Must mock?** → Last resort only
 
-#### Example: PostgreSQL + Redis
+📖 **Read when implementing:** [`docker-for-testing.md`](examples/docker-for-testing.md), [`testcontainers-examples.md`](examples/testcontainers-examples.md)
 
-```yaml
-# docker-compose.test.yml
-version: '3.8'
-
-services:
-  postgres:
-    image: postgres:15-alpine
-    environment:
-      POSTGRES_USER: test
-      POSTGRES_PASSWORD: test
-      POSTGRES_DB: testdb
-    ports:
-      - "5432:5432"
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U test"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
-```
-
-#### Running Tests with Docker-Compose
-
-```bash
-# Start infrastructure
-docker-compose -f docker-compose.test.yml up -d
-
-# Wait for health checks
-docker-compose -f docker-compose.test.yml ps
-
-# Run tests
-cargo test
-
-# Cleanup
-docker-compose -f docker-compose.test.yml down -v
-```
-
-#### Automated Test Script
-
-```bash
-#!/bin/bash
-# scripts/run-tests.sh
-
-set -e
-
-echo "Starting test infrastructure..."
-docker-compose -f docker-compose.test.yml up -d
-
-echo "Waiting for services to be healthy..."
-timeout 30 bash -c 'until docker-compose -f docker-compose.test.yml ps | grep -q "(healthy)"; do sleep 1; done'
-
-echo "Running tests..."
-cargo test "$@"
-
-echo "Cleaning up..."
-docker-compose -f docker-compose.test.yml down -v
-```
-
-### Testcontainers-rs (Programmatic Docker Management)
-
-**testcontainers**: Rust library for managing Docker containers in tests
-
+Quick example:
 ```toml
-# Cargo.toml
 [dev-dependencies]
 testcontainers = "0.15"
-postgres = "0.19"  # Or your database client
 ```
 
-#### PostgreSQL with Testcontainers
+```rust
+let docker = clients::Cli::default();
+let postgres = docker.run(images::postgres::Postgres::default());
+// Test with real PostgreSQL
+```
+
+### When Testing with Features
+
+Use **module-level gates**, not individual `#[cfg]` attributes:
 
 ```rust
 #[cfg(test)]
 mod tests {
-    use testcontainers::{clients, images};
-    use postgres::{Client, NoTls};
-
-    #[test]
-    fn test_user_repository() {
-        // Start PostgreSQL container
-        let docker = clients::Cli::default();
-        let postgres = docker.run(images::postgres::Postgres::default());
-
-        // Get connection details
-        let host_port = postgres.get_host_port_ipv4(5432);
-        let connection_string = format!(
-            "postgresql://postgres:postgres@127.0.0.1:{}/postgres",
-            host_port
-        );
-
-        // Connect to real PostgreSQL
-        let mut client = Client::connect(&connection_string, NoTls).unwrap();
-
-        // Run actual database operations
-        client.execute(
-            "CREATE TABLE users (id SERIAL PRIMARY KEY, name VARCHAR NOT NULL)",
-            &[],
-        ).unwrap();
-
-        client.execute(
-            "INSERT INTO users (name) VALUES ($1)",
-            &[&"Alice"],
-        ).unwrap();
-
-        let rows = client.query("SELECT name FROM users", &[]).unwrap();
-        assert_eq!(rows[0].get::<_, String>(0), "Alice");
-
-        // Container automatically cleaned up when dropped
-    }
-}
-```
-
-#### Redis with Testcontainers
-
-```rust
-#[cfg(test)]
-mod tests {
-    use testcontainers::{clients, images};
-    use redis::Commands;
-
-    #[test]
-    fn test_cache_operations() {
-        let docker = clients::Cli::default();
-        let redis = docker.run(images::redis::Redis::default());
-
-        let host_port = redis.get_host_port_ipv4(6379);
-        let connection_string = format!("redis://127.0.0.1:{}", host_port);
-
-        let client = redis::Client::open(connection_string).unwrap();
-        let mut con = client.get_connection().unwrap();
-
-        // Test actual Redis operations
-        con.set::<_, _, ()>("key", "value").unwrap();
-        let result: String = con.get("key").unwrap();
-
-        assert_eq!(result, "value");
-    }
-}
-```
-
-#### MongoDB with Testcontainers
-
-```rust
-#[cfg(test)]
-mod tests {
-    use testcontainers::{clients, images};
-    use mongodb::{Client, options::ClientOptions};
-
-    #[tokio::test]
-    async fn test_user_collection() {
-        let docker = clients::Cli::default();
-        let mongo = docker.run(images::mongo::Mongo::default());
-
-        let host_port = mongo.get_host_port_ipv4(27017);
-        let connection_string = format!("mongodb://127.0.0.1:{}", host_port);
-
-        // Connect to real MongoDB
-        let client_options = ClientOptions::parse(&connection_string).await.unwrap();
-        let client = Client::with_options(client_options).unwrap();
-
-        let db = client.database("test_db");
-        let collection = db.collection("users");
-
-        // Test actual MongoDB operations
-        collection.insert_one(
-            doc! { "name": "Alice", "age": 30 },
-            None,
-        ).await.unwrap();
-
-        let user = collection.find_one(
-            doc! { "name": "Alice" },
-            None,
-        ).await.unwrap().unwrap();
-
-        assert_eq!(user.get_str("name").unwrap(), "Alice");
-    }
-}
-```
-
-### Shared Test Fixtures with once_cell
-
-```rust
-use once_cell::sync::Lazy;
-use testcontainers::{clients, images, Container};
-use std::sync::Mutex;
-
-// Shared PostgreSQL container for all tests
-static POSTGRES: Lazy<Mutex<Container<'static, images::postgres::Postgres>>> = Lazy::new(|| {
-    let docker = Box::leak(Box::new(clients::Cli::default()));
-    let container = docker.run(images::postgres::Postgres::default());
-    Mutex::new(container)
-});
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_user_creation() {
-        let postgres = POSTGRES.lock().unwrap();
-        let host_port = postgres.get_host_port_ipv4(5432);
-        // Use shared container
-    }
-
-    #[test]
-    fn test_user_deletion() {
-        let postgres = POSTGRES.lock().unwrap();
-        let host_port = postgres.get_host_port_ipv4(5432);
-        // Use same shared container
-    }
-}
-```
-
-### Decision Tree for Database Testing
-
-```
-Need to test database code?
-├─ Can database run in Docker? (PostgreSQL, MySQL, MongoDB, etc.)
-│  ├─ YES → Use docker-compose or testcontainers-rs ✅ BEST
-│  └─ NO → Continue to next step
-├─ Is there a test instance available? (Snowflake test account, etc.)
-│  ├─ YES → Ask dev team for credentials, use test instance ✅ GOOD
-│  └─ NO → Continue to next step
-├─ Can we use SQLite as substitute? (For SQL databases only)
-│  ├─ YES → Use SQLite :memory: for fast tests ✅ ACCEPTABLE
-│  └─ NO → Continue to next step
-└─ Must mock (proprietary SaaS, no local/test options)
-   └─ Use trait mock for external database client only ⚠️ LAST RESORT
-```
-
-### GitHub Actions CI Integration
-
-```yaml
-# .github/workflows/test.yml
-name: Tests
-
-on: [push, pull_request]
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-
-    services:
-      postgres:
-        image: postgres:15-alpine
-        env:
-          POSTGRES_USER: test
-          POSTGRES_PASSWORD: test
-          POSTGRES_DB: testdb
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-
-      redis:
-        image: redis:7-alpine
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 6379:6379
-
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-
-      - name: Run tests
-        run: cargo test
-        env:
-          DATABASE_URL: postgresql://test:test@localhost:5432/testdb
-          REDIS_URL: redis://localhost:6379
-```
-
-### Benefits of Docker-Based Testing
-
-**Why this matters**:
-1. **Real behavior** - Tests validate actual database/service behavior
-2. **Production parity** - Same services as production
-3. **Isolation** - Each test run gets fresh infrastructure
-4. **CI/CD friendly** - Easy to replicate in GitHub Actions/GitLab CI
-5. **No mocks** - Test actual integration, not mock configuration
-
-### When Mocking is Acceptable
-
-**ONLY mock when**:
-- ✅ Service is proprietary SaaS without Docker image (Snowflake, Salesforce API)
-- ✅ Service requires hardware/licensing unavailable in test (special GPU, enterprise license)
-- ✅ Service costs money per request (payment gateways in CI - but use test mode if available)
-
-**Before mocking, ask**:
-1. "Can I run this in Docker?"
-2. "Does the dev team have test instance credentials?"
-3. "Is there a free tier or test mode?"
-4. "Can I use a compatible open-source alternative?" (MinIO for S3, LocalStack for AWS)
-
----
-
-## Test Organization
-
-### Test Location Conventions
-
-**CRITICAL:** ALL tests must be placed in the `tests/` directory. NO unit tests in source files.
-
-#### Project-Wide Test Structure
-
-```
-project_root/
-├── Cargo.toml
-├── src/
-│   ├── lib.rs              # NO #[cfg(test)] modules here
-│   └── module.rs           # NO #[cfg(test)] modules here
-├── tests/                   # ALL tests go here
-│   ├── units/              # Unit tests (test individual functions/modules)
-│   │   ├── crate_name_module_name.rs
-│   │   ├── crate_name_parser_tests.rs
-│   │   └── crate_name_validation_tests.rs
-│   ├── integration/        # Integration tests (test public API workflows)
-│   │   ├── crate_name_api_workflow.rs
-│   │   ├── crate_name_authentication_flow.rs
-│   │   └── crate_name_error_handling.rs
-│   └── common/             # Shared test utilities
-│       └── mod.rs
-└── benches/                # Benchmarks at project root
-    └── crate_name/
-        ├── parsing.rs
-        └── serialization.rs
-```
-
-**For Workspace Projects**:
-```
-workspace_root/
-├── Cargo.toml              # Workspace manifest
-├── crates/
-│   ├── crate_a/
-│   │   ├── Cargo.toml
-│   │   ├── src/
-│   │   │   └── lib.rs      # NO tests here
-│   │   └── tests/          # Tests for crate_a
-│   │       ├── units/
-│   │       │   ├── crate_a_module1_tests.rs
-│   │       │   └── crate_a_module2_tests.rs
-│   │       └── integration/
-│   │           └── crate_a_api_tests.rs
-│   └── crate_b/
-│       ├── Cargo.toml
-│       ├── src/
-│       │   └── lib.rs      # NO tests here
-│       └── tests/          # Tests for crate_b
-│           ├── units/
-│           │   └── crate_b_logic_tests.rs
-│           └── integration/
-│               └── crate_b_workflow_tests.rs
-└── tests/                  # Workspace-level integration tests
-    ├── units/              # Cross-crate unit tests (rare)
-    └── integration/        # Cross-crate integration tests
-        └── workspace_cross_crate_tests.rs
-```
-
-#### 1. Unit Tests - In tests/units/ Directory
-
-**MANDATORY**: Unit tests go in `tests/units/` directory, NOT in source files.
-
-**File Naming Convention**: `{crate_name}_{what_is_being_tested}.rs`
-
-```rust
-// tests/units/myapp_parser_tests.rs
-//! Unit tests for parser module in myapp crate.
-//!
-//! Tests individual parser functions for correctness.
-
-use myapp::parser::{parse_input, validate_syntax};
-
-#[test]
-fn test_parse_input_valid_data() {
-    let result = parse_input("valid input");
-    assert!(result.is_ok());
-    assert_eq!(result.unwrap().len(), 2);
-}
-
-#[test]
-fn test_parse_input_empty_string() {
-    let result = parse_input("");
-    assert!(result.is_err());
-}
-
-#[test]
-fn test_validate_syntax_correct() {
-    assert!(validate_syntax("{ valid: true }").is_ok());
-}
-```
-
-```rust
-// tests/units/myapp_validation_tests.rs
-//! Unit tests for validation module in myapp crate.
-//!
-//! Tests email validation, input sanitization, etc.
-
-use myapp::validation::{validate_email, sanitize_input};
-
-#[test]
-fn test_validate_email_valid_formats() {
-    assert!(validate_email("test@example.com").is_ok());
-    assert!(validate_email("user+tag@domain.co.uk").is_ok());
-}
-
-#[test]
-fn test_validate_email_invalid_formats() {
-    assert!(validate_email("invalid").is_err());
-    assert!(validate_email("@example.com").is_err());
-}
-
-#[test]
-fn test_sanitize_input_removes_scripts() {
-    let input = "<script>alert('xss')</script>Hello";
-    let sanitized = sanitize_input(input);
-    assert!(!sanitized.contains("script"));
-    assert!(sanitized.contains("Hello"));
-}
-```
-
-#### 2. Integration Tests - In tests/integration/ Directory
-
-**File Naming Convention**: `{crate_name}_{workflow_description}.rs`
-
-```rust
-// tests/integration/myapp_api_workflow.rs
-//! Integration tests for myapp public API workflows.
-//!
-//! Tests complete user workflows using only public API.
-
-use myapp::{App, Config};
-
-#[test]
-fn test_full_user_registration_workflow() {
-    // Setup
-    let config = Config::default();
-    let app = App::new(config).expect("should create app");
-
-    // Execute workflow
-    let user = app.register_user("alice", "alice@example.com").unwrap();
-    assert_eq!(user.name, "alice");
-
-    let logged_in = app.login("alice", "password").unwrap();
-    assert_eq!(logged_in.id, user.id);
-}
-```
-
-```rust
-// tests/integration/myapp_authentication_flow.rs
-//! Integration tests for authentication flows in myapp.
-//!
-//! Tests login, logout, session management workflows.
-
-use myapp::{AuthService, SessionStore};
-
-#[test]
-fn test_login_logout_flow() {
-    let session_store = SessionStore::new();
-    let auth = AuthService::new(session_store);
-
-    let session = auth.login("user", "pass").unwrap();
-    assert!(auth.is_authenticated(&session.token));
-
-    auth.logout(&session.token).unwrap();
-    assert!(!auth.is_authenticated(&session.token));
-}
-```
-
-#### 3. Benchmarks - At Project Root
-
-```
-project_root/
-├── Cargo.toml
-└── benches/                    # Benchmarks at project root
-    └── crate_name/             # Organize by crate name
-        ├── parsing.rs
-        └── serialization.rs
-```
-
-```toml
-# Cargo.toml
-[[bench]]
-name = "crate_name_parsing"
-harness = false
-path = "benches/crate_name/parsing.rs"
-
-[dev-dependencies]
-criterion = { version = "0.5", features = ["html_reports"] }
-```
-
-#### Test File Naming Examples
-
-**Unit Tests** (`tests/units/`):
-- `foundation_core_http_client_tests.rs` - Tests for HTTP client in foundation_core
-- `foundation_core_dns_resolver_tests.rs` - Tests for DNS resolver
-- `myapp_parser_tests.rs` - Tests for parser module
-- `myapp_validation_logic_tests.rs` - Tests for validation logic
-- `user_service_repository_tests.rs` - Tests for repository in user_service crate
-
-**Integration Tests** (`tests/integration/`):
-- `foundation_core_http_workflow.rs` - HTTP client full workflow tests
-- `myapp_api_authentication_flow.rs` - Authentication workflow
-- `myapp_user_registration_flow.rs` - User registration workflow
-- `workspace_cross_service_communication.rs` - Cross-service integration
-
-#### Why This Structure?
-
-**Benefits:**
-- ✅ **Clear separation** - Tests are separate from production code
-- ✅ **Better organization** - Easy to find unit vs integration tests
-- ✅ **Parallel compilation** - Tests compile separately from main crate
-- ✅ **No pollution** - Source files stay clean without test code
-- ✅ **Consistent naming** - Easy to understand what each test file covers
-- ✅ **Scalable** - Works well for both single crates and workspaces
-
-**Migration from old style:**
-```rust
-// OLD ❌ - Tests in source files
-// src/parser.rs
-pub fn parse(input: &str) -> Result<Data> { /* ... */ }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_parse() { /* ... */ }
-}
-
-// NEW ✅ - Tests in dedicated files
-// src/parser.rs
-pub fn parse(input: &str) -> Result<Data> { /* ... */ }
-// NO tests here!
-
-// tests/units/myapp_parser_tests.rs
-use myapp::parser::parse;
-
-#[test]
-fn test_parse_valid_input() { /* ... */ }
-
-#[test]
-fn test_parse_empty_input() { /* ... */ }
-```
-
----
-
-## Feature-Gated Tests
-
-### Use Module-Level Gates, Not Individual Attributes
-
-**MANDATORY:** Group feature-specific tests into modules with `#[cfg(...)]` at module level.
-
-```rust
-// BAD ❌ - Individual test attributes scattered
-#[cfg(test)]
-mod tests {
-    #[test]
     #[cfg(not(feature = "std"))]
-    fn test_spinlock_basic() { }
+    mod no_std_tests { /* ... */ }
 
-    #[test]
-    #[cfg(not(feature = "std"))]
-    fn test_spinlock_contention() { }
-
-    #[test]
     #[cfg(feature = "std")]
-    fn test_std_mutex() { }
-}
-
-// GOOD ✅ - Feature-gated test modules
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    // Common tests for all configurations
-    #[test]
-    fn test_basic_functionality() {
-        // Works with both std and no_std
-    }
-
-    // No-std specific tests grouped together
-    #[cfg(not(feature = "std"))]
-    mod nostd_tests {
-        use super::*;
-
-        #[test]
-        fn test_spinlock_basic() {
-            // SpinLock only available in no_std
-        }
-
-        #[test]
-        fn test_spinlock_contention() { }
-    }
-
-    // Std-specific tests grouped together
-    #[cfg(feature = "std")]
-    mod std_tests {
-        use super::*;
-
-        #[test]
-        fn test_std_mutex_threading() {
-            // Test with real OS threads
-        }
-    }
+    mod std_tests { /* ... */ }
 }
 ```
 
-**Benefits:**
-- ✅ Clear organization - see which tests run in which configuration
-- ✅ Single location for feature changes
-- ✅ Better test output and maintainability
-- ✅ Feature-specific imports scoped to relevant module
+📖 **Read when implementing:** [`feature-gated-tests.md`](examples/feature-gated-tests.md)
 
----
+### When Testing Properties (Not Specific Values)
 
-## Async Test Isolation
-
-**MANDATORY:** See [Async Test Isolation](../async/skill.md#3-async-test-isolation---mandatory) in rust-with-async-code for complete patterns.
-
-**Quick reference:** Always use `flavor = "current_thread"` for async tests to prevent test isolation issues with global state.
-
----
-
-## Property-Based Testing (Recommended)
-
-**Use `proptest` to test invariants across hundreds of generated inputs automatically.**
-
-### Why Property-Based Testing?
-
-Property-based testing is **highly recommended** for:
-- ✅ Testing invariants (properties that should always hold)
-- ✅ Finding edge cases you didn't think of
-- ✅ Serialization/deserialization roundtrips
-- ✅ Parsers and data transformations
-- ✅ Mathematical operations (commutativity, associativity, etc.)
-- ✅ State machines and protocols
-
-### Basic Usage
+Use property-based testing for:
+- Roundtrip properties (serialize/deserialize)
+- Invariants (sorted output stays sorted)
+- Mathematical properties (commutative, associative)
 
 ```rust
 use proptest::prelude::*;
 
 proptest! {
     #[test]
-    fn test_valid_inputs_produce_valid_outputs(
-        name in "[a-zA-Z]+",
-        value in 0i32..100,
-    ) {
-        let user = User::new(&name);
-        prop_assert!(user.is_ok());
-
-        let result = process_value(user.unwrap(), value);
-        prop_assert!(result.is_ok());
-        prop_assert!(result.unwrap() >= 0);
-    }
-
-    #[test]
-    fn test_idempotency(input in "[a-zA-Z]+") {
-        let first = compute_hash(&input);
-        let second = compute_hash(&input);
-        prop_assert_eq!(first, second,
-            "Hash computation should be deterministic");
+    fn test_roundtrip(data in any::<MyData>()) {
+        let json = to_json(&data).unwrap();
+        let parsed = from_json(&json).unwrap();
+        assert_eq!(data, parsed);
     }
 }
 ```
 
-### Common Property Testing Patterns
-
-**Roundtrip Properties** (serialization):
-```rust
-proptest! {
-    #[test]
-    fn test_json_roundtrip(user in any::<User>()) {
-        let json = serde_json::to_string(&user)?;
-        let decoded: User = serde_json::from_str(&json)?;
-        prop_assert_eq!(user, decoded);
-    }
-}
-```
-
-**Invariant Properties** (never panic):
-```rust
-proptest! {
-    #[test]
-    fn test_parser_never_panics(input in ".*") {
-        // Should never panic, regardless of input
-        let _ = parse_input(&input);
-    }
-}
-```
-
-**Relationship Properties** (commutativity):
-```rust
-proptest! {
-    #[test]
-    fn test_addition_commutative(a in 0i32..1000, b in 0i32..1000) {
-        prop_assert_eq!(add(a, b), add(b, a));
-    }
-}
-```
-
-### When to Use Property-Based Testing
-
-| Use Case | Example Property |
-|----------|------------------|
-| Serialization | `deserialize(serialize(x)) == x` |
-| Parsing | `parse` never panics on any input |
-| Encoding | `decode(encode(x)) == x` |
-| Sorting | Output is sorted and contains same elements |
-| Hashing | `hash(x) == hash(x)` (deterministic) |
-| Reversible operations | `reverse(reverse(x)) == x` |
-
-### Dependencies
-
-Add to `Cargo.toml`:
-```toml
-[dev-dependencies]
-proptest = "1.4"
-```
+📖 **Read when implementing:** [`property-based-testing-basics.md`](examples/property-based-testing-basics.md) (quick), [`intro-to-property-based-testing.md`](examples/intro-to-property-based-testing.md) (comprehensive)
 
 ---
 
-## Common Pitfalls
+## ⚠️ Common Mistakes (Read When Issues Occur)
 
 ### Pitfall 1: Testing Implementation Details
-
-```rust
-// BAD ❌ - Tests internal state
-let internal_state = obj.get_internal_map();
-assert_eq!(*internal_state.last_key(), "expected");
-
-// GOOD ✅ - Tests observable behavior
-obj.process("input");
-assert!(obj.result().contains("output"));
-```
+❌ Testing internal state → ✅ Test observable behavior
 
 ### Pitfall 2: No Error Path Testing
+❌ Only success cases → ✅ Test both success and failure
 
-```rust
-// BAD ❌ - Only tests success path
-#[test]
-fn test_valid_input() {
-    assert!(process(valid_data).is_ok());
-}
+### Pitfall 3: Missing Initialization
+❌ Tests pass for wrong reasons → ✅ Proper setup before each test
 
-// GOOD ✅ - Tests both paths
-#[test]
-fn test_valid_input() {
-    assert!(process(valid_data).is_ok());
-}
+### Pitfall 4: Muted Variables
+❌ Calculate but don't assert → ✅ Explicit assertions on all results
 
-#[test]
-fn test_invalid_input() {
-    assert_eq!(process(""), Err(Error::EmptyInput));
-    assert_eq!(process(too_long), Err(Error::InputTooLong));
-}
-```
-
-### Pitfall 3: Missing Initialization in Tests
-
-```rust
-// BAD ❌ - Pool never initialized
-#[test]
-fn test_threaded_operation() {
-    let mut executor = ThreadPool::new(4);
-    // MISSING: No initialization call!
-    assert!(executor.is_ready());
-}
-
-// GOOD ✅ - Properly initializes and validates
-#[test]
-fn test_threaded_operation() {
-    let mut thread_pool = ExecutorPool::with_capacity(4);
-
-    // MANDATORY: Initialize before testing
-    assert!(thread_pool.initialize().is_ok(),
-        "Pool must initialize successfully");
-
-    // Now validate actual behavior
-    assert!(thread_pool.is_ready());
-}
-```
+📖 **Read when debugging:** [`common-pitfalls.md`](examples/common-pitfalls.md)
 
 ---
 
-## Test Helper Functions
-
-Create reusable helpers for common test setup:
-
-```rust
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    fn create_test_user(name: &str) -> User {
-        User::new(name, format!("{}@test.com", name))
-            .expect("should create test user")
-    }
-
-    fn assert_valid_result(result: &Result<Data>) {
-        assert!(result.is_ok(), "result should be Ok");
-        let data = result.as_ref().unwrap();
-        assert!(!data.is_empty(), "data should not be empty");
-    }
-
-    #[test]
-    fn test_multiple_users() {
-        let alice = create_test_user("alice");
-        let bob = create_test_user("bob");
-
-        assert_ne!(alice.id(), bob.id());
-    }
-}
-```
-
----
-
-## Running Tests
+## 🚀 Running Tests
 
 ```bash
-# Run all tests (unit + integration + doc tests)
-cargo test
+# Basic
+cargo test                    # All tests
+cargo test test_name          # Specific test
+cargo test -p crate_name      # Specific package
 
-# Run only unit tests
-cargo test --lib
+# Features
+cargo test --all-features           # All features
+cargo test --no-default-features    # no_std
+cargo test --features "feature"     # Specific feature
 
-# Run only integration tests
-cargo test --test '*'
+# Ignored tests (network/slow)
+cargo test -- --ignored             # Only ignored
+cargo test -- --include-ignored     # All tests
 
-# Run specific integration test file
-cargo test --test api_tests
-
-# Run only doc tests
-cargo test --doc
-
-# Run with specific feature flags
-cargo test --features "std"
-cargo test --no-default-features
-
-# Run benchmarks
-cargo bench
-cargo bench --bench crate_name_parsing
+# Debug
+cargo test -- --nocapture           # Show output
+cargo test -- --test-threads=1      # Sequential
 ```
 
----
-
-## Valid Test Requirements
-
-Tests are considered valid when they:
-
-- ✅ Compile with `cargo test`
-- ✅ Have explicit assertions on outputs
-- ✅ Test both valid and invalid inputs
-- ✅ Test error paths, not just success
-- ✅ Don't test implementation details
-- ✅ Are properly isolated (use `current_thread` for async)
-- ✅ Have clear, descriptive names
-- ✅ Include documentation comments for complex tests
+📖 **Complete reference:** [`running-tests.md`](examples/running-tests.md)
 
 ---
 
-## Learning Log
+## ✅ Test Requirements Checklist
 
-### 2026-02-24: Test Organization Revamp - Tests Directory Only
+Every test must have:
 
-**Issue:** Unit tests scattered in source files with `#[cfg(test)] mod tests` made code harder to read and maintain.
+- [ ] Clear name describing what is tested
+- [ ] Explicit assertions (no muted variables)
+- [ ] Both success AND failure paths tested
+- [ ] Edge cases covered (empty, max, boundary)
+- [ ] Real dependencies (no mocks for our code)
+- [ ] Proper setup/initialization
+- [ ] Clear error messages in assertions
 
-**Learning:** Completely restructured test organization:
+**Forbidden:**
 
-**New Standard - ALL Tests in tests/ Directory:**
-1. **tests/units/** - Unit tests for individual functions/modules
-2. **tests/integration/** - Integration tests for workflows
-3. **NO MORE** `#[cfg(test)] mod tests` in source files
-4. **File naming**: `{crate_name}_{what_is_tested}.rs`
-
-**Benefits:**
-- Clear separation of production code and tests
-- Better organization and discoverability
-- Parallel compilation of tests
-- Cleaner source files
-- Consistent naming conventions
-- Scales well for workspaces
-
-**Migration Example:**
-```rust
-// OLD ❌
-// src/parser.rs with inline tests
-#[cfg(test)] mod tests { /* ... */ }
-
-// NEW ✅
-// src/parser.rs - clean, no tests
-// tests/units/myapp_parser_tests.rs - dedicated test file
-```
-
-**Workspace Structure:**
-- Each crate has `tests/units/` and `tests/integration/`
-- Workspace root can have cross-crate integration tests
-- Test utilities in `tests/common/`
-
-**New Standard:** ALL Rust tests must follow this directory-based organization. No exceptions.
-
-### 2026-02-02: Docker/Docker-Compose for Real Infrastructure
-
-**Issue:** Need to emphasize Docker/docker-compose for spawning real infrastructure over mocking.
-
-**Learning:** Added comprehensive "Docker/Docker-Compose for Real Infrastructure Testing" section:
-
-**The Infrastructure Testing Hierarchy:**
-1. **Docker/docker-compose** (FIRST) - Spawn real infrastructure locally
-2. **Test instance credentials** (SECOND) - Use provided test environments
-3. **Mock** (LAST RESORT) - Only when infrastructure cannot run locally
-
-**Complete coverage of:**
-- docker-compose.test.yml examples (PostgreSQL, Redis)
-- testcontainers-rs for programmatic container management
-- Automated test scripts with Docker cleanup
-- Shared test fixtures with once_cell
-- GitHub Actions CI integration with service containers
-- Decision tree for database testing
-
-**Examples added:**
-- PostgreSQL with testcontainers-rs
-- Redis with testcontainers-rs
-- MongoDB with testcontainers-rs (async)
-- Shared container fixtures
-- Complete test infrastructure patterns
-
-**When mocking is acceptable:**
-- Proprietary SaaS without Docker (Snowflake, Salesforce)
-- Services requiring special hardware/licenses
-- **Always ask**: "Can I run this in Docker? Do we have test instance credentials?"
-
-**New Standard:** Prefer Docker/docker-compose for all infrastructure testing. Only mock when truly impossible to run locally.
-
-### 2026-01-28: Skill Restructuring
-
-**Issue:** Original skill.md was 1059 lines with extensive duplication.
-
-**Learning:** Consolidated feature-gating patterns, removed duplicated test organization examples, streamlined into focused sections.
-
-**New Standard:** Test skill reduced to ~450 lines focusing on core patterns and anti-patterns.
-
-### 2026-01-27: False Positive Test Prevention
-
-**Issue:** Tests creating variables without validation were passing CI but catching no bugs.
-
-**Learning:** Every test must have at least one explicit assertion validating behavior.
-
-**Standard:** All tests must validate actual outputs, not just execute code paths.
+- ❌ Tests in source files (`src/`)
+- ❌ Empty test bodies or `assert!(true)`
+- ❌ Mocking our own HTTP/database/services
+- ❌ Tests without error path validation
 
 ---
 
-## Examples
+## 📖 When to Read Example Files
 
-See `examples/` directory for comprehensive guides:
+**Always read first:**
+1. ⭐ [`test-organization.md`](examples/test-organization.md) - Test file structure (MUST READ)
 
-- `intro-to-property-based-testing.md` - **Complete beginner to advanced guide** on property-based testing with proptest, including exercises and real-world examples
+**Read when you need to:**
 
-## Related Skills
-
-- [Rust Clean Implementation](../implementation/skill.md) - For implementation patterns
-- [Rust with Async Code](../async/skill.md) - For async testing patterns
+2. **Writing tests:** [`three-test-validations.md`](examples/three-test-validations.md) - Valid/invalid/edge pattern
+3. **Mocking decisions:** [`integration-theater-vs-real-testing.md`](examples/integration-theater-vs-real-testing.md) - Real vs mock examples
+4. **HTTP testing:** [`http-testing-with-project-types.md`](examples/http-testing-with-project-types.md) - Use project's types
+5. **TCP testing:** [`tcp-testing-stdlib.md`](examples/tcp-testing-stdlib.md) - Pure stdlib approach
+6. **Database testing:** [`testcontainers-examples.md`](examples/testcontainers-examples.md) - PostgreSQL/Redis/MongoDB
+7. **Docker setup:** [`docker-for-testing.md`](examples/docker-for-testing.md) - docker-compose + CI
+8. **Dependencies:** [`test-dependency-decisions.md`](examples/test-dependency-decisions.md) - Decision trees
+9. **Feature flags:** [`feature-gated-tests.md`](examples/feature-gated-tests.md) - Module-level gates
+10. **Property testing:** [`property-based-testing-basics.md`](examples/property-based-testing-basics.md) - Quick patterns
+11. **Debugging:** [`common-pitfalls.md`](examples/common-pitfalls.md) - Common mistakes
+12. **Running tests:** [`running-tests.md`](examples/running-tests.md) - Cargo commands
 
 ---
 
-*Last Updated: 2026-01-28*
-*Version: 3.1-approved*
+## 🔗 Related Skills
+
+- [rust-clean-implementation](../implementation/skill.md) - Implementation patterns and error handling
+- [rust-with-async-code](../async/skill.md) - Async code patterns and runtime management

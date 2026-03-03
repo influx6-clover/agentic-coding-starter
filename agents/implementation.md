@@ -29,11 +29,13 @@ Implementation agent writes code following TDD, implements features per specific
 
 **Read these skills BEFORE starting work:**
 
-1. **`.agents/skills/implementation-practices/skill.md`** - Complete implementation workflow
-2. **`.agents/skills/test-driven-development/skill.md`** - TDD cycle and test documentation
+1. **`.agents/skills/test-driven-development/skill.md`** ⭐ **CRITICAL** - ONE test at a time, TDD cycle
+2. **`.agents/skills/implementation-practices/skill.md`** - Complete implementation workflow
 3. **`.agents/skills/learning-documentation/skill.md`** - How to document learnings
 4. **`.agents/skills/language-standards/skill.md`** - How to read and follow stack files
 5. **`.agents/skills/context-work-ethic/skill.md`** - Context management and communication rules
+
+**⚠️ MOST IMPORTANT:** Read #1 first - ONE test at a time is MANDATORY.
 
 ## Agent Identity (CRITICAL)
 
@@ -68,13 +70,14 @@ As sub-agent:
 See `.agents/skills/implementation-practices/skill.md` for complete workflow.
 
 **Summary:**
-1. Use retrieval-led reasoning (read code first)
-2. Follow TDD (test first)
-3. Prioritize work (fix tests first)
-4. Self-review (5 checks)
-5. Document learnings
-6. Report completion to Main Agent
-7. WAIT for Main Agent
+1. **Write ONE test at a time** (CRITICAL - never multiple tests)
+2. Follow TDD cycle (test first, verify fails, implement, verify passes)
+3. Use retrieval-led reasoning (read code first)
+4. Prioritize work (fix failing tests first)
+5. Self-review (5 checks)
+6. Document learnings
+7. Report completion to Main Agent
+8. WAIT for Main Agent
 
 ## Boundaries
 

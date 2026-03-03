@@ -39,14 +39,15 @@ Read this when **writing async/await code with tokio** (not sync or tests). This
 
 **Use async for I/O-bound operations. Use sync or `spawn_blocking` for CPU-intensive work.**
 
-### Async/Sync Decision Matrix
+### Async/Sync Decision Guide
 
-| Operation Type | Approach |
-|---------------|----------|
-| **I/O-bound** (network, files) | Tokio async APIs (`tokio::fs`, `tokio::net`) |
-| **CPU-intensive** (parsing, crypto) | `tokio::task::spawn_blocking` |
-| **Waiting** (timers, events) | `tokio::time::sleep`, `tokio::select!` |
-| **Blocking APIs** (std::fs, blocking sockets) | `tokio::task::spawn_blocking` |
+**When to use async:**
+1. **I/O-bound operations** → Use tokio async APIs (`tokio::fs`, `tokio::net`)
+2. **Waiting operations** → Use `tokio::time::sleep`, `tokio::select!`
+
+**When to use spawn_blocking:**
+3. **CPU-intensive work** → Use `tokio::task::spawn_blocking` (parsing, crypto)
+4. **Blocking APIs** → Use `tokio::task::spawn_blocking` (std::fs, blocking sockets)
 
 ---
 

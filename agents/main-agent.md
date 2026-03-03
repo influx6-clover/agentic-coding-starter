@@ -67,6 +67,8 @@ Main Agent is the orchestrator that coordinates all work, spawns specialized sub
 
 ### Phase 2: Implementation Coordination
 1. Spawn implementation agents (they will read start.md and generate compacted.md themselves)
+   - ⚠️ **Remind:** ONE test at a time (never multiple tests)
+   - Implementation agents read TDD skill first
 2. Wait for completion reports
 3. DO NOT commit yet
 

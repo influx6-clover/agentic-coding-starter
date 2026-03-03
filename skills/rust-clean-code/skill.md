@@ -29,20 +29,25 @@ All sub-skills are approved and ready for use. Each can be read independently ba
 
 ## Which Sub-Skill Should I Read?
 
-Choose the appropriate sub-skill based on your current task:
+**Choose based on your current task:**
 
-| Task Type | Sub-Skill | Path |
-|-----------|-----------|------|
-| **Setting up a new Rust project** | Directory and Configuration | [`directory-and-configuration/skill.md`](directory-and-configuration/skill.md) |
-| **Installing Rust toolchain** | Directory and Configuration | [`directory-and-configuration/skill.md`](directory-and-configuration/skill.md) |
-| **Writing implementation code** | Clean Implementation | [`implementation/skill.md`](implementation/skill.md) |
-| **Documenting code** | Clean Implementation | [`implementation/skill.md`](implementation/skill.md) |
-| **Error handling patterns** | Clean Implementation | [`implementation/skill.md`](implementation/skill.md) |
-| **Writing or reviewing tests** | Testing Excellence | [`testing/skill.md`](testing/skill.md) |
-| **Property-based testing** | Testing Excellence | [`testing/skill.md`](testing/skill.md) |
-| **Working with async/await** | Async Code | [`async/skill.md`](async/skill.md) |
-| **Using Tokio runtime** | Async Code | [`async/skill.md`](async/skill.md) |
-| **Non-blocking I/O patterns** | Async Code | [`async/skill.md`](async/skill.md) |
+**Project Setup & Configuration:**
+1. **Setting up new project** → [`directory-and-configuration/skill.md`](directory-and-configuration/skill.md)
+2. **Installing Rust toolchain** → [`directory-and-configuration/skill.md`](directory-and-configuration/skill.md)
+
+**Writing Code:**
+3. **Implementing features** → [`implementation/skill.md`](implementation/skill.md)
+4. **Documenting code** → [`implementation/skill.md`](implementation/skill.md)
+5. **Error handling** → [`implementation/skill.md`](implementation/skill.md)
+
+**Testing:**
+6. **Writing/reviewing tests** → [`testing/skill.md`](testing/skill.md)
+7. **Property-based testing** → [`testing/skill.md`](testing/skill.md)
+
+**Async Programming:**
+8. **Working with async/await** → [`async/skill.md`](async/skill.md)
+9. **Using Tokio runtime** → [`async/skill.md`](async/skill.md)
+10. **Non-blocking I/O** → [`async/skill.md`](async/skill.md)
 
 ## Sub-Skills Reference
 
