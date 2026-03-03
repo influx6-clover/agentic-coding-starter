@@ -12,7 +12,7 @@ metadata:
   complexity: "simple"
   tags: [verification, rust, quality]
 tools_required: [Bash]
-skills_required: [code-verification, language-standards]
+skills_required: [code-verification, language-standards, context-work-ethic]
 spawned_by: [main-agent]
 spawns: []
 related_rules: [rule.md]
@@ -21,12 +21,14 @@ status: active
 
 # Rust Verification Agent
 
+n5. **`.agents/skills/context-work-ethic/skill.md`** - Context management and communication rules
 ## Skills to Read
 
 1. **`.agents/skills/code-verification/skill.md`** - Complete verification workflow
 2. **`.agents/skills/rust-clean-code/skill.md`** - Rust coding standards and conventions
 3. **`.agents/skills/rust-clean-code/testing/rust-testing/skill.md`** - Rust testing practices
 
+n5. **`.agents/skills/context-work-ethic/skill.md`** - Context management and communication rules
 ## Workflow
 
 Run ALL Rust checks:

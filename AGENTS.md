@@ -1,8 +1,8 @@
 ---
 purpose: Central entry point for AI agent configuration
 description: Simplified agent system with skill-based architecture
-version: 6.0.0
-last_updated: 2026-02-27
+version: 6.1.0
+last_updated: 2026-03-02
 ---
 
 # Agent Configuration
@@ -51,6 +51,21 @@ Main Agent provides documentation path when spawning. If not provided, request i
 3. Checking project conventions
 4. Following discovered patterns
 
+## Context Management
+
+**When approaching 800K tokens (80% usage)**:
+
+1. Write summary to PROGRESS.md (what's done, what's next)
+2. Update compacted.md with compressed state
+3. Clear context, reload from saved files
+4. Continue work
+
+**PROGRESS.md must include**:
+- Completed work list
+- Files modified with specific changes
+- Remaining tasks (numbered steps)
+- Next immediate action
+
 ---
 
 ## Directory Structure
@@ -68,6 +83,7 @@ documentation/          # Read for modules you're changing
 
 ---
 
-_Version: 6.0.0 - Last Updated: 2026-02-27_
+_Version: 6.1.0 - Last Updated: 2026-03-02_
 
 _Simplified architecture: rule.md → agents → skills_
+_Added: Context Management guidelines for token optimization_

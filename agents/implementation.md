@@ -12,7 +12,7 @@ metadata:
   complexity: "moderate"
   tags: [implementation, tdd, coding, sub-agent]
 tools_required: [Read, Write, Edit, Glob, Grep, Bash]
-skills_required: [implementation-practices, test-driven-development, learning-documentation, language-standards]
+skills_required: [implementation-practices, test-driven-development, learning-documentation, language-standards, context-work-ethic]
 spawned_by: [main-agent]
 spawns: []
 related_rules: [rule.md]
@@ -33,6 +33,7 @@ Implementation agent writes code following TDD, implements features per specific
 2. **`.agents/skills/test-driven-development/skill.md`** - TDD cycle and test documentation
 3. **`.agents/skills/learning-documentation/skill.md`** - How to document learnings
 4. **`.agents/skills/language-standards/skill.md`** - How to read and follow stack files
+5. **`.agents/skills/context-work-ethic/skill.md`** - Context management and communication rules
 
 ## Agent Identity (CRITICAL)
 

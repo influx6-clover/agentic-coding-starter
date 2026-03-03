@@ -12,7 +12,7 @@ metadata:
   complexity: "simple"
   tags: [verification, generic, base]
 tools_required: [Bash, Read, Grep, Glob]
-skills_required: [code-verification, language-standards]
+skills_required: [code-verification, language-standards, context-work-ethic]
 spawned_by: [main-agent]
 spawns: []
 related_rules: [rule.md]
@@ -21,6 +21,7 @@ status: active
 
 # Verification Agent - Generic Documentation
 
+n5. **`.agents/skills/context-work-ethic/skill.md`** - Context management and communication rules
 ## Overview
 
 This document defines the **common verification workflow** shared by ALL language-specific verification agents (Rust, JavaScript, Python, etc.).
@@ -30,11 +31,13 @@ This document defines the **common verification workflow** shared by ALL languag
 - [javascript-verification.md](./javascript-verification.md) - JavaScript/TypeScript verification
 - [python-verification.md](./python-verification.md) - Python verification
 
+n5. **`.agents/skills/context-work-ethic/skill.md`** - Context management and communication rules
 ## Skills to Read
 
 1. **`.agents/skills/code-verification/skill.md`** - Complete verification workflow
 2. **`.agents/skills/language-standards/skill.md`** - Stack file standards
 
+n5. **`.agents/skills/context-work-ethic/skill.md`** - Context management and communication rules
 ## Verification Workflow
 
 **All verification agents MUST:**
@@ -43,6 +46,7 @@ This document defines the **common verification workflow** shared by ALL languag
 3. Run standard language checks
 4. Report PASS/FAIL to Main Agent
 
+n5. **`.agents/skills/context-work-ethic/skill.md`** - Context management and communication rules
 ## Critical Rules
 
 - ✅ ONLY Main Agent can spawn verification agents

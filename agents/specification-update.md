@@ -12,7 +12,7 @@ metadata:
   complexity: "simple"
   tags: [utility, specification, tracking]
 tools_required: [Read, Write, Edit]
-skills_required: [specifications-management]
+skills_required: [specifications-management, context-work-ethic]
 spawned_by: [main-agent]
 spawns: []
 related_rules: [rule.md]
@@ -21,10 +21,12 @@ status: active
 
 # Specification Update Agent
 
+n5. **`.agents/skills/context-work-ethic/skill.md`** - Context management and communication rules
 ## Skills to Read
 
 1. **`.agents/skills/specifications-management/skill.md`** - Complete specification lifecycle
 
+n5. **`.agents/skills/context-work-ethic/skill.md`** - Context management and communication rules
 ## Workflow
 
 ### When Verification PASSES:

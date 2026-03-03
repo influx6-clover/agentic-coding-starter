@@ -12,7 +12,7 @@ metadata:
   complexity: "complex"
   tags: [main-agent, orchestration, coordination, verification]
 tools_required: [Bash, Git]
-skills_required: [main-agent-orchestration, code-verification, agent-documentation, skills-management, context-compaction, specifications-management, dangerous-operations]
+skills_required: [main-agent-orchestration, code-verification, agent-documentation, skills-management, context-compaction, specifications-management, dangerous-operations, context-work-ethic]
 spawned_by: [user]
 spawns: [implementation, verification, specification-update, documentation, review]
 related_rules: [rule.md]
@@ -36,6 +36,7 @@ Main Agent is the orchestrator that coordinates all work, spawns specialized sub
 5. **`.agents/skills/context-compaction/skill.md`** - How to generate compacted context files
 6. **`.agents/skills/specifications-management/skill.md`** - How to create and manage specifications
 7. **`.agents/skills/dangerous-operations/skill.md`** - How to handle dangerous operations safely
+8. **`.agents/skills/context-work-ethic/skill.md`** - Context management and communication rules
 
 ## Capabilities
 

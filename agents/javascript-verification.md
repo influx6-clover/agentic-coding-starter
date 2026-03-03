@@ -12,7 +12,7 @@ metadata:
   complexity: "simple"
   tags: [verification, javascript, typescript, quality]
 tools_required: [Bash]
-skills_required: [code-verification, language-standards]
+skills_required: [code-verification, language-standards, context-work-ethic]
 spawned_by: [main-agent]
 spawns: []
 related_rules: [rule.md]
@@ -21,10 +21,12 @@ status: active
 
 # JavaScript/TypeScript Verification Agent
 
+n5. **`.agents/skills/context-work-ethic/skill.md`** - Context management and communication rules
 ## Skills to Read
 
 1. **`.agents/skills/code-verification/skill.md`** - Complete verification workflow
 
+n5. **`.agents/skills/context-work-ethic/skill.md`** - Context management and communication rules
 ## Workflow
 
 Run ALL JavaScript/TypeScript checks:

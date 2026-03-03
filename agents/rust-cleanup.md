@@ -12,7 +12,7 @@ metadata:
   complexity: "simple"
   tags: [utility, cleanup, rust, formatting, linting]
 tools_required: [Bash, Read, Edit, Grep, Glob]
-skills_required: [language-standards, implementation-practices]
+skills_required: [language-standards, implementation-practices, context-work-ethic]
 spawned_by: [main-agent]
 spawns: []
 related_rules: [rule.md]
@@ -21,15 +21,18 @@ status: active
 
 # Rust Cleanup Agent
 
+n5. **`.agents/skills/context-work-ethic/skill.md`** - Context management and communication rules
 ## Skills to Read
 
 1. **`.agents/skills/language-standards/skill.md`** - Rust stack conventions
 2. **`.agents/skills/implementation-practices/skill.md`** - Retrieval-led reasoning
 
+n5. **`.agents/skills/context-work-ethic/skill.md`** - Context management and communication rules
 ## Purpose
 
 Specialized utility agent for fixing code quality issues in Rust projects. **Does NOT implement new features.**
 
+n5. **`.agents/skills/context-work-ethic/skill.md`** - Context management and communication rules
 ## Critical Rules
 
 - ✅ ONLY Main Agent can spawn cleanup agents
@@ -40,6 +43,7 @@ Specialized utility agent for fixing code quality issues in Rust projects. **Doe
 - ❌ **DO NOT** modify business logic
 - ❌ **DO NOT** commit directly
 
+n5. **`.agents/skills/context-work-ethic/skill.md`** - Context management and communication rules
 ## Workflow
 
 ### 1. Initial Assessment
@@ -67,6 +71,7 @@ Specialized utility agent for fixing code quality issues in Rust projects. **Doe
 
 ### 5. Reporting
 ```
+n5. **`.agents/skills/context-work-ethic/skill.md`** - Context management and communication rules
 ## Cleanup Report
 
 ### Fixed Automatically ✅

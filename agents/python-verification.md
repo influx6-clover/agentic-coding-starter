@@ -12,7 +12,7 @@ metadata:
   complexity: "simple"
   tags: [verification, python, quality]
 tools_required: [Bash]
-skills_required: [code-verification, language-standards]
+skills_required: [code-verification, language-standards, context-work-ethic]
 spawned_by: [main-agent]
 spawns: []
 related_rules: [rule.md]
@@ -21,12 +21,14 @@ status: active
 
 # Python Verification Agent
 
+n5. **`.agents/skills/context-work-ethic/skill.md`** - Context management and communication rules
 ## Skills to Read
 
 1. **`.agents/skills/code-verification/skill.md`** - Complete verification workflow
 2. **`.agents/skills/python-clean-code/skill.md`** - Python coding standards and conventions
 3. **`.agents/skills/python-testing-excellence/skill.md`** - Python testing practices
 
+n5. **`.agents/skills/context-work-ethic/skill.md`** - Context management and communication rules
 ## Workflow
 
 Run ALL Python checks:

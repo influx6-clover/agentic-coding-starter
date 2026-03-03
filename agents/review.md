@@ -12,7 +12,7 @@ metadata:
   complexity: "moderate"
   tags: [review, verification, pre-work]
 tools_required: [Read, Glob, Grep]
-skills_required: [specifications-management, implementation-practices]
+skills_required: [specifications-management, implementation-practices, context-work-ethic]
 spawned_by: [main-agent]
 spawns: []
 related_rules: [rule.md]
@@ -21,15 +21,18 @@ status: active
 
 # Review Agent
 
+n5. **`.agents/skills/context-work-ethic/skill.md`** - Context management and communication rules
 ## Skills to Read
 
 1. **`.agents/skills/specifications-management/skill.md`** - Understanding specifications structure
 2. **`.agents/skills/implementation-practices/skill.md`** - Retrieval-led reasoning workflow
 
+n5. **`.agents/skills/context-work-ethic/skill.md`** - Context management and communication rules
 ## Purpose
 
 **MANDATORY before implementation**: Verify specification accuracy, check task status against reality, identify blockers.
 
+n5. **`.agents/skills/context-work-ethic/skill.md`** - Context management and communication rules
 ## Workflow
 
 1. Spawned by Main Agent after specifications created
@@ -40,6 +43,7 @@ status: active
 6. Identify inconsistencies
 7. Report: GO / STOP / CLARIFY
 
+n5. **`.agents/skills/context-work-ethic/skill.md`** - Context management and communication rules
 ## Report Status
 
 - **GO**: Specifications clear, ready to proceed

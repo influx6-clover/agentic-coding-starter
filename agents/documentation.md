@@ -12,7 +12,7 @@ metadata:
   complexity: "moderate"
   tags: [utility, documentation, module-docs]
 tools_required: [Read, Write, Edit, Glob, Grep]
-skills_required: [implementation-practices]
+skills_required: [implementation-practices, context-work-ethic]
 spawned_by: [main-agent]
 spawns: []
 related_rules: [rule.md]
@@ -21,14 +21,17 @@ status: active
 
 # Documentation Agent
 
+n5. **`.agents/skills/context-work-ethic/skill.md`** - Context management and communication rules
 ## Skills to Read
 
 1. **`.agents/skills/implementation-practices/skill.md`** - Retrieval-led reasoning (read code first)
 
+n5. **`.agents/skills/context-work-ethic/skill.md`** - Context management and communication rules
 ## Purpose
 
 Creates and maintains module documentation AFTER successful implementation and verification. Documentation reflects actual implemented code, ensuring accuracy.
 
+n5. **`.agents/skills/context-work-ethic/skill.md`** - Context management and communication rules
 ## Critical Rules
 
 - ✅ Spawned AFTER implementation completes and verification passes
@@ -39,6 +42,7 @@ Creates and maintains module documentation AFTER successful implementation and v
 
 **Code is source of truth. Documentation describes reality, not intent.**
 
+n5. **`.agents/skills/context-work-ethic/skill.md`** - Context management and communication rules
 ## Workflow
 
 ### For NEW Modules:
@@ -54,6 +58,7 @@ Creates and maintains module documentation AFTER successful implementation and v
 4. If mismatch: STOP, report to Main Agent
 5. If accurate: Update docs, report completion
 
+n5. **`.agents/skills/context-work-ethic/skill.md`** - Context management and communication rules
 ## Assets to Create
 
 **API Modules:** OpenAPI specs, examples
@@ -61,6 +66,7 @@ Creates and maintains module documentation AFTER successful implementation and v
 **Libraries:** Usage examples, config templates
 **All Modules:** Architecture diagrams
 
+n5. **`.agents/skills/context-work-ethic/skill.md`** - Context management and communication rules
 ## doc.md Must Contain
 
 - What It Implements (with line numbers)
